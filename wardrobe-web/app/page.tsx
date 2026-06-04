@@ -1,207 +1,316 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import {
+  BRIGHTNESSES,
+  CATEGORIES,
+  createItem,
+  type CreateItem,
+  deleteItem,
+  fetchItems,
+  PATTERNS,
+  SATURATIONS,
+  SEASON_PALETTES,
+  SEASON_WEARS,
+  TEMPERATURES,
+  VIBES,
+  WARDROBE_ROLES,
+} from "./lib/items";
 
-// API-сервер (NestJS). По умолчанию http://localhost:3000.
-// Если Next.js запущен на том же порту — задай NEXT_PUBLIC_API_URL,
-// например NEXT_PUBLIC_API_URL=http://localhost:3001 next dev -p 3000
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
-
-type Item = {
-  id: number;
-  name: string;
-  category: string;
-  color?: string;
-  size?: string;
+const EMPTY_FORM: CreateItem = {
+  name: "",
+  category: "top",
+  color: {
+    hex: "#000000",
+    hue: 0,
+    temperature: "neutral",
+    brightness: "medium",
+    saturation: "muted",
+    isNeutral: false,
+  },
+  wardrobeRole: "core",
+  pattern: "solid",
+  seasonPaletteCompatibility: [],
+  vibe: [],
+  seasonWear: [],
 };
-
-type FormState = {
-  name: string;
-  category: string;
-  color: string;
-  size: string;
-};
-
-const EMPTY_FORM: FormState = { name: "", category: "", color: "", size: "" };
 
 export default function Home() {
-  const [items, setItems] = useState<Item[]>([]);
-  const [form, setForm] = useState<FormState>(EMPTY_FORM);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const [form, setForm] = useState<CreateItem>(EMPTY_FORM);
 
-  const load = useCallback(async () => {
-    try {
-      const res = await fetch(`${API_URL}/items`);
-      if (!res.ok) throw new Error(`GET /items → ${res.status}`);
-      setItems(await res.json());
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Не удалось загрузить вещи");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const { data: items = [], isLoading, error } = useQuery({
+    queryKey: ["items"],
+    queryFn: fetchItems,
+  });
 
-  useEffect(() => {
-    // все setState в load() выполняются после await — синхронного каскада нет
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void load();
-  }, [load]);
-
-  async function createItem(e: React.FormEvent) {
-    e.preventDefault();
-    if (!form.name.trim() || !form.category.trim()) return;
-    setError(null);
-    try {
-      const res = await fetch(`${API_URL}/items`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name.trim(),
-          category: form.category.trim(),
-          ...(form.color.trim() && { color: form.color.trim() }),
-          ...(form.size.trim() && { size: form.size.trim() }),
-        }),
-      });
-      if (!res.ok) throw new Error(`POST /items → ${res.status}`);
+  const create = useMutation({
+    mutationFn: createItem,
+    onSuccess: () => {
       setForm(EMPTY_FORM);
-      await load();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Не удалось создать вещь");
-    }
-  }
+      queryClient.invalidateQueries({ queryKey: ["items"] });
+    },
+  });
 
-  async function deleteItem(id: number) {
-    setError(null);
-    try {
-      const res = await fetch(`${API_URL}/items/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error(`DELETE /items/${id} → ${res.status}`);
-      setItems((prev) => prev.filter((it) => it.id !== id));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Не удалось удалить вещь");
-    }
+  const remove = useMutation({
+    mutationFn: deleteItem,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["items"] }),
+  });
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (
+      !form.name.trim() ||
+      form.seasonPaletteCompatibility.length === 0 ||
+      form.vibe.length === 0 ||
+      form.seasonWear.length === 0
+    )
+      return;
+    create.mutate(form);
   }
 
   return (
-    <div className="flex flex-1 justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex w-full max-w-2xl flex-col gap-8 px-6 py-16">
-        <header className="flex items-baseline justify-between">
-          <h1 className="text-3xl font-semibold tracking-tight text-black dark:text-zinc-50">
-            Гардероб
-          </h1>
-          <button
-            onClick={() => {
-              setLoading(true);
-              load();
-            }}
-            className="text-sm font-medium text-zinc-500 hover:text-black dark:hover:text-zinc-50"
-          >
-            Обновить
-          </button>
-        </header>
+    <main className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-12">
+      <h1 className="text-2xl font-semibold">Гардероб</h1>
 
-        {/* Форма создания */}
-        <form
-          onSubmit={createItem}
-          className="grid grid-cols-2 gap-3 rounded-2xl border border-black/[.08] bg-white p-5 dark:border-white/[.12] dark:bg-zinc-950"
-        >
-          <Field
-            label="Название *"
+      <form onSubmit={submit} className="flex flex-col gap-4 rounded border p-4">
+        <label className="flex flex-col gap-1">
+          <span className="text-sm">Название *</span>
+          <input
+            className="rounded border px-2 py-1"
             value={form.name}
-            onChange={(v) => setForm((f) => ({ ...f, name: v }))}
-            placeholder="Чёрные джинсы"
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
-          <Field
-            label="Категория *"
-            value={form.category}
-            onChange={(v) => setForm((f) => ({ ...f, category: v }))}
-            placeholder="bottoms"
-          />
-          <Field
-            label="Цвет"
-            value={form.color}
-            onChange={(v) => setForm((f) => ({ ...f, color: v }))}
-            placeholder="black"
-          />
-          <Field
-            label="Размер"
-            value={form.size}
-            onChange={(v) => setForm((f) => ({ ...f, size: v }))}
-            placeholder="32"
-          />
-          <button
-            type="submit"
-            disabled={!form.name.trim() || !form.category.trim()}
-            className="col-span-2 mt-1 h-11 rounded-full bg-black text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-40 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
-          >
-            Добавить вещь
-          </button>
-        </form>
+        </label>
 
-        {error && (
-          <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600 dark:bg-red-950/40 dark:text-red-400">
-            {error}
+        <Select
+          label="Категория"
+          value={form.category}
+          options={CATEGORIES}
+          onChange={(v) => setForm({ ...form, category: v })}
+        />
+        <Select
+          label="Роль"
+          value={form.wardrobeRole}
+          options={WARDROBE_ROLES}
+          onChange={(v) => setForm({ ...form, wardrobeRole: v })}
+        />
+        <Select
+          label="Паттерн"
+          value={form.pattern}
+          options={PATTERNS}
+          onChange={(v) => setForm({ ...form, pattern: v })}
+        />
+
+        <fieldset className="flex flex-col gap-3 rounded border p-3">
+          <legend className="text-sm font-medium">Цвет</legend>
+          <div className="flex gap-3">
+            <label className="flex flex-col gap-1">
+              <span className="text-sm">Hex</span>
+              <input
+                type="color"
+                className="h-9 w-16"
+                value={form.color.hex}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    color: { ...form.color, hex: e.target.value },
+                  })
+                }
+              />
+            </label>
+            <label className="flex flex-1 flex-col gap-1">
+              <span className="text-sm">Hue (0–360)</span>
+              <input
+                type="number"
+                min={0}
+                max={360}
+                className="rounded border px-2 py-1"
+                value={form.color.hue}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    color: { ...form.color, hue: Number(e.target.value) },
+                  })
+                }
+              />
+            </label>
+          </div>
+          <Select
+            label="Температура"
+            value={form.color.temperature}
+            options={TEMPERATURES}
+            onChange={(v) =>
+              setForm({ ...form, color: { ...form.color, temperature: v } })
+            }
+          />
+          <Select
+            label="Яркость"
+            value={form.color.brightness}
+            options={BRIGHTNESSES}
+            onChange={(v) =>
+              setForm({ ...form, color: { ...form.color, brightness: v } })
+            }
+          />
+          <Select
+            label="Насыщенность"
+            value={form.color.saturation}
+            options={SATURATIONS}
+            onChange={(v) =>
+              setForm({ ...form, color: { ...form.color, saturation: v } })
+            }
+          />
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={form.color.isNeutral}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  color: { ...form.color, isNeutral: e.target.checked },
+                })
+              }
+            />
+            <span className="text-sm">Нейтральный</span>
+          </label>
+        </fieldset>
+
+        <MultiSelect
+          label="Сезонная палитра *"
+          options={SEASON_PALETTES}
+          selected={form.seasonPaletteCompatibility}
+          onChange={(v) =>
+            setForm({ ...form, seasonPaletteCompatibility: v })
+          }
+        />
+        <MultiSelect
+          label="Vibe *"
+          options={VIBES}
+          selected={form.vibe}
+          onChange={(v) => setForm({ ...form, vibe: v })}
+        />
+        <MultiSelect
+          label="Когда носить *"
+          options={SEASON_WEARS}
+          selected={form.seasonWear}
+          onChange={(v) => setForm({ ...form, seasonWear: v })}
+        />
+
+        <button
+          type="submit"
+          disabled={create.isPending}
+          className="rounded bg-black px-4 py-2 text-white disabled:opacity-40 dark:bg-white dark:text-black"
+        >
+          {create.isPending ? "Сохранение…" : "Добавить вещь"}
+        </button>
+
+        {create.error && (
+          <p className="text-sm text-red-600">
+            {(create.error as Error).message}
           </p>
         )}
+      </form>
 
-        {/* Список вещей */}
-        <section className="flex flex-col gap-2">
-          {loading && items.length === 0 ? (
-            <p className="text-sm text-zinc-500">Загрузка…</p>
-          ) : items.length === 0 ? (
-            <p className="text-sm text-zinc-500">Пока пусто — добавь первую вещь.</p>
-          ) : (
-            items.map((item) => (
-              <article
-                key={item.id}
-                className="flex items-center justify-between rounded-xl border border-black/[.06] bg-white px-4 py-3 dark:border-white/[.1] dark:bg-zinc-950"
+      <section className="flex flex-col gap-2">
+        {isLoading ? (
+          <p className="text-sm text-zinc-500">Загрузка…</p>
+        ) : error ? (
+          <p className="text-sm text-red-600">{(error as Error).message}</p>
+        ) : items.length === 0 ? (
+          <p className="text-sm text-zinc-500">Пока пусто.</p>
+        ) : (
+          items.map((item) => (
+            <article
+              key={item.id}
+              className="flex items-center gap-3 rounded border px-3 py-2"
+            >
+              <span
+                className="h-8 w-8 shrink-0 rounded border"
+                style={{ backgroundColor: item.color.hex }}
+              />
+              <div className="flex flex-1 flex-col">
+                <span className="font-medium">{item.name}</span>
+                <span className="text-sm text-zinc-500">
+                  {[item.category, item.wardrobeRole, ...item.vibe].join(" · ")}
+                </span>
+              </div>
+              <button
+                onClick={() => remove.mutate(item.id)}
+                className="text-sm text-zinc-400 hover:text-red-600"
               >
-                <div className="flex flex-col">
-                  <span className="font-medium text-black dark:text-zinc-50">
-                    {item.name}
-                  </span>
-                  <span className="text-sm text-zinc-500">
-                    {[item.category, item.color, item.size]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </span>
-                </div>
-                <button
-                  onClick={() => deleteItem(item.id)}
-                  className="text-sm font-medium text-zinc-400 hover:text-red-600"
-                >
-                  Удалить
-                </button>
-              </article>
-            ))
-          )}
-        </section>
-      </main>
-    </div>
+                Удалить
+              </button>
+            </article>
+          ))
+        )}
+      </section>
+    </main>
   );
 }
 
-function Field({
+function Select<T extends string>({
   label,
   value,
+  options,
   onChange,
-  placeholder,
 }: {
   label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
+  value: T;
+  options: readonly T[];
+  onChange: (v: T) => void;
 }) {
   return (
-    <label className="flex flex-col gap-1 text-sm">
-      <span className="text-zinc-500">{label}</span>
-      <input
+    <label className="flex flex-col gap-1">
+      <span className="text-sm">{label}</span>
+      <select
+        className="rounded border px-2 py-1"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="h-10 rounded-lg border border-black/[.1] bg-transparent px-3 text-black outline-none focus:border-black dark:border-white/[.15] dark:text-zinc-50 dark:focus:border-zinc-50"
-      />
+        onChange={(e) => onChange(e.target.value as T)}
+      >
+        {options.map((o) => (
+          <option key={o} value={o}>
+            {o}
+          </option>
+        ))}
+      </select>
     </label>
+  );
+}
+
+function MultiSelect<T extends string>({
+  label,
+  options,
+  selected,
+  onChange,
+}: {
+  label: string;
+  options: readonly T[];
+  selected: T[];
+  onChange: (v: T[]) => void;
+}) {
+  function toggle(o: T) {
+    onChange(selected.includes(o) ? selected.filter((s) => s !== o) : [...selected, o]);
+  }
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="text-sm">{label}</span>
+      <div className="flex flex-wrap gap-2">
+        {options.map((o) => (
+          <button
+            type="button"
+            key={o}
+            onClick={() => toggle(o)}
+            className={`rounded-full border px-3 py-1 text-sm ${
+              selected.includes(o)
+                ? "bg-black text-white dark:bg-white dark:text-black"
+                : ""
+            }`}
+          >
+            {o}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
