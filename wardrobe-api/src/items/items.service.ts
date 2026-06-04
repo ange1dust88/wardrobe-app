@@ -9,6 +9,14 @@ export class ItemsService {
     return this.items;
   }
 
+  findByIds(ids: string[]): Item[] {
+    return this.items.filter((i) => ids.includes(i.id));
+  }
+
+  missingIds(ids: string[]): string[] {
+    return ids.filter((id) => !this.items.some((i) => i.id === id));
+  }
+
   findOne(id: string): Item {
     const item = this.items.find((i) => i.id === id);
     if (!item) {
