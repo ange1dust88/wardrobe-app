@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateItemDto, Item, UpdateItemDto } from './dto/item.dto';
+import { deriveItemData } from './item-derivation';
 
 @Injectable()
 export class ItemsService {
@@ -28,8 +29,13 @@ export class ItemsService {
   create(dto: CreateItemDto): Item {
     const item: Item = {
       id: Date.now().toString(),
-      ...dto,
       createdAt: new Date().toISOString(),
+      name: dto.name,
+      category: dto.category,
+      pattern: dto.pattern,
+      vibe: dto.vibe,
+      seasonWear: dto.seasonWear,
+      ...deriveItemData(dto.hex),
     };
     this.items.push(item);
     return item;
@@ -37,7 +43,24 @@ export class ItemsService {
 
   update(id: string, dto: UpdateItemDto): Item {
     const item = this.findOne(id);
-    Object.assign(item, dto);
+    if (dto.name !== undefined) {
+      item.name = dto.name;
+    }
+    if (dto.category !== undefined) {
+      item.category = dto.category;
+    }
+    if (dto.pattern !== undefined) {
+      item.pattern = dto.pattern;
+    }
+    if (dto.vibe !== undefined) {
+      item.vibe = dto.vibe;
+    }
+    if (dto.seasonWear !== undefined) {
+      item.seasonWear = dto.seasonWear;
+    }
+    if (dto.hex !== undefined) {
+      Object.assign(item, deriveItemData(dto.hex));
+    }
     return item;
   }
 

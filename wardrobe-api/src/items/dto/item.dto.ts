@@ -1,27 +1,18 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { Type } from 'class-transformer';
 import {
   ArrayNotEmpty,
   IsArray,
-  IsBoolean,
   IsEnum,
   IsHexColor,
-  IsInt,
   IsNotEmpty,
   IsString,
-  Max,
-  Min,
-  ValidateNested,
 } from 'class-validator';
 
 export enum Category {
-  Outerwear = 'outerwear',
   Top = 'top',
   Bottom = 'bottom',
   Shoes = 'shoes',
   Accessory = 'accessory',
-  Dress = 'dress',
-  Set = 'set',
 }
 
 export enum Temperature {
@@ -80,29 +71,6 @@ export enum SeasonWear {
   Summer = 'summer',
   Autumn = 'autumn',
   Winter = 'winter',
-  AllYear = 'all_year',
-}
-
-export class ColorDto {
-  @IsHexColor()
-  hex: string;
-
-  @IsInt()
-  @Min(0)
-  @Max(360)
-  hue: number;
-
-  @IsEnum(Temperature)
-  temperature: Temperature;
-
-  @IsEnum(Brightness)
-  brightness: Brightness;
-
-  @IsEnum(Saturation)
-  saturation: Saturation;
-
-  @IsBoolean()
-  isNeutral: boolean;
 }
 
 export class CreateItemDto {
@@ -113,20 +81,11 @@ export class CreateItemDto {
   @IsEnum(Category)
   category: Category;
 
-  @ValidateNested()
-  @Type(() => ColorDto)
-  color: ColorDto;
-
-  @IsEnum(WardrobeRole)
-  wardrobeRole: WardrobeRole;
+  @IsHexColor()
+  hex: string;
 
   @IsEnum(Pattern)
   pattern: Pattern;
-
-  @IsArray()
-  @ArrayNotEmpty()
-  @IsEnum(SeasonPalette, { each: true })
-  seasonPaletteCompatibility: SeasonPalette[];
 
   @IsArray()
   @ArrayNotEmpty()
@@ -141,7 +100,24 @@ export class CreateItemDto {
 
 export class UpdateItemDto extends PartialType(CreateItemDto) {}
 
-export interface Item extends CreateItemDto {
+export interface Color {
+  hex: string;
+  hue: number;
+  temperature: Temperature;
+  brightness: Brightness;
+  saturation: Saturation;
+  isNeutral: boolean;
+}
+
+export interface Item {
   id: string;
   createdAt: string;
+  name: string;
+  category: Category;
+  color: Color;
+  wardrobeRole: WardrobeRole;
+  pattern: Pattern;
+  vibe: Vibe[];
+  seasonPaletteCompatibility: SeasonPalette[];
+  seasonWear: SeasonWear[];
 }
