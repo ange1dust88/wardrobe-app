@@ -1,0 +1,26 @@
+# Dependencies
+node_modules
+
+# Next.js output and generated files
+.next
+out
+next-env.d.ts
+tsconfig.tsbuildinfo
+
+# Build output
+build
+dist
+
+# Tooling/cache output
+coverage
+.cache
+.turbo
+.vercel
+.eslintcache
+
+# Generated lock files
+package-lock.json
+skills-lock.json
+
+# Local agent/plugin instructions
+.agents

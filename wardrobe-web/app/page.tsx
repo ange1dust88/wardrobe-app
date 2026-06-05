@@ -1,34 +1,96 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { AddItemModal } from "./components/items/AddItemModal";
-import { ItemList } from "./components/items/ItemList";
-import { useItems } from "./hooks/useItems";
+import { PlusIcon, ShirtIcon } from 'lucide-react'
+import { useState } from 'react'
+import { AddItemModal } from '@/components/items/AddItemModal'
+import { ItemList } from '@/components/items/ItemList'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty'
+import {
+  Frame,
+  FrameDescription,
+  FrameHeader,
+  FramePanel,
+  FrameTitle,
+} from '@/components/ui/frame'
+import { Spinner } from '@/components/ui/spinner'
+import { useItems } from '@/hooks/useItems'
 
 export default function Home() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const { itemsQuery, createMutation, deleteMutation } = useItems();
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const { itemsQuery, createMutation, deleteMutation } = useItems()
+
+  const items = itemsQuery.data ?? []
+  const errorMessage = itemsQuery.error
+    ? (itemsQuery.error as Error).message
+    : undefined
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-12">
-      <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Wardrobe</h1>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="border border-black bg-white px-4 py-2 text-sm text-black"
-        >
-          Add item
-        </button>
-      </header>
+    <main className='mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-10 sm:px-6 sm:py-12'>
+      <Frame>
+        <FramePanel>
+          <FrameHeader className='flex-row items-center justify-between gap-4'>
+            <div>
+              <FrameTitle className='font-heading text-2xl'>
+                Wardrobe
+              </FrameTitle>
+              <FrameDescription>
+                {itemsQuery.isLoading
+                  ? 'Loading your closet…'
+                  : `${items.length} item${items.length === 1 ? '' : 's'}`}
+              </FrameDescription>
+            </div>
+            <Button onClick={() => setIsModalOpen(true)}>
+              <PlusIcon />
+              Add item
+            </Button>
+          </FrameHeader>
+        </FramePanel>
 
-      <ItemList
-        items={itemsQuery.data ?? []}
-        isLoading={itemsQuery.isLoading}
-        errorMessage={
-          itemsQuery.error ? (itemsQuery.error as Error).message : undefined
-        }
-        onDelete={(id) => deleteMutation.mutate(id)}
-      />
+        <FramePanel>
+          {itemsQuery.isLoading ? (
+            <div className='flex items-center justify-center py-16'>
+              <Spinner className='size-6 text-muted-foreground' />
+            </div>
+          ) : errorMessage ? (
+            <Alert variant='error'>
+              <AlertTitle>Failed to load items</AlertTitle>
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          ) : items.length === 0 ? (
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant='icon'>
+                  <ShirtIcon />
+                </EmptyMedia>
+                <EmptyTitle>Your wardrobe is empty</EmptyTitle>
+                <EmptyDescription>
+                  Add your first piece to start building your closet.
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <Button onClick={() => setIsModalOpen(true)}>
+                  <PlusIcon />
+                  Add item
+                </Button>
+              </EmptyContent>
+            </Empty>
+          ) : (
+            <ItemList
+              items={items}
+              onDelete={id => deleteMutation.mutate(id)}
+            />
+          )}
+        </FramePanel>
+      </Frame>
 
       <AddItemModal
         open={isModalOpen}
@@ -44,5 +106,5 @@ export default function Home() {
         }
       />
     </main>
-  );
+  )
 }
