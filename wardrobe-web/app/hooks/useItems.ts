@@ -3,7 +3,12 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { createItem, deleteItem, fetchItems } from "../lib/items";
+import {
+  createItem,
+  deleteItem,
+  fetchItems,
+  SAMPLE_ITEMS,
+} from "../lib/items";
 
 const ITEMS_KEY = ["items"] as const;
 
@@ -25,5 +30,18 @@ export function useItems() {
     onSuccess: invalidate,
   });
 
-  return { itemsQuery, createMutation, deleteMutation };
+  const seedMutation = useMutation({
+    mutationFn: async () => {
+      const existing = await fetchItems();
+      for (const item of existing) {
+        await deleteItem(item.id);
+      }
+      for (const item of SAMPLE_ITEMS) {
+        await createItem(item);
+      }
+    },
+    onSuccess: invalidate,
+  });
+
+  return { itemsQuery, createMutation, deleteMutation, seedMutation };
 }
