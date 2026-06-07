@@ -3,7 +3,6 @@ import {
   createItem,
   deleteItem,
   fetchItems,
-  SAMPLE_ITEMS,
   type CreateItem,
   type Item,
 } from '@/lib/items'
@@ -31,18 +30,5 @@ export function useItems() {
     onSuccess: invalidate,
   })
 
-  const seedMutation = useMutation<void, Error, void>({
-    mutationFn: async () => {
-      const existing = await fetchItems()
-      for (const item of existing) {
-        await deleteItem(item.id)
-      }
-      for (const item of SAMPLE_ITEMS) {
-        await createItem(item)
-      }
-    },
-    onSuccess: invalidate,
-  })
-
-  return { itemsQuery, createMutation, deleteMutation, seedMutation }
+  return { itemsQuery, createMutation, deleteMutation }
 }

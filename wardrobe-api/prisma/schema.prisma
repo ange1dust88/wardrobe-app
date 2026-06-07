@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Category {
+  top
+  bottom
+  shoes
+  accessory
+}
+
+enum Temperature {
+  warm
+  cool
+  neutral
+}
+
+enum Brightness {
+  light
+  medium
+  dark
+}
+
+enum Saturation {
+  muted
+  soft
+  vivid
+}
+
+enum WardrobeRole {
+  core
+  tonal
+  pop
+}
+
+enum Pattern {
+  solid
+  subtle_pattern
+  bold_pattern
+  graphic
+  texture_only
+}
+
+enum SeasonPalette {
+  spring
+  summer
+  autumn
+  winter
+  universal
+}
+
+enum Vibe {
+  casual
+  classic
+  romantic
+  edgy
+  sporty
+  business
+  evening
+  minimal
+}
+
+enum SeasonWear {
+  spring
+  summer
+  autumn
+  winter
+}
+
+model Item {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  name     String
+  category Category
+  imageUrl String?
+
+  // color (derived on the backend from hex)
+  hex         String
+  hue         Int
+  temperature Temperature
+  brightness  Brightness
+  saturation  Saturation
+  isNeutral   Boolean
+
+  wardrobeRole               WardrobeRole
+  pattern                    Pattern
+  vibe                       Vibe[]
+  seasonPaletteCompatibility SeasonPalette[]
+  seasonWear                 SeasonWear[]
+}
+
+model Outfit {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  name      String
+  itemIds   String[]
+}

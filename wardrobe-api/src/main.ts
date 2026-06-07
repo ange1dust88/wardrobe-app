@@ -1,15 +1,12 @@
+import 'dotenv/config';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { NestExpressApplication } from '@nestjs/platform-express';
-import { mkdirSync } from 'fs';
-import { join } from 'path';
 import { AppModule } from './app.module';
+import { validateEnv } from './config/validate-env';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  const uploadsDir = join(process.cwd(), 'uploads');
-  mkdirSync(uploadsDir, { recursive: true });
-  app.useStaticAssets(uploadsDir, { prefix: '/uploads/' });
+  validateEnv();
+  const app = await NestFactory.create(AppModule);
   app.enableCors();
   app.useGlobalPipes(
     new ValidationPipe({
@@ -20,4 +17,4 @@ async function bootstrap() {
   );
   await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+void bootstrap();
