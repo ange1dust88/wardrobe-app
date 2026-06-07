@@ -67,7 +67,11 @@ function deriveColor(hex: string): Color {
   }
 
   const brightness =
-    l < 0.35 ? Brightness.Dark : l < 0.65 ? Brightness.Medium : Brightness.Light;
+    l < 0.35
+      ? Brightness.Dark
+      : l < 0.65
+        ? Brightness.Medium
+        : Brightness.Light;
 
   const saturation =
     s < 0.2 ? Saturation.Muted : s < 0.55 ? Saturation.Soft : Saturation.Vivid;

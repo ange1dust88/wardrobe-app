@@ -76,26 +76,26 @@ export enum SeasonWear {
 export class CreateItemDto {
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @IsEnum(Category)
-  category: Category;
+  category!: Category;
 
   @IsHexColor()
-  hex: string;
+  hex!: string;
 
   @IsEnum(Pattern)
-  pattern: Pattern;
+  pattern!: Pattern;
 
   @IsArray()
   @ArrayNotEmpty()
   @IsEnum(Vibe, { each: true })
-  vibe: Vibe[];
+  vibe!: Vibe[];
 
   @IsArray()
   @ArrayNotEmpty()
   @IsEnum(SeasonWear, { each: true })
-  seasonWear: SeasonWear[];
+  seasonWear!: SeasonWear[];
 }
 
 export class UpdateItemDto extends PartialType(CreateItemDto) {}
@@ -114,6 +114,7 @@ export interface Item {
   createdAt: string;
   name: string;
   category: Category;
+  imageUrl: string | null;
   color: Color;
   wardrobeRole: WardrobeRole;
   pattern: Pattern;

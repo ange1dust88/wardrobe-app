@@ -19,14 +19,15 @@ export type MatchResult = {
 export class MatchingService {
   constructor(private readonly itemsService: ItemsService) {}
 
-  getMatches(anchorId: string, query: MatchQueryDto): MatchResult {
-    const anchor = this.itemsService.findOne(anchorId);
+  async getMatches(
+    anchorId: string,
+    query: MatchQueryDto,
+  ): Promise<MatchResult> {
+    const anchor = await this.itemsService.findOne(anchorId);
 
-    let candidates = this.itemsService
-      .findAll()
-      .filter(
-        (item) => item.id !== anchor.id && item.category !== anchor.category,
-      );
+    let candidates = (await this.itemsService.findAll()).filter(
+      (item) => item.id !== anchor.id && item.category !== anchor.category,
+    );
 
     if (query.category) {
       candidates = candidates.filter((c) => c.category === query.category);
