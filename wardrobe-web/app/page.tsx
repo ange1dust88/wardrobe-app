@@ -23,10 +23,14 @@ import {
 } from '@/components/ui/frame'
 import { Spinner } from '@/components/ui/spinner'
 import { useItems } from '@/hooks/useItems'
+import { useMatches } from '@/hooks/useMatches'
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const { itemsQuery, createMutation, deleteMutation } = useItems()
+  const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const { itemsQuery, createMutation, deleteMutation, seedMutation } =
+    useItems()
+  const { matchedIds, scoreById } = useMatches(hoveredId)
 
   const items = itemsQuery.data ?? []
   const errorMessage = itemsQuery.error
@@ -48,10 +52,19 @@ export default function Home() {
                   : `${items.length} item${items.length === 1 ? '' : 's'}`}
               </FrameDescription>
             </div>
-            <Button onClick={() => setIsModalOpen(true)}>
-              <PlusIcon />
-              Add item
-            </Button>
+            <div className='flex gap-2'>
+              <Button
+                variant='outline'
+                onClick={() => seedMutation.mutate()}
+                disabled={seedMutation.isPending}
+              >
+                {seedMutation.isPending ? 'Loading…' : 'Reset examples'}
+              </Button>
+              <Button onClick={() => setIsModalOpen(true)}>
+                <PlusIcon />
+                Add item
+              </Button>
+            </div>
           </FrameHeader>
         </FramePanel>
 
@@ -87,6 +100,10 @@ export default function Home() {
             <ItemList
               items={items}
               onDelete={id => deleteMutation.mutate(id)}
+              hoveredId={hoveredId}
+              matchedIds={matchedIds}
+              scoreById={scoreById}
+              onHover={setHoveredId}
             />
           )}
         </FramePanel>

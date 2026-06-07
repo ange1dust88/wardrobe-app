@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { ItemsService } from '../items/items.service';
 import {
   CreateOutfitDto,
@@ -32,7 +33,7 @@ export class OutfitsService {
   create(dto: CreateOutfitDto): Outfit {
     this.assertItemsExist(dto.itemIds);
     const outfit: Outfit = {
-      id: Date.now().toString(),
+      id: randomUUID(),
       name: dto.name,
       itemIds: this.dedupe(dto.itemIds),
       createdAt: new Date().toISOString(),

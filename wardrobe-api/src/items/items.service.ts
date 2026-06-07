@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { CreateItemDto, Item, UpdateItemDto } from './dto/item.dto';
 import { deriveItemData } from './item-derivation';
 
@@ -28,7 +29,7 @@ export class ItemsService {
 
   create(dto: CreateItemDto): Item {
     const item: Item = {
-      id: Date.now().toString(),
+      id: randomUUID(),
       createdAt: new Date().toISOString(),
       name: dto.name,
       category: dto.category,
