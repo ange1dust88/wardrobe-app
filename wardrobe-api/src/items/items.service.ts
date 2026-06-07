@@ -1,6 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Item as DbItem } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { extractDominantHex } from './color-extraction';
 import {
   Brightness,
   Category,
@@ -58,9 +63,23 @@ export class ItemsService {
     return this.toItem(row);
   }
 
+  async extractColor(image: UploadedItemImage): Promise<{ hex: string }> {
+    return { hex: await extractDominantHex(image.buffer) };
+  }
+
   async create(dto: CreateItemDto, image?: UploadedItemImage): Promise<Item> {
-    const derived = deriveItemData(dto.hex);
-    const imageUrl = image ? await this.storage.uploadImage(image) : null;
+    let hex = dto.hex;
+    let imageUrl: string | null = null;
+    if (image) {
+      imageUrl = await this.storage.uploadImage(image);
+      if (!hex) {
+        hex = await extractDominantHex(image.buffer);
+      }
+    }
+    if (!hex) {
+      throw new BadRequestException('Provide an image or a hex color');
+    }
+    const derived = deriveItemData(hex);
     const row = await this.prisma.item.create({
       data: {
         name: dto.name,

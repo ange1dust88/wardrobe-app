@@ -52,6 +52,22 @@ export class ItemsController {
     return this.itemsService.create(dto, image);
   }
 
+  @Post('extract-color')
+  @UseInterceptors(
+    FileInterceptor('image', {
+      limits: { fileSize: 5 * 1024 * 1024 },
+    }),
+  )
+  extractColor(@UploadedFile() image?: UploadedItemImage) {
+    if (!image) {
+      throw new BadRequestException('Image is required');
+    }
+    if (!ALLOWED_IMAGE_MIME_TYPES.has(image.mimetype)) {
+      throw new BadRequestException('Image must be a JPG, PNG, WebP, or GIF');
+    }
+    return this.itemsService.extractColor(image);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateItemDto) {
     return this.itemsService.update(id, dto);

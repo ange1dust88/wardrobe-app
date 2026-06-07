@@ -6,6 +6,7 @@ import {
   IsEnum,
   IsHexColor,
   IsNotEmpty,
+  IsOptional,
   IsString,
 } from 'class-validator';
 
@@ -92,8 +93,9 @@ export class CreateItemDto {
   @IsEnum(Category)
   category: Category;
 
+  @IsOptional()
   @IsHexColor()
-  hex: string;
+  hex?: string;
 
   @IsEnum(Pattern)
   pattern: Pattern;

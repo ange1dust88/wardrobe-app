@@ -1,8 +1,10 @@
 'use client'
 
+import { useState } from 'react'
 import {
   CATEGORIES,
   CATEGORY_LABELS,
+  extractItemColor,
   PATTERNS,
   SEASONS,
   VIBES,
@@ -54,6 +56,16 @@ function formatOption(value: string) {
 
 export function ItemForm({ form, onSubmit, pending, errorMessage }: Props) {
   const { values, patch, isValid } = form
+  const [extractingColor, setExtractingColor] = useState(false)
+
+  async function handleImageChange(file: File | null) {
+    patch({ image: file })
+    if (!file) return
+    setExtractingColor(true)
+    const result = await extractItemColor(file).catch(() => null)
+    if (result) patch({ hex: result.hex })
+    setExtractingColor(false)
+  }
 
   return (
     <form
@@ -72,39 +84,27 @@ export function ItemForm({ form, onSubmit, pending, errorMessage }: Props) {
           placeholder='Black Hooded Jacket'
         />
       </Field>
-
-      <div className='flex items-end gap-3'>
-        <Field className='flex-1'>
-          <FieldLabel>Type</FieldLabel>
-          <Select
-            items={categoryItems}
-            value={values.category}
-            onValueChange={value => patch({ category: value as Category })}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectPopup alignItemWithTrigger={false}>
-              {categoryItems.map(item => (
-                <SelectItem key={item.value} value={item.value}>
-                  {item.label}
-                </SelectItem>
-              ))}
-            </SelectPopup>
-          </Select>
-        </Field>
-
-        <Field>
-          <FieldLabel>Color</FieldLabel>
-          <Input
-            type='color'
-            className='h-9 w-14 p-1'
-            value={values.hex}
-            onChange={e => patch({ hex: e.target.value })}
-          />
-        </Field>
-      </div>
-
+    
+      <Field>
+        <FieldLabel>Type</FieldLabel>
+        <Select
+          items={categoryItems}
+          value={values.category}
+          onValueChange={value => patch({ category: value as Category })}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectPopup alignItemWithTrigger={false}>
+            {categoryItems.map(item => (
+              <SelectItem key={item.value} value={item.value}>
+                {item.label}
+              </SelectItem>
+            ))}
+          </SelectPopup>
+        </Select>
+      </Field>
+    
       <Field>
         <FieldLabel>Pattern</FieldLabel>
         <Select
@@ -125,19 +125,34 @@ export function ItemForm({ form, onSubmit, pending, errorMessage }: Props) {
         </Select>
       </Field>
 
-      <Field>
-        <FieldLabel>Photo</FieldLabel>
-        <Input
-          key={form.fileInputKey}
-          type='file'
-          nativeInput
-          accept='image/jpeg,image/png,image/webp,image/gif'
-          onChange={e => patch({ image: e.target.files?.[0] ?? null })}
-        />
-        <FieldDescription>
-          JPG, PNG, WebP, or GIF up to 5 MB.
-        </FieldDescription>
-      </Field>
+      <div className='flex items-start gap-3 w-full'>
+        <Field className='flex-1'>
+          <FieldLabel>Photo</FieldLabel>
+          <Input
+            key={form.fileInputKey}
+            type='file'
+            nativeInput
+            accept='image/jpeg,image/png,image/webp,image/gif'
+            onChange={e => handleImageChange(e.target.files?.[0] ?? null)}
+          />
+          <FieldDescription>
+            {extractingColor
+              ? 'Reading color from photo…'
+              : 'JPG, PNG, WebP, or GIF up to 5 MB.'}
+          </FieldDescription>
+        </Field>
+
+        <Field>
+          <FieldLabel>Color</FieldLabel>
+          <input
+            type='color'
+            aria-label='Color'
+            value={values.hex}
+            onChange={e => patch({ hex: e.target.value })}
+            className='size-8.5 shrink-0 cursor-pointer rounded-lg border border-input bg-background p-1 shadow-xs/5 sm:size-7.5'
+          />
+        </Field>
+      </div>
 
       <Field>
         <FieldLabel>Vibe *</FieldLabel>
