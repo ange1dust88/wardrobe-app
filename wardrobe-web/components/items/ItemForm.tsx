@@ -16,7 +16,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { CheckboxGroup } from '@/components/ui/checkbox-group'
-import { Field, FieldLabel } from '@/components/ui/field'
+import {
+  Field,
+  FieldDescription,
+  FieldLabel,
+} from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -119,6 +123,20 @@ export function ItemForm({ form, onSubmit, pending, errorMessage }: Props) {
             ))}
           </SelectPopup>
         </Select>
+      </Field>
+
+      <Field>
+        <FieldLabel>Photo</FieldLabel>
+        <Input
+          key={form.fileInputKey}
+          type='file'
+          nativeInput
+          accept='image/jpeg,image/png,image/webp,image/gif'
+          onChange={e => patch({ image: e.target.files?.[0] ?? null })}
+        />
+        <FieldDescription>
+          JPG, PNG, WebP, or GIF up to 5 MB.
+        </FieldDescription>
       </Field>
 
       <Field>

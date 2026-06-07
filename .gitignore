@@ -7,3 +7,4 @@ build/
 .DS_Store
 *.log
 CLAUDE.md*.tsbuildinfo
+wardrobe-api/uploads/

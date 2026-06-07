@@ -5,7 +5,6 @@ import {
   Pattern,
   Saturation,
   SeasonPalette,
-  Temperature,
   Vibe,
   WardrobeRole,
 } from '../items/dto/item.dto';
@@ -25,42 +24,133 @@ export type ScoreBreakdown = {
   pattern: number;
 };
 
-const WEIGHTS: ScoreBreakdown = {
-  color: 3,
-  role: 2,
-  season: 2,
-  palette: 2,
-  vibe: 1,
-  pattern: 1,
+const MAX_SCORE = 36;
+const MIN_RECOMMENDABLE_SCORE = 6;
+
+const SCORE_CAPS: ScoreBreakdown = {
+  color: 12,
+  role: 6,
+  season: 5,
+  palette: 5,
+  vibe: 5,
+  pattern: 3,
 };
+
+const BRIGHTNESS_ORDER: Brightness[] = [
+  Brightness.Light,
+  Brightness.Medium,
+  Brightness.Dark,
+];
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+function hueDistance(a: number, b: number): number {
+  const diff = Math.abs(a - b) % 360;
+  return Math.min(diff, 360 - diff);
+}
+
+function brightnessDistance(a: Brightness, b: Brightness): number {
+  return Math.abs(BRIGHTNESS_ORDER.indexOf(a) - BRIGHTNESS_ORDER.indexOf(b));
+}
+
+function isLoudPattern(pattern: Pattern): boolean {
+  return pattern === Pattern.BoldPattern || pattern === Pattern.Graphic;
+}
+
+function isSubtlePattern(pattern: Pattern): boolean {
+  return pattern === Pattern.SubtlePattern || pattern === Pattern.TextureOnly;
+}
+
+function hasPaletteOverlap(anchor: Item, candidate: Item): boolean {
+  return candidate.seasonPaletteCompatibility.some((palette) =>
+    anchor.seasonPaletteCompatibility.includes(palette),
+  );
+}
+
+function hasSamePaletteTemperature(anchor: Item, candidate: Item): boolean {
+  const warmPalettes = [SeasonPalette.Spring, SeasonPalette.Autumn];
+  const coolPalettes = [SeasonPalette.Summer, SeasonPalette.Winter];
+  const inSameGroup = (group: SeasonPalette[]) =>
+    anchor.seasonPaletteCompatibility.some((palette) =>
+      group.includes(palette),
+    ) &&
+    candidate.seasonPaletteCompatibility.some((palette) =>
+      group.includes(palette),
+    );
+
+  return inSameGroup(warmPalettes) || inSameGroup(coolPalettes);
+}
 
 export function computeColorScore(
   anchor: Color,
   candidate: Color,
   strictTemperature = false,
 ): number {
-  let score = 0;
+  if (anchor.isNeutral || candidate.isNeutral) {
+    const dist = brightnessDistance(anchor.brightness, candidate.brightness);
 
-  if (anchor.temperature === candidate.temperature) {
-    score += 2;
-  } else if (
-    anchor.temperature === Temperature.Neutral ||
-    candidate.temperature === Temperature.Neutral
-  ) {
-    score += 1;
-  } else {
-    score += strictTemperature ? -6 : -4;
+    if (anchor.isNeutral && candidate.isNeutral) {
+      return dist === 0 ? 10 : dist === 1 ? 9 : 8;
+    }
+
+    const colored = anchor.isNeutral ? candidate : anchor;
+    let score = 8;
+    if (colored.saturation === Saturation.Vivid) {
+      score += 2;
+    } else if (colored.saturation === Saturation.Soft) {
+      score += 1;
+    }
+    if (dist === 2) {
+      score += 1;
+    } else if (dist === 0) {
+      score -= 1;
+    }
+
+    return clamp(score, 5, 11);
   }
 
-  const order: Brightness[] = [
-    Brightness.Light,
-    Brightness.Medium,
-    Brightness.Dark,
-  ];
-  const dist = Math.abs(
-    order.indexOf(anchor.brightness) - order.indexOf(candidate.brightness),
+  const distance = hueDistance(anchor.hue, candidate.hue);
+  const isAnalogous = distance <= 35;
+  const isComplementary = distance >= 165;
+  const isTriadic = distance >= 105 && distance <= 135;
+  const isSplitComplementary = distance >= 145 && distance < 165;
+  const isWheelHarmony =
+    isAnalogous || isComplementary || isTriadic || isSplitComplementary;
+
+  let score =
+    distance <= 12
+      ? 9
+      : isAnalogous
+        ? 10
+        : isComplementary
+          ? 10
+          : isTriadic
+            ? 8
+            : isSplitComplementary
+              ? 7
+              : distance <= 70
+                ? 6
+                : distance <= 100
+                  ? 4
+                  : 5;
+
+  if (anchor.temperature === candidate.temperature) {
+    score += 1;
+  } else {
+    score -= strictTemperature ? 4 : isWheelHarmony ? 1 : 3;
+  }
+
+  const brightnessDist = brightnessDistance(
+    anchor.brightness,
+    candidate.brightness,
   );
-  score += dist;
+  if (brightnessDist === 0) {
+    score += 1;
+  } else if (brightnessDist === 2 && !isComplementary) {
+    score -= 1;
+  }
 
   const bothVivid =
     anchor.saturation === Saturation.Vivid &&
@@ -69,69 +159,94 @@ export function computeColorScore(
     anchor.saturation === Saturation.Vivid ||
     candidate.saturation === Saturation.Vivid;
   if (bothVivid) {
-    score -= 4;
+    score -= 3;
   } else if (oneVivid) {
-    score += 2;
+    score += 1;
   } else {
     score += 1;
   }
 
-  if (candidate.isNeutral) {
+  if (distance <= 12 && brightnessDist > 0) {
     score += 1;
   }
 
-  return score;
+  return clamp(score, -6, SCORE_CAPS.color);
 }
 
 export function computeRoleScore(anchor: Item, candidate: Item): number {
   const a = anchor.wardrobeRole;
   const c = candidate.wardrobeRole;
-  if (a === WardrobeRole.Pop && c === WardrobeRole.Pop) return -4;
-  if (a === WardrobeRole.Pop || c === WardrobeRole.Pop) return 2;
-  if (a === WardrobeRole.Core && c === WardrobeRole.Tonal) return 1;
-  if (a === WardrobeRole.Tonal && c === WardrobeRole.Core) return 1;
-  return 0;
+  if (a === WardrobeRole.Pop && c === WardrobeRole.Pop) return -5;
+  if (a === WardrobeRole.Core && c === WardrobeRole.Tonal) return 6;
+  if (a === WardrobeRole.Tonal && c === WardrobeRole.Core) return 6;
+  if (a === WardrobeRole.Core && c === WardrobeRole.Core) return 5;
+  if (a === WardrobeRole.Tonal && c === WardrobeRole.Tonal) return 4;
+  if (a === WardrobeRole.Pop || c === WardrobeRole.Pop) return 3;
+  return 2;
 }
 
 export function computeSeasonScore(anchor: Item, candidate: Item): number {
   const overlap = candidate.seasonWear.filter((s) =>
     anchor.seasonWear.includes(s),
   ).length;
-  return overlap === 0 ? -4 : overlap;
+  if (overlap === 0) return -5;
+  if (overlap === 1) return 2;
+  if (overlap === 2) return 4;
+  return SCORE_CAPS.season;
 }
 
 export function computePaletteScore(
+  anchor: Item,
   candidate: Item,
   userColorType?: SeasonPalette,
 ): number {
-  if (!userColorType) return 0;
   const palette = candidate.seasonPaletteCompatibility;
-  if (palette.includes(userColorType)) return 3;
-  if (palette.includes(SeasonPalette.Universal)) return 1;
-  return -3;
+  if (userColorType) {
+    if (palette.includes(userColorType)) return SCORE_CAPS.palette;
+    if (palette.includes(SeasonPalette.Universal)) return 3;
+    return -4;
+  }
+
+  if (hasPaletteOverlap(anchor, candidate)) return 4;
+  if (
+    anchor.seasonPaletteCompatibility.includes(SeasonPalette.Universal) ||
+    palette.includes(SeasonPalette.Universal)
+  ) {
+    return 2;
+  }
+  if (hasSamePaletteTemperature(anchor, candidate)) return 1;
+  return -2;
 }
 
 export function computeVibeScore(candidate: Item, desired: Vibe[]): number {
   if (desired.length === 0) return 0;
   const shared = candidate.vibe.filter((v) => desired.includes(v)).length;
-  return shared === 0 ? -3 : shared * 2;
+  if (shared === 0) return -4;
+  if (shared === 1) return 3;
+  if (shared === 2) return 4;
+  return SCORE_CAPS.vibe;
 }
 
 export function computePatternScore(anchor: Item, candidate: Item): number {
-  const isLoud = (p: Pattern) =>
-    p === Pattern.BoldPattern || p === Pattern.Graphic;
-  const a = isLoud(anchor.pattern);
-  const c = isLoud(candidate.pattern);
-  if (a && c) return -3;
-  if (a || c) return 2;
-  return 1;
+  const a = isLoudPattern(anchor.pattern);
+  const c = isLoudPattern(candidate.pattern);
+  if (a && c) return -4;
+  if (a || c) return SCORE_CAPS.pattern;
+  if (isSubtlePattern(anchor.pattern) || isSubtlePattern(candidate.pattern)) {
+    return 3;
+  }
+  return 2;
 }
 
 export function computeTotalScore(
   anchor: Item,
   candidate: Item,
   ctx: MatchContext,
-): { total: number; breakdown: ScoreBreakdown } {
+): {
+  total: number;
+  rawTotal: number;
+  breakdown: ScoreBreakdown;
+} {
   const breakdown: ScoreBreakdown = {
     color: computeColorScore(
       anchor.color,
@@ -140,18 +255,23 @@ export function computeTotalScore(
     ),
     role: computeRoleScore(anchor, candidate),
     season: computeSeasonScore(anchor, candidate),
-    palette: computePaletteScore(candidate, ctx.userColorType),
+    palette: computePaletteScore(anchor, candidate, ctx.userColorType),
     vibe: computeVibeScore(candidate, ctx.vibe),
     pattern: computePatternScore(anchor, candidate),
   };
 
-  const total =
-    WEIGHTS.color * breakdown.color +
-    WEIGHTS.role * breakdown.role +
-    WEIGHTS.season * breakdown.season +
-    WEIGHTS.palette * breakdown.palette +
-    WEIGHTS.vibe * breakdown.vibe +
-    WEIGHTS.pattern * breakdown.pattern;
+  const rawTotal =
+    breakdown.color +
+    breakdown.role +
+    breakdown.season +
+    breakdown.palette +
+    breakdown.vibe +
+    breakdown.pattern;
+  const total = clamp(Math.round(rawTotal), 0, MAX_SCORE);
 
-  return { total, breakdown };
+  return { total, rawTotal, breakdown };
+}
+
+export function isRecommendableScore(score: number): boolean {
+  return score >= MIN_RECOMMENDABLE_SCORE;
 }

@@ -10,10 +10,12 @@ const EMPTY_FORM: CreateItem = {
   pattern: 'solid',
   vibe: [],
   seasonWear: [],
+  image: null,
 }
 
 export function useItemForm() {
   const [values, setValues] = useState<CreateItem>(EMPTY_FORM)
+  const [fileInputKey, setFileInputKey] = useState(0)
 
   function patch(p: Partial<CreateItem>) {
     setValues(v => ({ ...v, ...p }))
@@ -31,6 +33,7 @@ export function useItemForm() {
 
   function reset() {
     setValues(EMPTY_FORM)
+    setFileInputKey(key => key + 1)
   }
 
   const isValid =
@@ -38,7 +41,7 @@ export function useItemForm() {
     values.vibe.length > 0 &&
     values.seasonWear.length > 0
 
-  return { values, patch, toggle, reset, isValid }
+  return { values, patch, toggle, reset, isValid, fileInputKey }
 }
 
 export type ItemFormApi = ReturnType<typeof useItemForm>

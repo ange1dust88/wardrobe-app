@@ -1,4 +1,5 @@
 import { PartialType } from '@nestjs/mapped-types';
+import { Transform } from 'class-transformer';
 import {
   ArrayNotEmpty,
   IsArray,
@@ -7,6 +8,16 @@ import {
   IsNotEmpty,
   IsString,
 } from 'class-validator';
+
+function toArray({ value }: { value: unknown }) {
+  if (Array.isArray(value)) {
+    return value;
+  }
+  if (value === undefined || value === null || value === '') {
+    return [];
+  }
+  return [value];
+}
 
 export enum Category {
   Top = 'top',
@@ -87,11 +98,13 @@ export class CreateItemDto {
   @IsEnum(Pattern)
   pattern: Pattern;
 
+  @Transform(toArray)
   @IsArray()
   @ArrayNotEmpty()
   @IsEnum(Vibe, { each: true })
   vibe: Vibe[];
 
+  @Transform(toArray)
   @IsArray()
   @ArrayNotEmpty()
   @IsEnum(SeasonWear, { each: true })
@@ -116,6 +129,7 @@ export interface Item {
   category: Category;
   color: Color;
   wardrobeRole: WardrobeRole;
+  imageUrl?: string;
   pattern: Pattern;
   vibe: Vibe[];
   seasonPaletteCompatibility: SeasonPalette[];

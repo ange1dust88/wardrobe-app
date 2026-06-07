@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -6,9 +7,20 @@ import {
   Param,
   Patch,
   Post,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ItemsService } from './items.service';
 import { CreateItemDto, UpdateItemDto } from './dto/item.dto';
+import type { UploadedItemImage } from './items.service';
+
+const ALLOWED_IMAGE_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+]);
 
 @Controller('items')
 export class ItemsController {
@@ -25,8 +37,16 @@ export class ItemsController {
   }
 
   @Post()
-  create(@Body() dto: CreateItemDto) {
-    return this.itemsService.create(dto);
+  @UseInterceptors(
+    FileInterceptor('image', {
+      limits: { fileSize: 5 * 1024 * 1024 },
+    }),
+  )
+  create(@Body() dto: CreateItemDto, @UploadedFile() image?: UploadedItemImage) {
+    if (image && !ALLOWED_IMAGE_MIME_TYPES.has(image.mimetype)) {
+      throw new BadRequestException('Image must be a JPG, PNG, WebP, or GIF');
+    }
+    return this.itemsService.create(dto, image);
   }
 
   @Patch(':id')
