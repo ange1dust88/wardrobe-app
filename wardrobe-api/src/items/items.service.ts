@@ -1,7 +1,18 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import { mkdirSync, unlinkSync, writeFileSync } from 'fs';
+import { basename, join } from 'path';
 import { CreateItemDto, Item, UpdateItemDto } from './dto/item.dto';
 import { deriveItemData } from './item-derivation';
+
+const UPLOADS_DIR = join(process.cwd(), 'uploads');
+
+export type UploadedItemImage = {
+  buffer: Buffer;
+  mimetype: string;
+  originalname: string;
+  size: number;
+};
 
 @Injectable()
 export class ItemsService {
@@ -27,7 +38,8 @@ export class ItemsService {
     return item;
   }
 
-  create(dto: CreateItemDto): Item {
+  create(dto: CreateItemDto, image?: UploadedItemImage): Item {
+    const imageUrl = image ? this.saveImage(image) : undefined;
     const item: Item = {
       id: randomUUID(),
       createdAt: new Date().toISOString(),
@@ -36,6 +48,7 @@ export class ItemsService {
       pattern: dto.pattern,
       vibe: dto.vibe,
       seasonWear: dto.seasonWear,
+      ...(imageUrl ? { imageUrl } : {}),
       ...deriveItemData(dto.hex),
     };
     this.items.push(item);
@@ -68,6 +81,41 @@ export class ItemsService {
   remove(id: string): { deleted: true; id: string } {
     const item = this.findOne(id);
     this.items = this.items.filter((i) => i.id !== item.id);
+    this.removeImage(item.imageUrl);
     return { deleted: true, id };
+  }
+
+  private saveImage(image: UploadedItemImage): string {
+    mkdirSync(UPLOADS_DIR, { recursive: true });
+    const filename = `${randomUUID()}${this.extensionFor(image.mimetype)}`;
+    writeFileSync(join(UPLOADS_DIR, filename), image.buffer);
+    return `/uploads/${filename}`;
+  }
+
+  private removeImage(imageUrl?: string) {
+    if (!imageUrl?.startsWith('/uploads/')) {
+      return;
+    }
+
+    try {
+      unlinkSync(join(UPLOADS_DIR, basename(imageUrl)));
+    } catch {
+      // Ignore missing files; the in-memory item is the source of truth here.
+    }
+  }
+
+  private extensionFor(mimetype: string): string {
+    switch (mimetype) {
+      case 'image/jpeg':
+        return '.jpg';
+      case 'image/png':
+        return '.png';
+      case 'image/webp':
+        return '.webp';
+      case 'image/gif':
+        return '.gif';
+      default:
+        return '';
+    }
   }
 }

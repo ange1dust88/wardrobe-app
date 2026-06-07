@@ -2,7 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { Category, Item } from '../items/dto/item.dto';
 import { ItemsService } from '../items/items.service';
 import { MatchQueryDto } from './dto/match-query.dto';
-import { computeTotalScore, ScoreBreakdown } from './match-scoring';
+import {
+  computeTotalScore,
+  isRecommendableScore,
+  ScoreBreakdown,
+} from './match-scoring';
 
 export type ScoredMatch = {
   item: Item;
@@ -47,7 +51,7 @@ export class MatchingService {
         const { total, breakdown } = computeTotalScore(anchor, item, ctx);
         return { item, score: total, breakdown };
       })
-      .filter((s) => s.score > 0)
+      .filter((s) => isRecommendableScore(s.score))
       .sort((a, b) => b.score - a.score);
 
     const matches = {} as Record<Category, ScoredMatch[]>;

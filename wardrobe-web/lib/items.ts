@@ -55,6 +55,7 @@ export type Item = {
   category: Category
   color: Color
   wardrobeRole: string
+  imageUrl?: string
   pattern: string
   vibe: string[]
   seasonPaletteCompatibility: string[]
@@ -68,6 +69,7 @@ export type CreateItem = {
   pattern: Pattern
   vibe: Vibe[]
   seasonWear: Season[]
+  image?: File | null
 }
 
 export async function fetchItems(): Promise<Item[]> {
@@ -77,10 +79,20 @@ export async function fetchItems(): Promise<Item[]> {
 }
 
 export async function createItem(body: CreateItem): Promise<Item> {
+  const formData = new FormData()
+  formData.append('name', body.name)
+  formData.append('category', body.category)
+  formData.append('hex', body.hex)
+  formData.append('pattern', body.pattern)
+  body.vibe.forEach(vibe => formData.append('vibe', vibe))
+  body.seasonWear.forEach(season => formData.append('seasonWear', season))
+  if (body.image) {
+    formData.append('image', body.image)
+  }
+
   const res = await fetch(`${API_URL}/items`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    body: formData,
   })
   if (!res.ok) {
     const data = await res.json().catch(() => null)
@@ -90,6 +102,16 @@ export async function createItem(body: CreateItem): Promise<Item> {
     throw new Error(msg)
   }
   return res.json()
+}
+
+export function getItemImageSrc(item: Item): string | null {
+  if (!item.imageUrl) {
+    return null
+  }
+  if (/^(https?:|data:|blob:)/.test(item.imageUrl)) {
+    return item.imageUrl
+  }
+  return `${API_URL}${item.imageUrl}`
 }
 
 export async function deleteItem(id: string): Promise<void> {
