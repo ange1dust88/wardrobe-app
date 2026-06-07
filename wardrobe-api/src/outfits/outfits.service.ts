@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { randomUUID } from 'crypto';
+import { PrismaService } from '../prisma/prisma.service';
 import { ItemsService } from '../items/items.service';
 import {
   CreateOutfitDto,
@@ -14,60 +14,64 @@ import {
 
 @Injectable()
 export class OutfitsService {
-  private outfits: Outfit[] = [];
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly itemsService: ItemsService,
+  ) {}
 
-  constructor(private readonly itemsService: ItemsService) {}
-
-  findAll(): Outfit[] {
-    return this.outfits;
+  async findAll(): Promise<Outfit[]> {
+    const rows = await this.prisma.outfit.findMany({
+      orderBy: { createdAt: 'asc' },
+    });
+    return rows.map((r) => this.toOutfit(r));
   }
 
-  findOne(id: string): OutfitWithItems {
-    const outfit = this.outfits.find((o) => o.id === id);
-    if (!outfit) {
+  async findOne(id: string): Promise<OutfitWithItems> {
+    const row = await this.prisma.outfit.findUnique({ where: { id } });
+    if (!row) {
       throw new NotFoundException(`Outfit ${id} not found`);
     }
-    return { ...outfit, items: this.itemsService.findByIds(outfit.itemIds) };
+    const outfit = this.toOutfit(row);
+    const items = await this.itemsService.findByIds(outfit.itemIds);
+    return { ...outfit, items };
   }
 
-  create(dto: CreateOutfitDto): Outfit {
-    this.assertItemsExist(dto.itemIds);
-    const outfit: Outfit = {
-      id: randomUUID(),
-      name: dto.name,
-      itemIds: this.dedupe(dto.itemIds),
-      createdAt: new Date().toISOString(),
-    };
-    this.outfits.push(outfit);
-    return outfit;
+  async create(dto: CreateOutfitDto): Promise<Outfit> {
+    const itemIds = this.dedupe(dto.itemIds);
+    await this.assertItemsExist(itemIds);
+    const row = await this.prisma.outfit.create({
+      data: { name: dto.name, itemIds },
+    });
+    return this.toOutfit(row);
   }
 
-  update(id: string, dto: UpdateOutfitDto): Outfit {
-    const outfit = this.outfits.find((o) => o.id === id);
-    if (!outfit) {
+  async update(id: string, dto: UpdateOutfitDto): Promise<Outfit> {
+    const existing = await this.prisma.outfit.findUnique({ where: { id } });
+    if (!existing) {
       throw new NotFoundException(`Outfit ${id} not found`);
     }
-    if (dto.itemIds) {
-      this.assertItemsExist(dto.itemIds);
-      outfit.itemIds = this.dedupe(dto.itemIds);
+    const data: { name?: string; itemIds?: string[] } = {};
+    if (dto.name !== undefined) data.name = dto.name;
+    if (dto.itemIds !== undefined) {
+      const itemIds = this.dedupe(dto.itemIds);
+      await this.assertItemsExist(itemIds);
+      data.itemIds = itemIds;
     }
-    if (dto.name !== undefined) {
-      outfit.name = dto.name;
-    }
-    return outfit;
+    const row = await this.prisma.outfit.update({ where: { id }, data });
+    return this.toOutfit(row);
   }
 
-  remove(id: string): { deleted: true; id: string } {
-    const exists = this.outfits.some((o) => o.id === id);
-    if (!exists) {
+  async remove(id: string): Promise<{ deleted: true; id: string }> {
+    const existing = await this.prisma.outfit.findUnique({ where: { id } });
+    if (!existing) {
       throw new NotFoundException(`Outfit ${id} not found`);
     }
-    this.outfits = this.outfits.filter((o) => o.id !== id);
+    await this.prisma.outfit.delete({ where: { id } });
     return { deleted: true, id };
   }
 
-  private assertItemsExist(ids: string[]): void {
-    const missing = this.itemsService.missingIds(this.dedupe(ids));
+  private async assertItemsExist(ids: string[]): Promise<void> {
+    const missing = await this.itemsService.missingIds(ids);
     if (missing.length > 0) {
       throw new BadRequestException(`Unknown item ids: ${missing.join(', ')}`);
     }
@@ -75,5 +79,19 @@ export class OutfitsService {
 
   private dedupe(ids: string[]): string[] {
     return [...new Set(ids)];
+  }
+
+  private toOutfit(row: {
+    id: string;
+    name: string;
+    itemIds: string[];
+    createdAt: Date;
+  }): Outfit {
+    return {
+      id: row.id,
+      name: row.name,
+      itemIds: row.itemIds,
+      createdAt: row.createdAt.toISOString(),
+    };
   }
 }

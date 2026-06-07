@@ -42,7 +42,10 @@ export class ItemsController {
       limits: { fileSize: 5 * 1024 * 1024 },
     }),
   )
-  create(@Body() dto: CreateItemDto, @UploadedFile() image?: UploadedItemImage) {
+  create(
+    @Body() dto: CreateItemDto,
+    @UploadedFile() image?: UploadedItemImage,
+  ) {
     if (image && !ALLOWED_IMAGE_MIME_TYPES.has(image.mimetype)) {
       throw new BadRequestException('Image must be a JPG, PNG, WebP, or GIF');
     }

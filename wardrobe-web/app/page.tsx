@@ -28,8 +28,7 @@ import { useMatches } from '@/hooks/useMatches'
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
-  const { itemsQuery, createMutation, deleteMutation, seedMutation } =
-    useItems()
+  const { itemsQuery, createMutation, deleteMutation } = useItems()
   const { matchedIds, scoreById } = useMatches(hoveredId)
 
   const items = itemsQuery.data ?? []
@@ -52,19 +51,10 @@ export default function Home() {
                   : `${items.length} item${items.length === 1 ? '' : 's'}`}
               </FrameDescription>
             </div>
-            <div className='flex gap-2'>
-              <Button
-                variant='outline'
-                onClick={() => seedMutation.mutate()}
-                disabled={seedMutation.isPending}
-              >
-                {seedMutation.isPending ? 'Loading…' : 'Reset examples'}
-              </Button>
-              <Button onClick={() => setIsModalOpen(true)}>
-                <PlusIcon />
-                Add item
-              </Button>
-            </div>
+            <Button onClick={() => setIsModalOpen(true)}>
+              <PlusIcon />
+              Add item
+            </Button>
           </FrameHeader>
         </FramePanel>
 

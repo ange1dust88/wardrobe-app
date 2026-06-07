@@ -9,9 +9,9 @@ import {
   IsString,
 } from 'class-validator';
 
-function toArray({ value }: { value: unknown }) {
+function toArray({ value }: { value: unknown }): unknown[] {
   if (Array.isArray(value)) {
-    return value;
+    return value as unknown[];
   }
   if (value === undefined || value === null || value === '') {
     return [];
@@ -129,7 +129,7 @@ export interface Item {
   category: Category;
   color: Color;
   wardrobeRole: WardrobeRole;
-  imageUrl?: string;
+  imageUrl: string | null;
   pattern: Pattern;
   vibe: Vibe[];
   seasonPaletteCompatibility: SeasonPalette[];

@@ -5,12 +5,12 @@ import { Item } from '../../items/dto/item.dto';
 export class CreateOutfitDto {
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name!: string;
 
   @IsArray()
   @ArrayNotEmpty()
   @IsString({ each: true })
-  itemIds: string[];
+  itemIds!: string[];
 }
 
 export class UpdateOutfitDto extends PartialType(CreateOutfitDto) {}
