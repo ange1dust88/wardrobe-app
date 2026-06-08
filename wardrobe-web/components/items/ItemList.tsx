@@ -31,10 +31,13 @@ export function ItemList({
   })).filter(group => group.items.length > 0)
 
   return (
-    <div className='flex flex-col gap-6 border border-black p-4'>
+    <div className='grid gap-6 border border-black p-4 sm:grid-cols-2 lg:grid-cols-4'>
       {groups.map(group => (
-        <div key={group.category} className='flex items-center gap-4'>
-          <div className='grid flex-1 grid-cols-4 gap-3'>
+        <section key={group.category} className='flex min-w-0 flex-col gap-3'>
+          <h2 className='text-sm font-medium text-black'>
+            {CATEGORY_LABELS[group.category]}
+          </h2>
+          <div className='grid grid-cols-2 gap-3'>
             {group.items.map(item => (
               <ItemCard
                 key={item.id}
@@ -46,10 +49,7 @@ export function ItemList({
               />
             ))}
           </div>
-          <span className='w-24 shrink-0 text-sm text-black'>
-            {CATEGORY_LABELS[group.category]}
-          </span>
-        </div>
+        </section>
       ))}
     </div>
   )
