@@ -26,7 +26,6 @@ export class StorageService implements OnModuleInit {
     this.client = createClient(url, key, {
       auth: { persistSession: false },
     });
-    // create the bucket once (ignored if it already exists)
     await this.client.storage
       .createBucket(this.bucket, { public: true })
       .catch(() => undefined);
