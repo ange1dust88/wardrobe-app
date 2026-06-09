@@ -1,5 +1,15 @@
+import { supabase } from './supabase'
+
 export const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'
+
+async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
+  const { data } = await supabase.auth.getSession()
+  const token = data.session?.access_token
+  const headers = new Headers(init.headers)
+  if (token) headers.set('Authorization', `Bearer ${token}`)
+  return fetch(`${API_URL}${path}`, { ...init, headers })
+}
 
 export const CATEGORIES = ['top', 'bottom', 'shoes', 'accessory'] as const
 
@@ -73,7 +83,7 @@ export type CreateItem = {
 }
 
 export async function fetchItems(): Promise<Item[]> {
-  const res = await fetch(`${API_URL}/items`)
+  const res = await apiFetch('/items')
   if (!res.ok) throw new Error(`GET /items → ${res.status}`)
   return res.json()
 }
@@ -90,7 +100,7 @@ export async function createItem(body: CreateItem): Promise<Item> {
     formData.append('image', body.image)
   }
 
-  const res = await fetch(`${API_URL}/items`, {
+  const res = await apiFetch('/items', {
     method: 'POST',
     body: formData,
   })
@@ -107,7 +117,7 @@ export async function createItem(body: CreateItem): Promise<Item> {
 export async function extractItemColor(image: File): Promise<{ hex: string }> {
   const formData = new FormData()
   formData.append('image', image)
-  const res = await fetch(`${API_URL}/items/extract-color`, {
+  const res = await apiFetch('/items/extract-color', {
     method: 'POST',
     body: formData,
   })
@@ -126,7 +136,7 @@ export function getItemImageSrc(item: Item): string | null {
 }
 
 export async function deleteItem(id: string): Promise<void> {
-  const res = await fetch(`${API_URL}/items/${id}`, { method: 'DELETE' })
+  const res = await apiFetch(`/items/${id}`, { method: 'DELETE' })
   if (!res.ok) throw new Error(`DELETE /items/${id} → ${res.status}`)
 }
 
@@ -142,7 +152,7 @@ export type MatchResult = {
 }
 
 export async function fetchMatches(anchorId: string): Promise<MatchResult> {
-  const res = await fetch(`${API_URL}/items/${anchorId}/matches`)
+  const res = await apiFetch(`/items/${anchorId}/matches`)
   if (!res.ok) throw new Error(`GET /items/${anchorId}/matches → ${res.status}`)
   return res.json()
 }
@@ -158,7 +168,7 @@ export type SuggestResult = {
 }
 
 export async function suggestMatches(itemIds: string[]): Promise<SuggestResult> {
-  const res = await fetch(`${API_URL}/items/matches`, {
+  const res = await apiFetch('/items/matches', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ itemIds }),
@@ -178,7 +188,7 @@ export async function createOutfit(body: {
   name: string
   itemIds: string[]
 }): Promise<Outfit> {
-  const res = await fetch(`${API_URL}/outfits`, {
+  const res = await apiFetch('/outfits', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -194,13 +204,13 @@ export async function createOutfit(body: {
 }
 
 export async function fetchOutfits(): Promise<Outfit[]> {
-  const res = await fetch(`${API_URL}/outfits`)
+  const res = await apiFetch('/outfits')
   if (!res.ok) throw new Error(`GET /outfits → ${res.status}`)
   return res.json()
 }
 
 export async function deleteOutfit(id: string): Promise<void> {
-  const res = await fetch(`${API_URL}/outfits/${id}`, { method: 'DELETE' })
+  const res = await apiFetch(`/outfits/${id}`, { method: 'DELETE' })
   if (!res.ok) throw new Error(`DELETE /outfits/${id} → ${res.status}`)
 }
 

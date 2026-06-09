@@ -77,11 +77,11 @@ model Item {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
 
+  userId   String?
   name     String
   category Category
   imageUrl String?
 
-  // color (derived on the backend from hex)
   hex         String
   hue         Int
   temperature Temperature
@@ -94,11 +94,16 @@ model Item {
   vibe                       Vibe[]
   seasonPaletteCompatibility SeasonPalette[]
   seasonWear                 SeasonWear[]
+
+  @@index([userId])
 }
 
 model Outfit {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
+  userId    String?
   name      String
   itemIds   String[]
+
+  @@index([userId])
 }

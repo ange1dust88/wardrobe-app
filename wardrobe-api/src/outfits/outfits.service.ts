@@ -19,34 +19,41 @@ export class OutfitsService {
     private readonly itemsService: ItemsService,
   ) {}
 
-  async findAll(): Promise<Outfit[]> {
+  async findAll(userId: string): Promise<Outfit[]> {
     const rows = await this.prisma.outfit.findMany({
+      where: { userId },
       orderBy: { createdAt: 'asc' },
     });
     return rows.map((r) => this.toOutfit(r));
   }
 
-  async findOne(id: string): Promise<OutfitWithItems> {
-    const row = await this.prisma.outfit.findUnique({ where: { id } });
+  async findOne(userId: string, id: string): Promise<OutfitWithItems> {
+    const row = await this.prisma.outfit.findFirst({ where: { id, userId } });
     if (!row) {
       throw new NotFoundException(`Outfit ${id} not found`);
     }
     const outfit = this.toOutfit(row);
-    const items = await this.itemsService.findByIds(outfit.itemIds);
+    const items = await this.itemsService.findByIds(userId, outfit.itemIds);
     return { ...outfit, items };
   }
 
-  async create(dto: CreateOutfitDto): Promise<Outfit> {
+  async create(userId: string, dto: CreateOutfitDto): Promise<Outfit> {
     const itemIds = this.dedupe(dto.itemIds);
-    await this.assertItemsExist(itemIds);
+    await this.assertItemsExist(userId, itemIds);
     const row = await this.prisma.outfit.create({
-      data: { name: dto.name, itemIds },
+      data: { userId, name: dto.name, itemIds },
     });
     return this.toOutfit(row);
   }
 
-  async update(id: string, dto: UpdateOutfitDto): Promise<Outfit> {
-    const existing = await this.prisma.outfit.findUnique({ where: { id } });
+  async update(
+    userId: string,
+    id: string,
+    dto: UpdateOutfitDto,
+  ): Promise<Outfit> {
+    const existing = await this.prisma.outfit.findFirst({
+      where: { id, userId },
+    });
     if (!existing) {
       throw new NotFoundException(`Outfit ${id} not found`);
     }
@@ -54,15 +61,20 @@ export class OutfitsService {
     if (dto.name !== undefined) data.name = dto.name;
     if (dto.itemIds !== undefined) {
       const itemIds = this.dedupe(dto.itemIds);
-      await this.assertItemsExist(itemIds);
+      await this.assertItemsExist(userId, itemIds);
       data.itemIds = itemIds;
     }
     const row = await this.prisma.outfit.update({ where: { id }, data });
     return this.toOutfit(row);
   }
 
-  async remove(id: string): Promise<{ deleted: true; id: string }> {
-    const existing = await this.prisma.outfit.findUnique({ where: { id } });
+  async remove(
+    userId: string,
+    id: string,
+  ): Promise<{ deleted: true; id: string }> {
+    const existing = await this.prisma.outfit.findFirst({
+      where: { id, userId },
+    });
     if (!existing) {
       throw new NotFoundException(`Outfit ${id} not found`);
     }
@@ -70,8 +82,8 @@ export class OutfitsService {
     return { deleted: true, id };
   }
 
-  private async assertItemsExist(ids: string[]): Promise<void> {
-    const missing = await this.itemsService.missingIds(ids);
+  private async assertItemsExist(userId: string, ids: string[]): Promise<void> {
+    const missing = await this.itemsService.missingIds(userId, ids);
     if (missing.length > 0) {
       throw new BadRequestException(`Unknown item ids: ${missing.join(', ')}`);
     }

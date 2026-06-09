@@ -2,6 +2,8 @@
 
 import { PlusIcon, ShirtIcon } from 'lucide-react'
 import { useState } from 'react'
+import { useAuth } from '@/components/auth/AuthProvider'
+import { LoginScreen } from '@/components/auth/LoginScreen'
 import { AddItemModal } from '@/components/items/AddItemModal'
 import { ItemList } from '@/components/items/ItemList'
 import { OutfitPanel } from '@/components/items/OutfitPanel'
@@ -30,6 +32,25 @@ import { useOutfitBuilder } from '@/hooks/useOutfitBuilder'
 import { useOutfits } from '@/hooks/useOutfits'
 
 export default function Home() {
+  const { user, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <main className='flex min-h-[60vh] items-center justify-center'>
+        <Spinner className='size-6 text-muted-foreground' />
+      </main>
+    )
+  }
+
+  if (!user) {
+    return <LoginScreen />
+  }
+
+  return <Wardrobe />
+}
+
+function Wardrobe() {
+  const { signOut } = useAuth()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const { itemsQuery, createMutation, deleteMutation } = useItems()
@@ -65,10 +86,15 @@ export default function Home() {
                     : `${items.length} item${items.length === 1 ? '' : 's'}`}
                 </FrameDescription>
               </div>
-              <Button onClick={() => setIsModalOpen(true)}>
-                <PlusIcon />
-                Add item
-              </Button>
+              <div className='flex items-center gap-2'>
+                <Button onClick={() => setIsModalOpen(true)}>
+                  <PlusIcon />
+                  Add item
+                </Button>
+                <Button variant='outline' onClick={() => signOut()}>
+                  Sign out
+                </Button>
+              </div>
             </FrameHeader>
           </FramePanel>
 
