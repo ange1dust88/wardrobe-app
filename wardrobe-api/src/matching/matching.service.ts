@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Category, Item } from '../items/dto/item.dto';
 import { ItemsService } from '../items/items.service';
 import { MatchQueryDto } from './dto/match-query.dto';
+import { SuggestMatchesDto } from './dto/suggest-matches.dto';
 import {
   computeTotalScore,
   isRecommendableScore,
@@ -17,6 +18,16 @@ export type ScoredMatch = {
 export type MatchResult = {
   anchor: Item;
   matches: Record<Category, ScoredMatch[]>;
+};
+
+export type SuggestMatch = {
+  item: Item;
+  score: number;
+};
+
+export type SuggestResult = {
+  selected: Item[];
+  matches: Record<Category, SuggestMatch[]>;
 };
 
 @Injectable()
@@ -61,5 +72,51 @@ export class MatchingService {
     }
 
     return { anchor, matches };
+  }
+
+  async suggestMatches(dto: SuggestMatchesDto): Promise<SuggestResult> {
+    const missing = await this.itemsService.missingIds(dto.itemIds);
+    if (missing.length > 0) {
+      throw new BadRequestException(`Unknown item ids: ${missing.join(', ')}`);
+    }
+
+    const selected = await this.itemsService.findByIds(dto.itemIds);
+    const selectedIds = new Set(dto.itemIds);
+    const selectedCategories = new Set(selected.map((s) => s.category));
+
+    let candidates = (await this.itemsService.findAll()).filter(
+      (item) =>
+        !selectedIds.has(item.id) && !selectedCategories.has(item.category),
+    );
+    if (dto.season) {
+      candidates = candidates.filter((c) => c.seasonWear.includes(dto.season!));
+    }
+
+    const ctx = {
+      userColorType: dto.userColorType,
+      vibe: dto.vibe?.length
+        ? dto.vibe
+        : [...new Set(selected.flatMap((s) => s.vibe))],
+    };
+
+    const scored: SuggestMatch[] = candidates
+      .map((item) => {
+        const totals = selected.map(
+          (s) => computeTotalScore(s, item, ctx).total,
+        );
+        const score = Math.round(
+          totals.reduce((sum, t) => sum + t, 0) / totals.length,
+        );
+        return { item, score };
+      })
+      .filter((s) => isRecommendableScore(s.score))
+      .sort((a, b) => b.score - a.score);
+
+    const matches = {} as Record<Category, SuggestMatch[]>;
+    for (const category of Object.values(Category)) {
+      matches[category] = scored.filter((s) => s.item.category === category);
+    }
+
+    return { selected, matches };
   }
 }

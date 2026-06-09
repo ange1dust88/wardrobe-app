@@ -147,6 +147,63 @@ export async function fetchMatches(anchorId: string): Promise<MatchResult> {
   return res.json()
 }
 
+export type SuggestMatch = {
+  item: Item
+  score: number
+}
+
+export type SuggestResult = {
+  selected: Item[]
+  matches: Record<Category, SuggestMatch[]>
+}
+
+export async function suggestMatches(itemIds: string[]): Promise<SuggestResult> {
+  const res = await fetch(`${API_URL}/items/matches`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ itemIds }),
+  })
+  if (!res.ok) throw new Error(`POST /items/matches → ${res.status}`)
+  return res.json()
+}
+
+export type Outfit = {
+  id: string
+  createdAt: string
+  name: string
+  itemIds: string[]
+}
+
+export async function createOutfit(body: {
+  name: string
+  itemIds: string[]
+}): Promise<Outfit> {
+  const res = await fetch(`${API_URL}/outfits`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    const data = await res.json().catch(() => null)
+    const msg = Array.isArray(data?.message)
+      ? data.message.join(', ')
+      : (data?.message ?? `POST /outfits → ${res.status}`)
+    throw new Error(msg)
+  }
+  return res.json()
+}
+
+export async function fetchOutfits(): Promise<Outfit[]> {
+  const res = await fetch(`${API_URL}/outfits`)
+  if (!res.ok) throw new Error(`GET /outfits → ${res.status}`)
+  return res.json()
+}
+
+export async function deleteOutfit(id: string): Promise<void> {
+  const res = await fetch(`${API_URL}/outfits/${id}`, { method: 'DELETE' })
+  if (!res.ok) throw new Error(`DELETE /outfits/${id} → ${res.status}`)
+}
+
 export const SAMPLE_ITEMS: CreateItem[] = [
   { name: 'Fuchsia Shirt', category: 'top', hex: '#D4006F', pattern: 'solid', vibe: ['evening', 'edgy'], seasonWear: ['autumn', 'winter'] },
   { name: 'Black Hoodie', category: 'top', hex: '#111111', pattern: 'solid', vibe: ['casual', 'edgy'], seasonWear: ['autumn', 'winter'] },

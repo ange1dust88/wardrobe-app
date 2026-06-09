@@ -2,30 +2,35 @@ import { getItemImageSrc, type Item } from '../../lib/items'
 import { getMatchScoreTone } from '@/lib/match-score'
 import { cn } from '@/lib/utils'
 
-export type CardState = 'anchor' | 'match' | 'dim' | 'normal'
+export type CardState = 'anchor' | 'selected' | 'match' | 'dim' | 'normal'
 
 type Props = {
   item: Item
   state: CardState
   score?: number
   onDelete: (id: string) => void
+  onSelect: (item: Item) => void
   onHover: (id: string | null) => void
 }
 
 const BOX_STATE: Record<CardState, string> = {
   anchor: 'border-2 border-black shadow-[inset_0_0_0_2px_#fbfaf6]',
+  selected: 'border-2 border-black shadow-[inset_0_0_0_3px_#fbfaf6]',
   match: 'border-2',
   dim: 'border border-black opacity-30',
   normal: 'border border-black',
 }
 
-export function ItemCard({ item, state, score, onDelete, onHover }: Props) {
+export function ItemCard({
+  item,
+  state,
+  score,
+  onDelete,
+  onSelect,
+  onHover,
+}: Props) {
   const tone = score !== undefined ? getMatchScoreTone(score) : null
   const imageSrc = getItemImageSrc(item)
-
-  function activateCard() {
-    onHover(item.id)
-  }
 
   return (
     <div className='group relative flex flex-col gap-1'>
@@ -33,17 +38,17 @@ export function ItemCard({ item, state, score, onDelete, onHover }: Props) {
         className='flex cursor-pointer flex-col gap-1'
         role='button'
         tabIndex={0}
-        onClick={activateCard}
-        onFocus={activateCard}
-        onBlur={() => onHover(null)}
+        onClick={() => onSelect(item)}
         onKeyDown={event => {
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault()
-            activateCard()
+            onSelect(item)
           }
         }}
-        onMouseEnter={activateCard}
+        onMouseEnter={() => onHover(item.id)}
         onMouseLeave={() => onHover(null)}
+        onFocus={() => onHover(item.id)}
+        onBlur={() => onHover(null)}
       >
         <div
           className={cn(
@@ -64,8 +69,13 @@ export function ItemCard({ item, state, score, onDelete, onHover }: Props) {
               className='absolute inset-0 h-full w-full object-cover'
             />
           )}
-          {state === 'anchor' && (
+          {(state === 'anchor' || state === 'selected') && (
             <div className='absolute inset-0 bg-black/10 ring-2 ring-inset ring-white/70' />
+          )}
+          {state === 'selected' && (
+            <span className='absolute top-1 right-1 inline-flex size-5 items-center justify-center rounded-full bg-black text-xs font-semibold text-white'>
+              ✓
+            </span>
           )}
           {state === 'match' && score !== undefined && tone && (
             <>

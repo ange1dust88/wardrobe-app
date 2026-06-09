@@ -5,8 +5,10 @@ type Props = {
   items: Item[]
   onDelete: (id: string) => void
   hoveredId: string | null
+  selectedIds: string[]
   matchedIds: Set<string>
   scoreById: Record<string, number>
+  onSelect: (item: Item) => void
   onHover: (id: string | null) => void
 }
 
@@ -14,11 +16,20 @@ export function ItemList({
   items,
   onDelete,
   hoveredId,
-  matchedIds,
-  scoreById,
+  selectedIds = [],
+  matchedIds = new Set(),
+  scoreById = {},
+  onSelect,
   onHover,
 }: Props) {
+  const building = selectedIds.length > 0
+
   function cardState(item: Item): CardState {
+    if (building) {
+      if (selectedIds.includes(item.id)) return 'selected'
+      if (matchedIds.has(item.id)) return 'match'
+      return 'dim'
+    }
     if (!hoveredId) return 'normal'
     if (item.id === hoveredId) return 'anchor'
     if (matchedIds.has(item.id)) return 'match'
@@ -45,6 +56,7 @@ export function ItemList({
                 state={cardState(item)}
                 score={scoreById[item.id]}
                 onDelete={onDelete}
+                onSelect={onSelect}
                 onHover={onHover}
               />
             ))}
