@@ -4,6 +4,8 @@ import { PlusIcon, ShirtIcon } from 'lucide-react'
 import { useState } from 'react'
 import { AddItemModal } from '@/components/items/AddItemModal'
 import { ItemList } from '@/components/items/ItemList'
+import { OutfitPanel } from '@/components/items/OutfitPanel'
+import { SavedOutfits } from '@/components/items/SavedOutfits'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
@@ -24,80 +26,120 @@ import {
 import { Spinner } from '@/components/ui/spinner'
 import { useItems } from '@/hooks/useItems'
 import { useMatches } from '@/hooks/useMatches'
+import { useOutfitBuilder } from '@/hooks/useOutfitBuilder'
+import { useOutfits } from '@/hooks/useOutfits'
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const { itemsQuery, createMutation, deleteMutation } = useItems()
-  const { matchedIds, scoreById } = useMatches(hoveredId)
+  const builder = useOutfitBuilder()
+  const { outfitsQuery, deleteMutation: deleteOutfitMutation } = useOutfits()
 
   const items = itemsQuery.data ?? []
+  const building = builder.selectedIds.length > 0
+  const hover = useMatches(building ? null : hoveredId)
+
+  const matchedIds = building ? builder.matchedIds : hover.matchedIds
+  const scoreById = building ? builder.scoreById : hover.scoreById
+
   const errorMessage = itemsQuery.error
     ? (itemsQuery.error as Error).message
     : undefined
 
+  const hasItems = !itemsQuery.isLoading && !errorMessage && items.length > 0
+
   return (
     <main className='mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-10 sm:px-6 sm:py-12'>
-      <Frame>
-        <FramePanel>
-          <FrameHeader className='flex-row items-center justify-between gap-4'>
-            <div>
-              <FrameTitle className='font-heading text-2xl'>
-                Wardrobe
-              </FrameTitle>
-              <FrameDescription>
-                {itemsQuery.isLoading
-                  ? 'Loading your closet…'
-                  : `${items.length} item${items.length === 1 ? '' : 's'}`}
-              </FrameDescription>
-            </div>
-            <Button onClick={() => setIsModalOpen(true)}>
-              <PlusIcon />
-              Add item
-            </Button>
-          </FrameHeader>
-        </FramePanel>
+      <div className='flex flex-col gap-6 lg:flex-row lg:items-start'>
+        <Frame className='min-w-0 flex-1'>
+          <FramePanel>
+            <FrameHeader className='flex-row items-center justify-between gap-4'>
+              <div>
+                <FrameTitle className='font-heading text-2xl'>
+                  Wardrobe
+                </FrameTitle>
+                <FrameDescription>
+                  {itemsQuery.isLoading
+                    ? 'Loading your closet…'
+                    : `${items.length} item${items.length === 1 ? '' : 's'}`}
+                </FrameDescription>
+              </div>
+              <Button onClick={() => setIsModalOpen(true)}>
+                <PlusIcon />
+                Add item
+              </Button>
+            </FrameHeader>
+          </FramePanel>
 
-        <FramePanel>
-          {itemsQuery.isLoading ? (
-            <div className='flex items-center justify-center py-16'>
-              <Spinner className='size-6 text-muted-foreground' />
-            </div>
-          ) : errorMessage ? (
-            <Alert variant='error'>
-              <AlertTitle>Failed to load items</AlertTitle>
-              <AlertDescription>{errorMessage}</AlertDescription>
-            </Alert>
-          ) : items.length === 0 ? (
-            <Empty>
-              <EmptyHeader>
-                <EmptyMedia variant='icon'>
-                  <ShirtIcon />
-                </EmptyMedia>
-                <EmptyTitle>Your wardrobe is empty</EmptyTitle>
-                <EmptyDescription>
-                  Add your first piece to start building your closet.
-                </EmptyDescription>
-              </EmptyHeader>
-              <EmptyContent>
-                <Button onClick={() => setIsModalOpen(true)}>
-                  <PlusIcon />
-                  Add item
-                </Button>
-              </EmptyContent>
-            </Empty>
-          ) : (
-            <ItemList
-              items={items}
-              onDelete={id => deleteMutation.mutate(id)}
-              hoveredId={hoveredId}
-              matchedIds={matchedIds}
-              scoreById={scoreById}
-              onHover={setHoveredId}
+          <FramePanel>
+            {itemsQuery.isLoading ? (
+              <div className='flex items-center justify-center py-16'>
+                <Spinner className='size-6 text-muted-foreground' />
+              </div>
+            ) : errorMessage ? (
+              <Alert variant='error'>
+                <AlertTitle>Failed to load items</AlertTitle>
+                <AlertDescription>{errorMessage}</AlertDescription>
+              </Alert>
+            ) : items.length === 0 ? (
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia variant='icon'>
+                    <ShirtIcon />
+                  </EmptyMedia>
+                  <EmptyTitle>Your wardrobe is empty</EmptyTitle>
+                  <EmptyDescription>
+                    Add your first piece to start building your closet.
+                  </EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  <Button onClick={() => setIsModalOpen(true)}>
+                    <PlusIcon />
+                    Add item
+                  </Button>
+                </EmptyContent>
+              </Empty>
+            ) : (
+              <ItemList
+                items={items}
+                onDelete={id => deleteMutation.mutate(id)}
+                hoveredId={hoveredId}
+                selectedIds={builder.selectedIds}
+                matchedIds={matchedIds}
+                scoreById={scoreById}
+                onSelect={builder.toggle}
+                onHover={setHoveredId}
+              />
+            )}
+          </FramePanel>
+        </Frame>
+
+        {hasItems && (
+          <div className='lg:sticky lg:top-6'>
+            <OutfitPanel
+              items={builder.selected}
+              onRemove={builder.remove}
+              onClear={builder.clear}
+              onSave={name => builder.saveMutation.mutate(name)}
+              saving={builder.saveMutation.isPending}
+              errorMessage={
+                builder.saveMutation.error
+                  ? (builder.saveMutation.error as Error).message
+                  : undefined
+              }
             />
-          )}
-        </FramePanel>
-      </Frame>
+          </div>
+        )}
+      </div>
+
+      {hasItems && (
+        <SavedOutfits
+          outfits={outfitsQuery.data ?? []}
+          items={items}
+          onDelete={id => deleteOutfitMutation.mutate(id)}
+        />
+      )}
 
       <AddItemModal
         open={isModalOpen}
