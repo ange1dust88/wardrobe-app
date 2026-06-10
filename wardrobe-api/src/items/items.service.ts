@@ -32,42 +32,43 @@ export class ItemsService {
     private readonly storage: StorageService,
   ) {}
 
-  async findAll(): Promise<Item[]> {
+  async findAll(userId: string): Promise<Item[]> {
     const rows = await this.prisma.item.findMany({
+      where: { userId },
       orderBy: { createdAt: 'asc' },
     });
     return rows.map((r) => this.toItem(r));
   }
 
-  async findByIds(ids: string[]): Promise<Item[]> {
+  async findByIds(userId: string, ids: string[]): Promise<Item[]> {
     const rows = await this.prisma.item.findMany({
-      where: { id: { in: ids } },
+      where: { userId, id: { in: ids } },
     });
     return rows.map((r) => this.toItem(r));
   }
 
-  async missingIds(ids: string[]): Promise<string[]> {
+  async missingIds(userId: string, ids: string[]): Promise<string[]> {
     const rows = await this.prisma.item.findMany({
-      where: { id: { in: ids } },
+      where: { userId, id: { in: ids } },
       select: { id: true },
     });
     const found = new Set(rows.map((r) => r.id));
     return ids.filter((id) => !found.has(id));
   }
 
-  async findOne(id: string): Promise<Item> {
-    const row = await this.prisma.item.findUnique({ where: { id } });
+  async findOne(userId: string, id: string): Promise<Item> {
+    const row = await this.prisma.item.findFirst({ where: { id, userId } });
     if (!row) {
       throw new NotFoundException(`Item ${id} not found`);
     }
     return this.toItem(row);
   }
 
-  async extractColor(image: UploadedItemImage): Promise<{ hex: string }> {
-    return { hex: await extractDominantHex(image.buffer) };
-  }
-
-  async create(dto: CreateItemDto, image?: UploadedItemImage): Promise<Item> {
+  async create(
+    userId: string,
+    dto: CreateItemDto,
+    image?: UploadedItemImage,
+  ): Promise<Item> {
     let hex = dto.hex;
     let imageUrl: string | null = null;
     if (image) {
@@ -82,6 +83,7 @@ export class ItemsService {
     const derived = deriveItemData(hex);
     const row = await this.prisma.item.create({
       data: {
+        userId,
         name: dto.name,
         category: dto.category,
         pattern: dto.pattern,
@@ -101,8 +103,8 @@ export class ItemsService {
     return this.toItem(row);
   }
 
-  async update(id: string, dto: UpdateItemDto): Promise<Item> {
-    await this.findOne(id);
+  async update(userId: string, id: string, dto: UpdateItemDto): Promise<Item> {
+    await this.findOne(userId, id);
     const data: Record<string, unknown> = {};
     if (dto.name !== undefined) data.name = dto.name;
     if (dto.category !== undefined) data.category = dto.category;
@@ -124,11 +126,14 @@ export class ItemsService {
     return this.toItem(row);
   }
 
-  async remove(id: string): Promise<{ deleted: true; id: string }> {
-    const item = await this.findOne(id);
+  async remove(
+    userId: string,
+    id: string,
+  ): Promise<{ deleted: true; id: string }> {
+    const item = await this.findOne(userId, id);
 
     const outfits = await this.prisma.outfit.findMany({
-      where: { itemIds: { has: id } },
+      where: { userId, itemIds: { has: id } },
       select: { id: true, itemIds: true },
     });
 
@@ -148,8 +153,12 @@ export class ItemsService {
     return { deleted: true, id };
   }
 
-  async setImage(id: string, file: UploadedItemImage): Promise<Item> {
-    const current = await this.findOne(id);
+  async setImage(
+    userId: string,
+    id: string,
+    file: UploadedItemImage,
+  ): Promise<Item> {
+    const current = await this.findOne(userId, id);
     const imageUrl = await this.storage.uploadImage(file);
 
     let row: DbItem;
@@ -167,6 +176,10 @@ export class ItemsService {
       await this.storage.deleteImage(current.imageUrl);
     }
     return this.toItem(row);
+  }
+
+  async extractColor(image: UploadedItemImage): Promise<{ hex: string }> {
+    return { hex: await extractDominantHex(image.buffer) };
   }
 
   private toItem(row: DbItem): Item {

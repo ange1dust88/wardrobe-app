@@ -35,12 +35,13 @@ export class MatchingService {
   constructor(private readonly itemsService: ItemsService) {}
 
   async getMatches(
+    userId: string,
     anchorId: string,
     query: MatchQueryDto,
   ): Promise<MatchResult> {
-    const anchor = await this.itemsService.findOne(anchorId);
+    const anchor = await this.itemsService.findOne(userId, anchorId);
 
-    let candidates = (await this.itemsService.findAll()).filter(
+    let candidates = (await this.itemsService.findAll(userId)).filter(
       (item) => item.id !== anchor.id && item.category !== anchor.category,
     );
 
@@ -74,17 +75,20 @@ export class MatchingService {
     return { anchor, matches };
   }
 
-  async suggestMatches(dto: SuggestMatchesDto): Promise<SuggestResult> {
-    const missing = await this.itemsService.missingIds(dto.itemIds);
+  async suggestMatches(
+    userId: string,
+    dto: SuggestMatchesDto,
+  ): Promise<SuggestResult> {
+    const missing = await this.itemsService.missingIds(userId, dto.itemIds);
     if (missing.length > 0) {
       throw new BadRequestException(`Unknown item ids: ${missing.join(', ')}`);
     }
 
-    const selected = await this.itemsService.findByIds(dto.itemIds);
+    const selected = await this.itemsService.findByIds(userId, dto.itemIds);
     const selectedIds = new Set(dto.itemIds);
     const selectedCategories = new Set(selected.map((s) => s.category));
 
-    let candidates = (await this.itemsService.findAll()).filter(
+    let candidates = (await this.itemsService.findAll(userId)).filter(
       (item) =>
         !selectedIds.has(item.id) && !selectedCategories.has(item.category),
     );

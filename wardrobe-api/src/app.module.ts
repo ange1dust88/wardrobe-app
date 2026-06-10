@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AuthModule } from './auth/auth.module';
 import { ItemsModule } from './items/items.module';
 import { MatchingModule } from './matching/matching.module';
 import { OutfitsModule } from './outfits/outfits.module';
@@ -9,6 +10,7 @@ import { StorageModule } from './storage/storage.module';
   imports: [
     PrismaModule,
     StorageModule,
+    AuthModule,
     ItemsModule,
     OutfitsModule,
     MatchingModule,
