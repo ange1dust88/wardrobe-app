@@ -157,6 +157,14 @@ export async function fetchMatches(anchorId: string): Promise<MatchResult> {
   return res.json()
 }
 
+export type MatchMap = Record<string, Record<string, number>>
+
+export async function fetchMatchMap(): Promise<MatchMap> {
+  const res = await apiFetch('/items/matches/map')
+  if (!res.ok) throw new Error(`GET /items/matches/map → ${res.status}`)
+  return res.json()
+}
+
 export type SuggestMatch = {
   item: Item
   score: number

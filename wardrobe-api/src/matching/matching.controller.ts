@@ -18,6 +18,11 @@ import { MatchingService } from './matching.service';
 export class MatchingController {
   constructor(private readonly matchingService: MatchingService) {}
 
+  @Get('matches/map')
+  getMatchMap(@CurrentUser() user: AuthUser) {
+    return this.matchingService.getMatchMap(user.id);
+  }
+
   @Get(':anchorId/matches')
   getMatches(
     @CurrentUser() user: AuthUser,

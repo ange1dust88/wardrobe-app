@@ -30,9 +30,34 @@ export type SuggestResult = {
   matches: Record<Category, SuggestMatch[]>;
 };
 
+export type MatchMap = Record<string, Record<string, number>>;
+
 @Injectable()
 export class MatchingService {
   constructor(private readonly itemsService: ItemsService) {}
+
+  async getMatchMap(userId: string): Promise<MatchMap> {
+    const items = await this.itemsService.findAll(userId);
+    const map: MatchMap = {};
+    for (const anchor of items) {
+      const ctx = { vibe: anchor.vibe };
+      const scores: Record<string, number> = {};
+      for (const candidate of items) {
+        if (
+          candidate.id === anchor.id ||
+          candidate.category === anchor.category
+        ) {
+          continue;
+        }
+        const { total } = computeTotalScore(anchor, candidate, ctx);
+        if (isRecommendableScore(total)) {
+          scores[candidate.id] = total;
+        }
+      }
+      map[anchor.id] = scores;
+    }
+    return map;
+  }
 
   async getMatches(
     userId: string,
