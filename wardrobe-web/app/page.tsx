@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/frame'
 import { Spinner } from '@/components/ui/spinner'
 import { useItems } from '@/hooks/useItems'
-import { useMatches } from '@/hooks/useMatches'
+import { useMatchMap } from '@/hooks/useMatchMap'
 import { useOutfitBuilder } from '@/hooks/useOutfitBuilder'
 import { useOutfits } from '@/hooks/useOutfits'
 
@@ -59,10 +59,14 @@ function Wardrobe() {
 
   const items = itemsQuery.data ?? []
   const building = builder.selectedIds.length > 0
-  const hover = useMatches(building ? null : hoveredId)
+  const matchMap = useMatchMap()
 
-  const matchedIds = building ? builder.matchedIds : hover.matchedIds
-  const scoreById = building ? builder.scoreById : hover.scoreById
+  const hoverScores =
+    !building && hoveredId ? (matchMap.data?.[hoveredId] ?? {}) : {}
+  const matchedIds = building
+    ? builder.matchedIds
+    : new Set(Object.keys(hoverScores))
+  const scoreById = building ? builder.scoreById : hoverScores
 
   const errorMessage = itemsQuery.error
     ? (itemsQuery.error as Error).message

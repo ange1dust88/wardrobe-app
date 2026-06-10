@@ -12,8 +12,11 @@ const ITEMS_KEY = ['items'] as const
 export function useItems() {
   const queryClient = useQueryClient()
 
-  const invalidate = () =>
+  const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ITEMS_KEY })
+    queryClient.invalidateQueries({ queryKey: ['match-map'] })
+    queryClient.invalidateQueries({ queryKey: ['set-matches'] })
+  }
 
   const itemsQuery = useQuery<Item[]>({
     queryKey: ITEMS_KEY,
