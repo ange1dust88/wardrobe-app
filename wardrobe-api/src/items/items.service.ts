@@ -22,6 +22,7 @@ import {
 } from './dto/item.dto';
 import { deriveItemData } from './item-derivation';
 import { StorageService, UploadedImage } from '../storage/storage.service';
+import { MatchMapCacheService } from '../matching/match-map-cache.service';
 
 export type UploadedItemImage = UploadedImage;
 
@@ -30,6 +31,7 @@ export class ItemsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
+    private readonly matchMapCache: MatchMapCacheService,
   ) {}
 
   async findAll(userId: string): Promise<Item[]> {
@@ -100,6 +102,7 @@ export class ItemsService {
         seasonPaletteCompatibility: derived.seasonPaletteCompatibility,
       },
     });
+    this.matchMapCache.invalidate(userId);
     return this.toItem(row);
   }
 
@@ -123,6 +126,7 @@ export class ItemsService {
       data.seasonPaletteCompatibility = derived.seasonPaletteCompatibility;
     }
     const row = await this.prisma.item.update({ where: { id }, data });
+    this.matchMapCache.invalidate(userId);
     return this.toItem(row);
   }
 
@@ -150,6 +154,7 @@ export class ItemsService {
     if (item.imageUrl) {
       await this.storage.deleteImage(item.imageUrl);
     }
+    this.matchMapCache.invalidate(userId);
     return { deleted: true, id };
   }
 
