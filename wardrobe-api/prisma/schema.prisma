@@ -95,7 +95,7 @@ model Item {
   seasonPaletteCompatibility SeasonPalette[]
   seasonWear                 SeasonWear[]
 
-  @@index([userId])
+  @@index([userId, category])
 }
 
 model Outfit {

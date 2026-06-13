@@ -4,7 +4,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createRemoteJWKSet, jwtVerify, type JWTVerifyGetKey } from 'jose';
 import { Request } from 'express';
 
 export type AuthUser = {
@@ -14,20 +14,21 @@ export type AuthUser = {
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  private client: SupabaseClient | null = null;
+  private jwks: JWTVerifyGetKey | null = null;
+  private issuer = '';
 
-  private getClient(): SupabaseClient {
-    if (!this.client) {
+  private getJwks(): JWTVerifyGetKey {
+    if (!this.jwks) {
       const url = process.env.SUPABASE_URL;
-      const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-      if (!url || !key) {
-        throw new Error('Supabase auth is not configured');
+      if (!url) {
+        throw new Error('SUPABASE_URL is not configured');
       }
-      this.client = createClient(url, key, {
-        auth: { persistSession: false },
-      });
+      this.issuer = `${url}/auth/v1`;
+      this.jwks = createRemoteJWKSet(
+        new URL(`${this.issuer}/.well-known/jwks.json`),
+      );
     }
-    return this.client;
+    return this.jwks;
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -40,12 +41,20 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Missing bearer token');
     }
 
-    const { data, error } = await this.getClient().auth.getUser(token);
-    if (error || !data.user) {
+    try {
+      const { payload } = await jwtVerify(token, this.getJwks(), {
+        issuer: this.issuer,
+      });
+      if (!payload.sub) {
+        throw new Error('Token has no subject');
+      }
+      req.user = {
+        id: payload.sub,
+        email: typeof payload.email === 'string' ? payload.email : undefined,
+      };
+      return true;
+    } catch {
       throw new UnauthorizedException('Invalid token');
     }
-
-    req.user = { id: data.user.id, email: data.user.email };
-    return true;
   }
 }

@@ -3,6 +3,7 @@ import { Category, Item } from '../items/dto/item.dto';
 import { ItemsService } from '../items/items.service';
 import { MatchQueryDto } from './dto/match-query.dto';
 import { SuggestMatchesDto } from './dto/suggest-matches.dto';
+import { MatchMap, MatchMapCacheService } from './match-map-cache.service';
 import {
   computeTotalScore,
   isRecommendableScore,
@@ -30,13 +31,19 @@ export type SuggestResult = {
   matches: Record<Category, SuggestMatch[]>;
 };
 
-export type MatchMap = Record<string, Record<string, number>>;
-
 @Injectable()
 export class MatchingService {
-  constructor(private readonly itemsService: ItemsService) {}
+  constructor(
+    private readonly itemsService: ItemsService,
+    private readonly matchMapCache: MatchMapCacheService,
+  ) {}
 
   async getMatchMap(userId: string): Promise<MatchMap> {
+    const cached = this.matchMapCache.get(userId);
+    if (cached) {
+      return cached;
+    }
+
     const items = await this.itemsService.findAll(userId);
     const map: MatchMap = {};
     for (const anchor of items) {
@@ -56,6 +63,7 @@ export class MatchingService {
       }
       map[anchor.id] = scores;
     }
+    this.matchMapCache.set(userId, map);
     return map;
   }
 

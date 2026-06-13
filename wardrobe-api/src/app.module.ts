@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { ItemsModule } from './items/items.module';
+import { MatchMapCacheModule } from './matching/match-map-cache.module';
 import { MatchingModule } from './matching/matching.module';
 import { OutfitsModule } from './outfits/outfits.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -11,6 +12,7 @@ import { StorageModule } from './storage/storage.module';
     PrismaModule,
     StorageModule,
     AuthModule,
+    MatchMapCacheModule,
     ItemsModule,
     OutfitsModule,
     MatchingModule,
