@@ -24,15 +24,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let active = true
+    let currentUserId: string | null = null
+
     supabase.auth.getSession().then(({ data }) => {
       if (!active) return
+      currentUserId = data.session?.user?.id ?? null
       setUser(data.session?.user ?? null)
       setLoading(false)
     })
+
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextId = session?.user?.id ?? null
+      if (nextId === currentUserId) return
+      currentUserId = nextId
       setUser(session?.user ?? null)
-      queryClient.clear()
+      setTimeout(() => queryClient.clear(), 0)
     })
+
     return () => {
       active = false
       sub.subscription.unsubscribe()
