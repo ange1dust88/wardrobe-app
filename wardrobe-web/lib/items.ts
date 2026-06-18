@@ -55,13 +55,15 @@ export type Pattern = (typeof PATTERNS)[number]
 
 export const VIBES = [
   'casual',
-  'classic',
+  'sporty',
+  'minimalist',
+  'urban',
+  'workwear',
   'romantic',
   'edgy',
-  'sporty',
-  'business',
-  'evening',
-  'minimal',
+  'vintage',
+  'classic',
+  'relaxed',
 ] as const
 
 export type Vibe = (typeof VIBES)[number]
@@ -244,26 +246,3 @@ export async function deleteOutfit(id: string): Promise<void> {
   const res = await apiFetch(`/outfits/${id}`, { method: 'DELETE' })
   if (!res.ok) throw new Error(`DELETE /outfits/${id} → ${res.status}`)
 }
-
-export const SAMPLE_ITEMS: CreateItem[] = [
-  { name: 'Fuchsia Shirt', category: 'top', hex: '#D4006F', pattern: 'solid', vibe: ['evening', 'edgy'], seasonWear: ['autumn', 'winter'] },
-  { name: 'Black Hoodie', category: 'top', hex: '#111111', pattern: 'solid', vibe: ['casual', 'edgy'], seasonWear: ['autumn', 'winter'] },
-  { name: 'White Tee', category: 'top', hex: '#FFFFFF', pattern: 'solid', vibe: ['casual', 'minimal'], seasonWear: ['spring', 'summer', 'autumn', 'winter'] },
-  { name: 'Mustard Knit', category: 'top', hex: '#C9A227', pattern: 'solid', vibe: ['casual', 'classic'], seasonWear: ['autumn', 'winter'] },
-  { name: 'Red Graphic Tee', category: 'top', hex: '#E11900', pattern: 'graphic', vibe: ['sporty', 'casual'], seasonWear: ['summer', 'autumn'] },
-  { name: 'Striped Shirt', category: 'top', hex: '#3A6EA5', pattern: 'subtle_pattern', vibe: ['classic', 'business'], seasonWear: ['spring', 'autumn'] },
-  { name: 'Black Trousers', category: 'bottom', hex: '#1A1A1A', pattern: 'solid', vibe: ['business', 'edgy'], seasonWear: ['autumn', 'winter'] },
-  { name: 'Beige Wide Pants', category: 'bottom', hex: '#E6D6B8', pattern: 'solid', vibe: ['casual', 'minimal'], seasonWear: ['spring', 'summer', 'autumn'] },
-  { name: 'Blue Jeans', category: 'bottom', hex: '#2E4A8A', pattern: 'solid', vibe: ['casual'], seasonWear: ['spring', 'summer', 'autumn', 'winter'] },
-  { name: 'Olive Cargo', category: 'bottom', hex: '#556B2F', pattern: 'solid', vibe: ['sporty', 'casual'], seasonWear: ['spring', 'autumn'] },
-  { name: 'Pink Skirt', category: 'bottom', hex: '#F49AC2', pattern: 'bold_pattern', vibe: ['romantic'], seasonWear: ['spring', 'summer'] },
-  { name: 'Grey Slacks', category: 'bottom', hex: '#8A8A8A', pattern: 'solid', vibe: ['business', 'classic'], seasonWear: ['spring', 'summer', 'autumn', 'winter'] },
-  { name: 'Black Boots', category: 'shoes', hex: '#0D0D0D', pattern: 'solid', vibe: ['edgy'], seasonWear: ['autumn', 'winter'] },
-  { name: 'White Sneakers', category: 'shoes', hex: '#F5F5F5', pattern: 'solid', vibe: ['casual', 'sporty'], seasonWear: ['spring', 'summer'] },
-  { name: 'Brown Loafers', category: 'shoes', hex: '#5A3A22', pattern: 'solid', vibe: ['classic', 'business'], seasonWear: ['autumn', 'winter'] },
-  { name: 'Red Heels', category: 'shoes', hex: '#B0152B', pattern: 'solid', vibe: ['evening', 'romantic'], seasonWear: ['autumn', 'winter'] },
-  { name: 'Silver Necklace', category: 'accessory', hex: '#CCCCCC', pattern: 'solid', vibe: ['evening'], seasonWear: ['autumn', 'winter'] },
-  { name: 'Tan Belt', category: 'accessory', hex: '#B08D57', pattern: 'solid', vibe: ['classic', 'business'], seasonWear: ['spring', 'summer', 'autumn', 'winter'] },
-  { name: 'Green Scarf', category: 'accessory', hex: '#2E8B57', pattern: 'solid', vibe: ['casual', 'sporty'], seasonWear: ['autumn', 'winter'] },
-  { name: 'Black Cap', category: 'accessory', hex: '#161616', pattern: 'solid', vibe: ['sporty', 'casual'], seasonWear: ['spring', 'summer', 'autumn', 'winter'] },
-]

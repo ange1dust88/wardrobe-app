@@ -70,6 +70,11 @@ enum Vibe {
   business
   evening
   minimal
+  minimalist
+  urban
+  workwear
+  vintage
+  relaxed
 }
 
 enum SeasonWear {

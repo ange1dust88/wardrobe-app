@@ -224,13 +224,45 @@ export function computePaletteScore(
   return -2;
 }
 
+const VIBE_INCOMPATIBLE: [Vibe, Vibe][] = [
+  [Vibe.Sporty, Vibe.Workwear],
+  [Vibe.Sporty, Vibe.Romantic],
+  [Vibe.Sporty, Vibe.Classic],
+  [Vibe.Minimalist, Vibe.Romantic],
+  [Vibe.Minimalist, Vibe.Vintage],
+  [Vibe.Urban, Vibe.Romantic],
+  [Vibe.Urban, Vibe.Classic],
+  [Vibe.Workwear, Vibe.Romantic],
+  [Vibe.Edgy, Vibe.Relaxed],
+];
+
+const VIBE_INCOMPATIBLE_SET = new Set(
+  VIBE_INCOMPATIBLE.map(([a, b]) => [a, b].sort().join('|')),
+);
+
+function vibePairCompatible(a: Vibe, b: Vibe): boolean {
+  if (a === b) return true;
+  return !VIBE_INCOMPATIBLE_SET.has([a, b].sort().join('|'));
+}
+
 export function computeVibeScore(candidate: Item, desired: Vibe[]): number {
-  if (desired.length === 0) return 0;
-  const shared = candidate.vibe.filter((v) => desired.includes(v)).length;
-  if (shared === 0) return -4;
-  if (shared === 1) return 3;
-  if (shared === 2) return 4;
-  return SCORE_CAPS.vibe;
+  if (desired.length === 0 || candidate.vibe.length === 0) return 0;
+
+  let compatible = 0;
+  let total = 0;
+  for (const a of desired) {
+    for (const c of candidate.vibe) {
+      total += 1;
+      if (vibePairCompatible(a, c)) compatible += 1;
+    }
+  }
+
+  const ratio = compatible / total;
+  if (ratio === 1) return SCORE_CAPS.vibe;
+  if (ratio >= 0.75) return 4;
+  if (ratio >= 0.5) return 2;
+  if (ratio > 0) return 0;
+  return -4;
 }
 
 export function computePatternScore(anchor: Item, candidate: Item): number {
