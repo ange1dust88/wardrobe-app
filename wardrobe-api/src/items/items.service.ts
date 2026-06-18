@@ -106,8 +106,13 @@ export class ItemsService {
     return this.toItem(row);
   }
 
-  async update(userId: string, id: string, dto: UpdateItemDto): Promise<Item> {
-    await this.findOne(userId, id);
+  async update(
+    userId: string,
+    id: string,
+    dto: UpdateItemDto,
+    image?: UploadedItemImage,
+  ): Promise<Item> {
+    const current = await this.findOne(userId, id);
     const data: Record<string, unknown> = {};
     if (dto.name !== undefined) data.name = dto.name;
     if (dto.category !== undefined) data.category = dto.category;
@@ -125,7 +130,26 @@ export class ItemsService {
       data.wardrobeRole = derived.wardrobeRole;
       data.seasonPaletteCompatibility = derived.seasonPaletteCompatibility;
     }
-    const row = await this.prisma.item.update({ where: { id }, data });
+
+    let newImageUrl: string | null = null;
+    if (image) {
+      newImageUrl = await this.storage.uploadImage(image);
+      data.imageUrl = newImageUrl;
+    }
+
+    let row: DbItem;
+    try {
+      row = await this.prisma.item.update({ where: { id }, data });
+    } catch (err) {
+      if (newImageUrl) {
+        await this.storage.deleteImage(newImageUrl);
+      }
+      throw err;
+    }
+
+    if (image && current.imageUrl) {
+      await this.storage.deleteImage(current.imageUrl);
+    }
     this.matchMapCache.invalidate(userId);
     return this.toItem(row);
   }

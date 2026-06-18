@@ -133,6 +133,45 @@ export async function createItem(body: CreateItem): Promise<Item> {
   return res.json()
 }
 
+export type UpdateItem = {
+  name: string
+  category: Category
+  hex: string
+  pattern: Pattern
+  vibe: Vibe[]
+  seasonWear: Season[]
+  image?: File | null
+}
+
+export async function updateItem(
+  id: string,
+  body: UpdateItem
+): Promise<Item> {
+  const formData = new FormData()
+  formData.append('name', body.name)
+  formData.append('category', body.category)
+  formData.append('hex', body.hex)
+  formData.append('pattern', body.pattern)
+  body.vibe.forEach(vibe => formData.append('vibe', vibe))
+  body.seasonWear.forEach(season => formData.append('seasonWear', season))
+  if (body.image) {
+    formData.append('image', body.image)
+  }
+
+  const res = await apiFetch(`/items/${id}`, {
+    method: 'PATCH',
+    body: formData,
+  })
+  if (!res.ok) {
+    const data = await res.json().catch(() => null)
+    const msg = Array.isArray(data?.message)
+      ? data.message.join(', ')
+      : (data?.message ?? `PATCH /items/${id} → ${res.status}`)
+    throw new Error(msg)
+  }
+  return res.json()
+}
+
 export async function extractItemColor(image: File): Promise<{ hex: string }> {
   const formData = new FormData()
   formData.append('image', image)

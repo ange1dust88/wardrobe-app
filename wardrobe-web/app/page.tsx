@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { LoginScreen } from '@/components/auth/LoginScreen'
 import { AddItemModal } from '@/components/items/AddItemModal'
+import { EditItemModal } from '@/components/items/EditItemModal'
 import { DevPanel } from '@/components/DevPanel'
 import { ItemList } from '@/components/items/ItemList'
 import { OutfitPanel } from '@/components/items/OutfitPanel'
@@ -27,6 +28,7 @@ import {
   FrameTitle,
 } from '@/components/ui/frame'
 import { Spinner } from '@/components/ui/spinner'
+import type { Item } from '@/lib/items'
 import { useItems } from '@/hooks/useItems'
 import { useMatchMap } from '@/hooks/useMatchMap'
 import { useOutfitBuilder } from '@/hooks/useOutfitBuilder'
@@ -56,7 +58,9 @@ function Wardrobe() {
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [colorType, setColorType] = useState<string | null>(null)
   const [showSeasons, setShowSeasons] = useState(false)
-  const { itemsQuery, createMutation, deleteMutation } = useItems()
+  const [editingItem, setEditingItem] = useState<Item | null>(null)
+  const { itemsQuery, createMutation, updateMutation, deleteMutation } =
+    useItems()
   const builder = useOutfitBuilder(colorType)
   const { outfitsQuery, deleteMutation: deleteOutfitMutation } = useOutfits()
 
@@ -136,7 +140,7 @@ function Wardrobe() {
             ) : (
               <ItemList
                 items={items}
-                onDelete={id => deleteMutation.mutate(id)}
+                onEdit={setEditingItem}
                 hoveredId={hoveredId}
                 selectedIds={builder.selectedIds}
                 matchedIds={matchedIds}
@@ -188,6 +192,25 @@ function Wardrobe() {
             : undefined
         }
       />
+
+      {editingItem && (
+        <EditItemModal
+          key={editingItem.id}
+          item={editingItem}
+          onClose={() => setEditingItem(null)}
+          onSubmit={(id, body, callbacks) =>
+            updateMutation.mutate({ id, body }, callbacks)
+          }
+          onDelete={(id, callbacks) => deleteMutation.mutate(id, callbacks)}
+          pending={updateMutation.isPending}
+          deleting={deleteMutation.isPending}
+          errorMessage={
+            updateMutation.error
+              ? (updateMutation.error as Error).message
+              : undefined
+          }
+        />
+      )}
 
       <DevPanel
         colorType={colorType}

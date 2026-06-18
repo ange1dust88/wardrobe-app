@@ -39,6 +39,10 @@ type Props = {
   onSubmit: () => void
   pending?: boolean
   errorMessage?: string
+  submitLabel?: string
+  photoLabel?: string
+  onDelete?: () => void
+  deleting?: boolean
 }
 
 const categoryItems = CATEGORIES.map(value => ({
@@ -55,7 +59,16 @@ function formatOption(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1)
 }
 
-export function ItemForm({ form, onSubmit, pending, errorMessage }: Props) {
+export function ItemForm({
+  form,
+  onSubmit,
+  pending,
+  errorMessage,
+  submitLabel = 'Add item',
+  photoLabel = 'Photo',
+  onDelete,
+  deleting,
+}: Props) {
   const { values, patch, isValid } = form
   const [extractingColor, setExtractingColor] = useState(false)
   const vibeConflicts = findVibeConflicts(values.vibe)
@@ -129,7 +142,7 @@ export function ItemForm({ form, onSubmit, pending, errorMessage }: Props) {
 
       <div className='flex items-start gap-3 w-full'>
         <Field className='flex-1'>
-          <FieldLabel>Photo</FieldLabel>
+          <FieldLabel>{photoLabel}</FieldLabel>
           <Input
             key={form.fileInputKey}
             type='file'
@@ -207,9 +220,27 @@ export function ItemForm({ form, onSubmit, pending, errorMessage }: Props) {
         </Alert>
       )}
 
-      <Button type='submit' disabled={!isValid} loading={pending}>
-        Add item
-      </Button>
+      <div className='flex gap-2'>
+        {onDelete && (
+          <Button
+            type='button'
+            variant='outline'
+            onClick={onDelete}
+            loading={deleting}
+            disabled={pending}
+          >
+            Delete
+          </Button>
+        )}
+        <Button
+          type='submit'
+          className='flex-1'
+          disabled={!isValid || deleting}
+          loading={pending}
+        >
+          {submitLabel}
+        </Button>
+      </div>
     </form>
   )
 }
