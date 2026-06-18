@@ -8,6 +8,7 @@ import {
   Vibe,
   WardrobeRole,
 } from '../items/dto/item.dto';
+import { warmthGap } from './season-compat';
 
 export type MatchContext = {
   userColorType?: SeasonPalette;
@@ -193,10 +194,14 @@ export function computeSeasonScore(anchor: Item, candidate: Item): number {
   const overlap = candidate.seasonWear.filter((s) =>
     anchor.seasonWear.includes(s),
   ).length;
-  if (overlap === 0) return -5;
-  if (overlap === 1) return 2;
+  if (overlap >= 3) return SCORE_CAPS.season;
   if (overlap === 2) return 4;
-  return SCORE_CAPS.season;
+  if (overlap === 1) return 2;
+
+  const gap = warmthGap(anchor.seasonWear, candidate.seasonWear);
+  if (gap >= 2) return -12;
+  if (gap === 1) return -4;
+  return 0;
 }
 
 export function computePaletteScore(

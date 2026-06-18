@@ -4,6 +4,8 @@ import { ItemsService } from '../items/items.service';
 import { MatchQueryDto } from './dto/match-query.dto';
 import { SuggestMatchesDto } from './dto/suggest-matches.dto';
 import { MatchMap, MatchMapCacheService } from './match-map-cache.service';
+import { categoriesConflict } from './category-compat';
+import { seasonsConflict } from './season-compat';
 import {
   computeTotalScore,
   isRecommendableScore,
@@ -58,7 +60,9 @@ export class MatchingService {
       for (const candidate of items) {
         if (
           candidate.id === anchor.id ||
-          candidate.category === anchor.category
+          candidate.category === anchor.category ||
+          categoriesConflict(anchor.category, candidate.category) ||
+          seasonsConflict(anchor.seasonWear, candidate.seasonWear)
         ) {
           continue;
         }
@@ -83,7 +87,11 @@ export class MatchingService {
     const anchor = await this.itemsService.findOne(userId, anchorId);
 
     let candidates = (await this.itemsService.findAll(userId)).filter(
-      (item) => item.id !== anchor.id && item.category !== anchor.category,
+      (item) =>
+        item.id !== anchor.id &&
+        item.category !== anchor.category &&
+        !categoriesConflict(anchor.category, item.category) &&
+        !seasonsConflict(anchor.seasonWear, item.seasonWear),
     );
 
     if (query.category) {
@@ -131,7 +139,10 @@ export class MatchingService {
 
     let candidates = (await this.itemsService.findAll(userId)).filter(
       (item) =>
-        !selectedIds.has(item.id) && !selectedCategories.has(item.category),
+        !selectedIds.has(item.id) &&
+        !selectedCategories.has(item.category) &&
+        !selected.some((s) => categoriesConflict(s.category, item.category)) &&
+        !selected.some((s) => seasonsConflict(s.seasonWear, item.seasonWear)),
     );
     if (dto.season) {
       candidates = candidates.filter((c) => c.seasonWear.includes(dto.season!));
