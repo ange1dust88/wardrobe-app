@@ -11,14 +11,31 @@ async function apiFetch(path: string, init: RequestInit = {}): Promise<Response>
   return fetch(`${API_URL}${path}`, { ...init, headers })
 }
 
-export const CATEGORIES = ['top', 'bottom', 'shoes', 'accessory'] as const
+export const CATEGORIES = [
+  'headwear',
+  'top',
+  'outerwear',
+  'dress',
+  'bottom',
+  'skirt',
+  'shoes',
+  'bag',
+  'jewelry',
+  'accessory',
+] as const
 
 export type Category = (typeof CATEGORIES)[number]
 
 export const CATEGORY_LABELS: Record<Category, string> = {
+  headwear: 'Headwear',
   top: 'Top',
+  outerwear: 'Outerwear',
+  dress: 'Dress',
   bottom: 'Bottom',
+  skirt: 'Skirt',
   shoes: 'Shoes',
+  bag: 'Bag',
+  jewelry: 'Jewelry',
   accessory: 'Accessory',
 }
 

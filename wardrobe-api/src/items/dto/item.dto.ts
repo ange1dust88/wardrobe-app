@@ -21,9 +21,15 @@ function toArray({ value }: { value: unknown }): unknown[] {
 }
 
 export enum Category {
+  Headwear = 'headwear',
   Top = 'top',
+  Outerwear = 'outerwear',
+  Dress = 'dress',
   Bottom = 'bottom',
+  Skirt = 'skirt',
   Shoes = 'shoes',
+  Bag = 'bag',
+  Jewelry = 'jewelry',
   Accessory = 'accessory',
 }
 

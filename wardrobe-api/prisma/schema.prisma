@@ -13,6 +13,12 @@ enum Category {
   bottom
   shoes
   accessory
+  dress
+  skirt
+  outerwear
+  bag
+  headwear
+  jewelry
 }
 
 enum Temperature {
