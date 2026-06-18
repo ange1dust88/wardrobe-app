@@ -13,6 +13,12 @@ enum Category {
   bottom
   shoes
   accessory
+  dress
+  skirt
+  outerwear
+  bag
+  headwear
+  jewelry
 }
 
 enum Temperature {
@@ -57,13 +63,15 @@ enum SeasonPalette {
 
 enum Vibe {
   casual
-  classic
+  sporty
+  minimalist
+  urban
+  workwear
   romantic
   edgy
-  sporty
-  business
-  evening
-  minimal
+  vintage
+  classic
+  relaxed
 }
 
 enum SeasonWear {
