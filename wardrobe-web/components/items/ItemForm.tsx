@@ -14,6 +14,7 @@ import {
   type Vibe,
 } from '@/lib/items'
 import type { ItemFormApi } from '@/hooks/useItemForm'
+import { findVibeConflicts } from '@/lib/vibe-compat'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -57,6 +58,7 @@ function formatOption(value: string) {
 export function ItemForm({ form, onSubmit, pending, errorMessage }: Props) {
   const { values, patch, isValid } = form
   const [extractingColor, setExtractingColor] = useState(false)
+  const vibeConflicts = findVibeConflicts(values.vibe)
 
   async function handleImageChange(file: File | null) {
     patch({ image: file })
@@ -168,6 +170,19 @@ export function ItemForm({ form, onSubmit, pending, errorMessage }: Props) {
             </Label>
           ))}
         </CheckboxGroup>
+        {vibeConflicts.length > 0 && (
+          <Alert variant='warning'>
+            <AlertDescription>
+              {vibeConflicts.length === 1
+                ? 'These vibes usually clash: '
+                : 'These vibe pairs usually clash: '}
+              {vibeConflicts
+                .map(([a, b]) => `${formatOption(a)} + ${formatOption(b)}`)
+                .join(', ')}
+              .
+            </AlertDescription>
+          </Alert>
+        )}
       </Field>
 
       <Field>
