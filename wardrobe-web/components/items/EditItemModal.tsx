@@ -46,10 +46,10 @@ export function EditItemModal({
 
   function submit() {
     if (!form.isValid) return
-    const { name, category, hex, pattern, vibe, seasonWear } = form.values
+    const { name, category, hex, pattern, vibe, seasonWear, image } = form.values
     onSubmit(
       item.id,
-      { name, category, hex, pattern, vibe, seasonWear },
+      { name, category, hex, pattern, vibe, seasonWear, image },
       { onSuccess: onClose }
     )
   }
@@ -76,7 +76,7 @@ export function EditItemModal({
             pending={pending}
             errorMessage={errorMessage}
             submitLabel='Save changes'
-            hidePhoto
+            photoLabel='Replace photo'
             onDelete={handleDelete}
             deleting={deleting}
           />

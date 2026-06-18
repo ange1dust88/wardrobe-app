@@ -140,16 +140,27 @@ export type UpdateItem = {
   pattern: Pattern
   vibe: Vibe[]
   seasonWear: Season[]
+  image?: File | null
 }
 
 export async function updateItem(
   id: string,
   body: UpdateItem
 ): Promise<Item> {
+  const formData = new FormData()
+  formData.append('name', body.name)
+  formData.append('category', body.category)
+  formData.append('hex', body.hex)
+  formData.append('pattern', body.pattern)
+  body.vibe.forEach(vibe => formData.append('vibe', vibe))
+  body.seasonWear.forEach(season => formData.append('seasonWear', season))
+  if (body.image) {
+    formData.append('image', body.image)
+  }
+
   const res = await apiFetch(`/items/${id}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    body: formData,
   })
   if (!res.ok) {
     const data = await res.json().catch(() => null)

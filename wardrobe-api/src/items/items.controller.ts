@@ -74,12 +74,21 @@ export class ItemsController {
   }
 
   @Patch(':id')
+  @UseInterceptors(
+    FileInterceptor('image', {
+      limits: { fileSize: 5 * 1024 * 1024 },
+    }),
+  )
   update(
     @CurrentUser() user: AuthUser,
     @Param('id') id: string,
     @Body() dto: UpdateItemDto,
+    @UploadedFile() image?: UploadedItemImage,
   ) {
-    return this.itemsService.update(user.id, id, dto);
+    if (image && !ALLOWED_IMAGE_MIME_TYPES.has(image.mimetype)) {
+      throw new BadRequestException('Image must be a JPG, PNG, WebP, or GIF');
+    }
+    return this.itemsService.update(user.id, id, dto, image);
   }
 
   @Delete(':id')

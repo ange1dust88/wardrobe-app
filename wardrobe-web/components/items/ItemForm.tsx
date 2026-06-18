@@ -40,7 +40,7 @@ type Props = {
   pending?: boolean
   errorMessage?: string
   submitLabel?: string
-  hidePhoto?: boolean
+  photoLabel?: string
   onDelete?: () => void
   deleting?: boolean
 }
@@ -65,7 +65,7 @@ export function ItemForm({
   pending,
   errorMessage,
   submitLabel = 'Add item',
-  hidePhoto = false,
+  photoLabel = 'Photo',
   onDelete,
   deleting,
 }: Props) {
@@ -141,23 +141,21 @@ export function ItemForm({
       </Field>
 
       <div className='flex items-start gap-3 w-full'>
-        {!hidePhoto && (
-          <Field className='flex-1'>
-            <FieldLabel>Photo</FieldLabel>
-            <Input
-              key={form.fileInputKey}
-              type='file'
-              nativeInput
-              accept='image/jpeg,image/png,image/webp,image/gif'
-              onChange={e => handleImageChange(e.target.files?.[0] ?? null)}
-            />
-            <FieldDescription>
-              {extractingColor
-                ? 'Reading color from photo…'
-                : 'JPG, PNG, WebP, or GIF up to 5 MB.'}
-            </FieldDescription>
-          </Field>
-        )}
+        <Field className='flex-1'>
+          <FieldLabel>{photoLabel}</FieldLabel>
+          <Input
+            key={form.fileInputKey}
+            type='file'
+            nativeInput
+            accept='image/jpeg,image/png,image/webp,image/gif'
+            onChange={e => handleImageChange(e.target.files?.[0] ?? null)}
+          />
+          <FieldDescription>
+            {extractingColor
+              ? 'Reading color from photo…'
+              : 'JPG, PNG, WebP, or GIF up to 5 MB.'}
+          </FieldDescription>
+        </Field>
 
         <Field>
           <FieldLabel>Color</FieldLabel>
