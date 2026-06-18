@@ -63,17 +63,14 @@ enum SeasonPalette {
 
 enum Vibe {
   casual
-  classic
-  romantic
-  edgy
   sporty
-  business
-  evening
-  minimal
   minimalist
   urban
   workwear
+  romantic
+  edgy
   vintage
+  classic
   relaxed
 }
 
