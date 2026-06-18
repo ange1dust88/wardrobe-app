@@ -36,6 +36,10 @@ const SCORE_CAPS: ScoreBreakdown = {
   pattern: 3,
 };
 
+const COLORTYPE_MATCH_BONUS = 8;
+const COLORTYPE_UNIVERSAL_BONUS = 3;
+const COLORTYPE_MISMATCH_PENALTY = -12;
+
 const BRIGHTNESS_ORDER: Brightness[] = [
   Brightness.Light,
   Brightness.Medium,
@@ -202,9 +206,11 @@ export function computePaletteScore(
 ): number {
   const palette = candidate.seasonPaletteCompatibility;
   if (userColorType) {
-    if (palette.includes(userColorType)) return SCORE_CAPS.palette;
-    if (palette.includes(SeasonPalette.Universal)) return 3;
-    return -4;
+    if (palette.includes(userColorType)) return COLORTYPE_MATCH_BONUS;
+    if (palette.includes(SeasonPalette.Universal)) {
+      return COLORTYPE_UNIVERSAL_BONUS;
+    }
+    return COLORTYPE_MISMATCH_PENALTY;
   }
 
   if (hasPaletteOverlap(anchor, candidate)) return 4;
