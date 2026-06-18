@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { fetchMatchMap } from '@/lib/items'
 
-export function useMatchMap() {
+export function useMatchMap(colorType: string | null) {
   return useQuery({
-    queryKey: ['match-map'],
-    queryFn: fetchMatchMap,
+    queryKey: ['match-map', colorType],
+    queryFn: () => fetchMatchMap(colorType ?? undefined),
     staleTime: 30_000,
   })
 }

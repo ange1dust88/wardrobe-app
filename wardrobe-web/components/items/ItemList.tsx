@@ -8,6 +8,7 @@ type Props = {
   selectedIds: string[]
   matchedIds: Set<string>
   scoreById: Record<string, number>
+  showSeasons?: boolean
   onSelect: (item: Item) => void
   onHover: (id: string | null) => void
 }
@@ -19,6 +20,7 @@ export function ItemList({
   selectedIds = [],
   matchedIds = new Set(),
   scoreById = {},
+  showSeasons,
   onSelect,
   onHover,
 }: Props) {
@@ -55,6 +57,7 @@ export function ItemList({
                 item={item}
                 state={cardState(item)}
                 score={scoreById[item.id]}
+                showSeasons={showSeasons}
                 onDelete={onDelete}
                 onSelect={onSelect}
                 onHover={onHover}

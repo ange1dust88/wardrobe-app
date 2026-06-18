@@ -2,15 +2,15 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { createOutfit, suggestMatches, type Item } from '@/lib/items'
 
-export function useOutfitBuilder() {
+export function useOutfitBuilder(colorType: string | null) {
   const queryClient = useQueryClient()
   const [selected, setSelected] = useState<Item[]>([])
 
   const selectedIds = selected.map(item => item.id)
   const sortedKey = [...selectedIds].sort()
   const matchesQuery = useQuery({
-    queryKey: ['set-matches', sortedKey],
-    queryFn: () => suggestMatches(selectedIds),
+    queryKey: ['set-matches', sortedKey, colorType],
+    queryFn: () => suggestMatches(selectedIds, colorType ?? undefined),
     enabled: selectedIds.length > 0,
     staleTime: 30_000,
   })

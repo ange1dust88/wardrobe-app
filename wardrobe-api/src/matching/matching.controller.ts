@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard, type AuthUser } from '../auth/auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
+import { SeasonPalette } from '../items/dto/item.dto';
 import { MatchQueryDto } from './dto/match-query.dto';
 import { SuggestMatchesDto } from './dto/suggest-matches.dto';
 import { MatchingService } from './matching.service';
@@ -19,8 +20,20 @@ export class MatchingController {
   constructor(private readonly matchingService: MatchingService) {}
 
   @Get('matches/map')
-  getMatchMap(@CurrentUser() user: AuthUser) {
-    return this.matchingService.getMatchMap(user.id);
+  getMatchMap(
+    @CurrentUser() user: AuthUser,
+    @Query('colorType') colorType?: string,
+  ) {
+    const seasons: string[] = [
+      SeasonPalette.Spring,
+      SeasonPalette.Summer,
+      SeasonPalette.Autumn,
+      SeasonPalette.Winter,
+    ];
+    const userColorType = seasons.includes(colorType ?? '')
+      ? (colorType as SeasonPalette)
+      : undefined;
+    return this.matchingService.getMatchMap(user.id, userColorType);
   }
 
   @Get(':anchorId/matches')

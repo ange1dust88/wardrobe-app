@@ -159,8 +159,9 @@ export async function fetchMatches(anchorId: string): Promise<MatchResult> {
 
 export type MatchMap = Record<string, Record<string, number>>
 
-export async function fetchMatchMap(): Promise<MatchMap> {
-  const res = await apiFetch('/items/matches/map')
+export async function fetchMatchMap(colorType?: string): Promise<MatchMap> {
+  const query = colorType ? `?colorType=${colorType}` : ''
+  const res = await apiFetch(`/items/matches/map${query}`)
   if (!res.ok) throw new Error(`GET /items/matches/map → ${res.status}`)
   return res.json()
 }
@@ -175,11 +176,16 @@ export type SuggestResult = {
   matches: Record<Category, SuggestMatch[]>
 }
 
-export async function suggestMatches(itemIds: string[]): Promise<SuggestResult> {
+export async function suggestMatches(
+  itemIds: string[],
+  colorType?: string,
+): Promise<SuggestResult> {
   const res = await apiFetch('/items/matches', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ itemIds }),
+    body: JSON.stringify(
+      colorType ? { itemIds, userColorType: colorType } : { itemIds },
+    ),
   })
   if (!res.ok) throw new Error(`POST /items/matches → ${res.status}`)
   return res.json()
