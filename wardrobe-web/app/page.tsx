@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { LoginScreen } from '@/components/auth/LoginScreen'
 import { AddItemModal } from '@/components/items/AddItemModal'
+import { DevPanel } from '@/components/DevPanel'
 import { ItemList } from '@/components/items/ItemList'
 import { OutfitPanel } from '@/components/items/OutfitPanel'
 import { SavedOutfits } from '@/components/items/SavedOutfits'
@@ -53,13 +54,15 @@ function Wardrobe() {
   const { signOut } = useAuth()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const [colorType, setColorType] = useState<string | null>(null)
+  const [showSeasons, setShowSeasons] = useState(false)
   const { itemsQuery, createMutation, deleteMutation } = useItems()
-  const builder = useOutfitBuilder()
+  const builder = useOutfitBuilder(colorType)
   const { outfitsQuery, deleteMutation: deleteOutfitMutation } = useOutfits()
 
   const items = itemsQuery.data ?? []
   const building = builder.selectedIds.length > 0
-  const matchMap = useMatchMap()
+  const matchMap = useMatchMap(colorType)
 
   const hoverScores =
     !building && hoveredId ? (matchMap.data?.[hoveredId] ?? {}) : {}
@@ -138,6 +141,7 @@ function Wardrobe() {
                 selectedIds={builder.selectedIds}
                 matchedIds={matchedIds}
                 scoreById={scoreById}
+                showSeasons={showSeasons}
                 onSelect={builder.toggle}
                 onHover={setHoveredId}
               />
@@ -183,6 +187,13 @@ function Wardrobe() {
             ? (createMutation.error as Error).message
             : undefined
         }
+      />
+
+      <DevPanel
+        colorType={colorType}
+        onColorType={setColorType}
+        showSeasons={showSeasons}
+        onShowSeasons={setShowSeasons}
       />
     </main>
   )

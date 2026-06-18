@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { Category, Item } from '../items/dto/item.dto';
+import { Category, Item, SeasonPalette } from '../items/dto/item.dto';
 import { ItemsService } from '../items/items.service';
 import { MatchQueryDto } from './dto/match-query.dto';
 import { SuggestMatchesDto } from './dto/suggest-matches.dto';
@@ -38,16 +38,22 @@ export class MatchingService {
     private readonly matchMapCache: MatchMapCacheService,
   ) {}
 
-  async getMatchMap(userId: string): Promise<MatchMap> {
-    const cached = this.matchMapCache.get(userId);
-    if (cached) {
-      return cached;
+  async getMatchMap(
+    userId: string,
+    userColorType?: SeasonPalette,
+  ): Promise<MatchMap> {
+    const useCache = !userColorType;
+    if (useCache) {
+      const cached = this.matchMapCache.get(userId);
+      if (cached) {
+        return cached;
+      }
     }
 
     const items = await this.itemsService.findAll(userId);
     const map: MatchMap = {};
     for (const anchor of items) {
-      const ctx = { vibe: anchor.vibe };
+      const ctx = { vibe: anchor.vibe, userColorType };
       const scores: Record<string, number> = {};
       for (const candidate of items) {
         if (
@@ -63,7 +69,9 @@ export class MatchingService {
       }
       map[anchor.id] = scores;
     }
-    this.matchMapCache.set(userId, map);
+    if (useCache) {
+      this.matchMapCache.set(userId, map);
+    }
     return map;
   }
 

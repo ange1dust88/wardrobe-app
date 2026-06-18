@@ -8,6 +8,7 @@ type Props = {
   item: Item
   state: CardState
   score?: number
+  showSeasons?: boolean
   onDelete: (id: string) => void
   onSelect: (item: Item) => void
   onHover: (id: string | null) => void
@@ -25,6 +26,7 @@ export function ItemCard({
   item,
   state,
   score,
+  showSeasons,
   onDelete,
   onSelect,
   onHover,
@@ -101,6 +103,11 @@ export function ItemCard({
           )}
         </div>
         <span className='text-center text-sm text-black'>{item.name}</span>
+        {showSeasons && (
+          <span className='text-center text-[10px] text-muted-foreground'>
+            {item.seasonPaletteCompatibility.join(', ')}
+          </span>
+        )}
       </div>
       <button
         onClick={() => onDelete(item.id)}

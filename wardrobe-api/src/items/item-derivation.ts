@@ -6,6 +6,7 @@ import {
   Temperature,
   WardrobeRole,
 } from './dto/item.dto';
+import { classifySeasons } from './season-palette';
 
 type Hsl = { h: number; s: number; l: number };
 
@@ -83,11 +84,7 @@ function derivePalette(color: Color): SeasonPalette[] {
   if (color.isNeutral) {
     return [SeasonPalette.Universal];
   }
-  const isLight = color.brightness === Brightness.Light;
-  if (color.temperature === Temperature.Warm) {
-    return [isLight ? SeasonPalette.Spring : SeasonPalette.Autumn];
-  }
-  return [isLight ? SeasonPalette.Summer : SeasonPalette.Winter];
+  return classifySeasons(color.hex);
 }
 
 function deriveRole(color: Color): WardrobeRole {
