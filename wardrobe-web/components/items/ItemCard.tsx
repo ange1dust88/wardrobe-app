@@ -1,3 +1,4 @@
+import { PencilIcon } from 'lucide-react'
 import { getItemImageSrc, type Item } from '../../lib/items'
 import { getMatchScoreTone } from '@/lib/match-score'
 import { cn } from '@/lib/utils'
@@ -9,7 +10,7 @@ type Props = {
   state: CardState
   score?: number
   showSeasons?: boolean
-  onDelete: (id: string) => void
+  onEdit: (item: Item) => void
   onSelect: (item: Item) => void
   onHover: (id: string | null) => void
 }
@@ -27,7 +28,7 @@ export function ItemCard({
   state,
   score,
   showSeasons,
-  onDelete,
+  onEdit,
   onSelect,
   onHover,
 }: Props) {
@@ -110,11 +111,12 @@ export function ItemCard({
         )}
       </div>
       <button
-        onClick={() => onDelete(item.id)}
-        aria-label='Delete'
-        className='absolute top-1 right-1 hidden border border-black bg-white px-1 text-xs text-black group-hover:block'
+        type='button'
+        onClick={() => onEdit(item)}
+        aria-label='Edit'
+        className='absolute top-1 right-1 hidden border border-black bg-white p-1 text-black group-hover:block'
       >
-        ✕
+        <PencilIcon className='size-3.5' />
       </button>
     </div>
   )

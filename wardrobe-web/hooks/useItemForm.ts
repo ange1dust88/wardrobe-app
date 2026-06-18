@@ -13,8 +13,8 @@ const EMPTY_FORM: CreateItem = {
   image: null,
 }
 
-export function useItemForm() {
-  const [values, setValues] = useState<CreateItem>(EMPTY_FORM)
+export function useItemForm(initial?: CreateItem) {
+  const [values, setValues] = useState<CreateItem>(initial ?? EMPTY_FORM)
   const [fileInputKey, setFileInputKey] = useState(0)
 
   function patch(p: Partial<CreateItem>) {
@@ -32,7 +32,7 @@ export function useItemForm() {
   }
 
   function reset() {
-    setValues(EMPTY_FORM)
+    setValues(initial ?? EMPTY_FORM)
     setFileInputKey(key => key + 1)
   }
 

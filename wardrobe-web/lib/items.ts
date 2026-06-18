@@ -133,6 +133,34 @@ export async function createItem(body: CreateItem): Promise<Item> {
   return res.json()
 }
 
+export type UpdateItem = {
+  name: string
+  category: Category
+  hex: string
+  pattern: Pattern
+  vibe: Vibe[]
+  seasonWear: Season[]
+}
+
+export async function updateItem(
+  id: string,
+  body: UpdateItem
+): Promise<Item> {
+  const res = await apiFetch(`/items/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    const data = await res.json().catch(() => null)
+    const msg = Array.isArray(data?.message)
+      ? data.message.join(', ')
+      : (data?.message ?? `PATCH /items/${id} → ${res.status}`)
+    throw new Error(msg)
+  }
+  return res.json()
+}
+
 export async function extractItemColor(image: File): Promise<{ hex: string }> {
   const formData = new FormData()
   formData.append('image', image)

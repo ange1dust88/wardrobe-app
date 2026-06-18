@@ -3,7 +3,7 @@ import { type CardState, ItemCard } from './ItemCard'
 
 type Props = {
   items: Item[]
-  onDelete: (id: string) => void
+  onEdit: (item: Item) => void
   hoveredId: string | null
   selectedIds: string[]
   matchedIds: Set<string>
@@ -15,7 +15,7 @@ type Props = {
 
 export function ItemList({
   items,
-  onDelete,
+  onEdit,
   hoveredId,
   selectedIds = [],
   matchedIds = new Set(),
@@ -58,7 +58,7 @@ export function ItemList({
                 state={cardState(item)}
                 score={scoreById[item.id]}
                 showSeasons={showSeasons}
-                onDelete={onDelete}
+                onEdit={onEdit}
                 onSelect={onSelect}
                 onHover={onHover}
               />

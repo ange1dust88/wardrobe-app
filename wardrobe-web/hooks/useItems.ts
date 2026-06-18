@@ -3,8 +3,10 @@ import {
   createItem,
   deleteItem,
   fetchItems,
+  updateItem,
   type CreateItem,
   type Item,
+  type UpdateItem,
 } from '@/lib/items'
 
 const ITEMS_KEY = ['items'] as const
@@ -28,10 +30,19 @@ export function useItems() {
     onSuccess: invalidate,
   })
 
+  const updateMutation = useMutation<
+    Item,
+    Error,
+    { id: string; body: UpdateItem }
+  >({
+    mutationFn: ({ id, body }) => updateItem(id, body),
+    onSuccess: invalidate,
+  })
+
   const deleteMutation = useMutation<void, Error, string>({
     mutationFn: deleteItem,
     onSuccess: invalidate,
   })
 
-  return { itemsQuery, createMutation, deleteMutation }
+  return { itemsQuery, createMutation, updateMutation, deleteMutation }
 }
