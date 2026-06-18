@@ -5,6 +5,7 @@ import { MatchQueryDto } from './dto/match-query.dto';
 import { SuggestMatchesDto } from './dto/suggest-matches.dto';
 import { MatchMap, MatchMapCacheService } from './match-map-cache.service';
 import { categoriesConflict } from './category-compat';
+import { seasonsConflict } from './season-compat';
 import {
   computeTotalScore,
   isRecommendableScore,
@@ -60,7 +61,8 @@ export class MatchingService {
         if (
           candidate.id === anchor.id ||
           candidate.category === anchor.category ||
-          categoriesConflict(anchor.category, candidate.category)
+          categoriesConflict(anchor.category, candidate.category) ||
+          seasonsConflict(anchor.seasonWear, candidate.seasonWear)
         ) {
           continue;
         }
@@ -88,7 +90,8 @@ export class MatchingService {
       (item) =>
         item.id !== anchor.id &&
         item.category !== anchor.category &&
-        !categoriesConflict(anchor.category, item.category),
+        !categoriesConflict(anchor.category, item.category) &&
+        !seasonsConflict(anchor.seasonWear, item.seasonWear),
     );
 
     if (query.category) {
@@ -138,7 +141,8 @@ export class MatchingService {
       (item) =>
         !selectedIds.has(item.id) &&
         !selectedCategories.has(item.category) &&
-        !selected.some((s) => categoriesConflict(s.category, item.category)),
+        !selected.some((s) => categoriesConflict(s.category, item.category)) &&
+        !selected.some((s) => seasonsConflict(s.seasonWear, item.seasonWear)),
     );
     if (dto.season) {
       candidates = candidates.filter((c) => c.seasonWear.includes(dto.season!));
