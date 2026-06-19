@@ -115,3 +115,25 @@ model Outfit {
 
   @@index([userId])
 }
+
+enum Who {
+  men
+  women
+  mix
+}
+
+enum Climate {
+  cold
+  mild
+  hot
+}
+
+model UserProfile {
+  userId      String          @id
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  who         Who?
+  climate     Climate?
+  palettes    SeasonPalette[]
+  onboardedAt DateTime?
+}

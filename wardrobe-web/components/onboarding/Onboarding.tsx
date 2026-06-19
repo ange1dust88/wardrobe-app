@@ -7,10 +7,10 @@ import {
   ONBOARDING_PALETTES,
   WHO_OPTIONS,
   type Climate,
-  type OnboardingResult,
   type PaletteId,
   type Who,
 } from '@/lib/onboarding'
+import type { ProfileInput } from '@/lib/profile'
 
 const ACCENT = '#8ec63a'
 const FONT = "'Helvetica Neue', Helvetica, Arial, sans-serif"
@@ -18,7 +18,7 @@ const PILL =
   'inline-flex cursor-pointer items-center justify-center rounded-full bg-[#111] px-[30px] py-[15px] text-[20px] font-bold text-white'
 
 type Props = {
-  onComplete: (result: OnboardingResult) => void
+  onComplete: (result: ProfileInput) => void
 }
 
 function Chip({
@@ -89,12 +89,7 @@ export function Onboarding({ onComplete }: Props) {
   }
 
   function complete() {
-    onComplete({
-      who,
-      climate,
-      palettes,
-      completedAt: new Date().toISOString(),
-    })
+    onComplete({ who, climate, palettes })
   }
 
   return (

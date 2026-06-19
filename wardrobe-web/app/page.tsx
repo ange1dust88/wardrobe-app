@@ -30,12 +30,8 @@ import {
 } from '@/components/ui/frame'
 import { Spinner } from '@/components/ui/spinner'
 import type { Item } from '@/lib/items'
-import {
-  readOnboarding,
-  saveOnboarding,
-  type OnboardingResult,
-} from '@/lib/onboarding'
 import { useItems } from '@/hooks/useItems'
+import { useProfile } from '@/hooks/useProfile'
 import { useMatchMap } from '@/hooks/useMatchMap'
 import { useOutfitBuilder } from '@/hooks/useOutfitBuilder'
 import { useOutfits } from '@/hooks/useOutfits'
@@ -55,26 +51,26 @@ export default function Home() {
     return <LoginScreen />
   }
 
-  return <AuthedApp key={user.id} userId={user.id} />
+  return <AuthedApp key={user.id} />
 }
 
-function AuthedApp({ userId }: { userId: string }) {
-  const [onboarding, setOnboarding] = useState<OnboardingResult | null>(() =>
-    readOnboarding(userId)
-  )
+function AuthedApp() {
+  const { profileQuery, saveMutation } = useProfile()
 
-  if (!onboarding) {
+  if (profileQuery.isLoading) {
     return (
-      <Onboarding
-        onComplete={result => {
-          saveOnboarding(userId, result)
-          setOnboarding(result)
-        }}
-      />
+      <main className='flex min-h-[60vh] items-center justify-center'>
+        <Spinner className='size-6 text-muted-foreground' />
+      </main>
     )
   }
 
-  return <Wardrobe initialColorType={onboarding.palettes[0] ?? null} />
+  const profile = profileQuery.data ?? null
+  if (!profile || !profile.onboardedAt) {
+    return <Onboarding onComplete={input => saveMutation.mutate(input)} />
+  }
+
+  return <Wardrobe initialColorType={profile.palettes[0] ?? null} />
 }
 
 function Wardrobe({ initialColorType }: { initialColorType: string | null }) {

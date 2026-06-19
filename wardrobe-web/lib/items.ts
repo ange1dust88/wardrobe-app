@@ -3,7 +3,10 @@ import { supabase } from './supabase'
 export const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'
 
-async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
+export async function apiFetch(
+  path: string,
+  init: RequestInit = {}
+): Promise<Response> {
   const { data } = await supabase.auth.getSession()
   const token = data.session?.access_token
   const headers = new Headers(init.headers)
