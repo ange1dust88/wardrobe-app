@@ -4,6 +4,7 @@ import { PlusIcon, ShirtIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { LoginScreen } from '@/components/auth/LoginScreen'
+import { Onboarding } from '@/components/onboarding/Onboarding'
 import { AddItemModal } from '@/components/items/AddItemModal'
 import { EditItemModal } from '@/components/items/EditItemModal'
 import { DevPanel } from '@/components/DevPanel'
@@ -29,6 +30,11 @@ import {
 } from '@/components/ui/frame'
 import { Spinner } from '@/components/ui/spinner'
 import type { Item } from '@/lib/items'
+import {
+  readOnboarding,
+  saveOnboarding,
+  type OnboardingResult,
+} from '@/lib/onboarding'
 import { useItems } from '@/hooks/useItems'
 import { useMatchMap } from '@/hooks/useMatchMap'
 import { useOutfitBuilder } from '@/hooks/useOutfitBuilder'
@@ -49,14 +55,33 @@ export default function Home() {
     return <LoginScreen />
   }
 
-  return <Wardrobe />
+  return <AuthedApp key={user.id} userId={user.id} />
 }
 
-function Wardrobe() {
+function AuthedApp({ userId }: { userId: string }) {
+  const [onboarding, setOnboarding] = useState<OnboardingResult | null>(() =>
+    readOnboarding(userId)
+  )
+
+  if (!onboarding) {
+    return (
+      <Onboarding
+        onComplete={result => {
+          saveOnboarding(userId, result)
+          setOnboarding(result)
+        }}
+      />
+    )
+  }
+
+  return <Wardrobe initialColorType={onboarding.palettes[0] ?? null} />
+}
+
+function Wardrobe({ initialColorType }: { initialColorType: string | null }) {
   const { signOut } = useAuth()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
-  const [colorType, setColorType] = useState<string | null>(null)
+  const [colorType, setColorType] = useState<string | null>(initialColorType)
   const [showSeasons, setShowSeasons] = useState(false)
   const [editingItem, setEditingItem] = useState<Item | null>(null)
   const { itemsQuery, createMutation, updateMutation, deleteMutation } =
