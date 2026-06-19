@@ -4,6 +4,7 @@ import { PlusIcon, ShirtIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { LoginScreen } from '@/components/auth/LoginScreen'
+import { Onboarding } from '@/components/onboarding/Onboarding'
 import { AddItemModal } from '@/components/items/AddItemModal'
 import { EditItemModal } from '@/components/items/EditItemModal'
 import { DevPanel } from '@/components/DevPanel'
@@ -30,6 +31,7 @@ import {
 import { Spinner } from '@/components/ui/spinner'
 import type { Item } from '@/lib/items'
 import { useItems } from '@/hooks/useItems'
+import { useProfile } from '@/hooks/useProfile'
 import { useMatchMap } from '@/hooks/useMatchMap'
 import { useOutfitBuilder } from '@/hooks/useOutfitBuilder'
 import { useOutfits } from '@/hooks/useOutfits'
@@ -49,14 +51,33 @@ export default function Home() {
     return <LoginScreen />
   }
 
-  return <Wardrobe />
+  return <AuthedApp key={user.id} />
 }
 
-function Wardrobe() {
+function AuthedApp() {
+  const { profileQuery, saveMutation } = useProfile()
+
+  if (profileQuery.isLoading) {
+    return (
+      <main className='flex min-h-[60vh] items-center justify-center'>
+        <Spinner className='size-6 text-muted-foreground' />
+      </main>
+    )
+  }
+
+  const profile = profileQuery.data ?? null
+  if (!profile || !profile.onboardedAt) {
+    return <Onboarding onComplete={input => saveMutation.mutate(input)} />
+  }
+
+  return <Wardrobe initialColorType={profile.palettes[0] ?? null} />
+}
+
+function Wardrobe({ initialColorType }: { initialColorType: string | null }) {
   const { signOut } = useAuth()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
-  const [colorType, setColorType] = useState<string | null>(null)
+  const [colorType, setColorType] = useState<string | null>(initialColorType)
   const [showSeasons, setShowSeasons] = useState(false)
   const [editingItem, setEditingItem] = useState<Item | null>(null)
   const { itemsQuery, createMutation, updateMutation, deleteMutation } =

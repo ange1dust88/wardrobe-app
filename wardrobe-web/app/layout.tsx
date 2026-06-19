@@ -33,7 +33,7 @@ export default function RootLayout({
     >
       <body>
         <Providers>
-          <div className='isolate relative flex min-h-svh flex-col"'>
+          <div className='isolate relative flex min-h-svh flex-col'>
             {children}
           </div>
         </Providers>

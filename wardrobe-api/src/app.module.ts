@@ -5,6 +5,7 @@ import { MatchMapCacheModule } from './matching/match-map-cache.module';
 import { MatchingModule } from './matching/matching.module';
 import { OutfitsModule } from './outfits/outfits.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ProfileModule } from './profile/profile.module';
 import { StorageModule } from './storage/storage.module';
 
 @Module({
@@ -16,6 +17,7 @@ import { StorageModule } from './storage/storage.module';
     ItemsModule,
     OutfitsModule,
     MatchingModule,
+    ProfileModule,
   ],
 })
 export class AppModule {}
