@@ -90,12 +90,31 @@ function Wardrobe({ initialColorType }: { initialColorType: string | null }) {
   const building = builder.selectedIds.length > 0
   const matchMap = useMatchMap(colorType)
 
-  const hoverScores =
-    !building && hoveredId ? (matchMap.data?.[hoveredId] ?? {}) : {}
-  const matchedIds = building
-    ? builder.matchedIds
-    : new Set(Object.keys(hoverScores))
-  const scoreById = building ? builder.scoreById : hoverScores
+  const map = matchMap.data ?? {}
+
+  const hoverScores = !building && hoveredId ? (map[hoveredId] ?? {}) : {}
+
+  const buildScores: Record<string, number> = {}
+  if (building) {
+    const sel = builder.selectedIds
+    for (const item of items) {
+      if (sel.includes(item.id)) continue
+      let sum = 0
+      let ok = true
+      for (const s of sel) {
+        const sc = map[s]?.[item.id]
+        if (sc == null) {
+          ok = false
+          break
+        }
+        sum += sc
+      }
+      if (ok) buildScores[item.id] = Math.round(sum / sel.length)
+    }
+  }
+
+  const scoreById = building ? buildScores : hoverScores
+  const matchedIds = new Set(Object.keys(scoreById))
 
   let outfitScore: number | null = null
   const selectedItems = builder.selected
