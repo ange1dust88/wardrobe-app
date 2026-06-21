@@ -179,7 +179,10 @@ export function MatchWheel({
               strokeLinecap='round'
               strokeWidth={arc.width}
               strokeDasharray={900}
-              style={{ opacity: arc.opacity, animation: 'wheel-draw 1s ease both' }}
+              style={{
+                opacity: arc.opacity,
+                animation: building ? 'none' : 'wheel-draw 1s ease both',
+              }}
             />
           ))}
         </svg>
