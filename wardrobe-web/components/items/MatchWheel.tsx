@@ -7,6 +7,7 @@ type Props = {
   selectedIds?: string[]
   matchedIds?: Set<string>
   scoreById?: Record<string, number>
+  outfitScore?: number | null
   showSeasons?: boolean
   onHover: (id: string | null) => void
   onSelect: (item: Item) => void
@@ -38,6 +39,7 @@ export function MatchWheel({
   selectedIds = [],
   matchedIds = new Set(),
   scoreById = {},
+  outfitScore = null,
   showSeasons,
   onHover,
   onSelect,
@@ -125,8 +127,16 @@ export function MatchWheel({
         @keyframes wheel-chip { 0% { opacity:0; transform:translate(-50%,-50%) scale(.5) } 60% { opacity:1; transform:translate(-50%,-50%) scale(1.12) } 100% { opacity:1; transform:translate(-50%,-50%) scale(1) } }
       `}</style>
 
-      <div className='h-5 text-center text-[13px] text-muted-foreground'>
-        {readout}
+      <div className='relative flex min-h-[26px] items-center justify-center'>
+        {outfitScore != null && (
+          <span
+            className='font-heading absolute left-0 rounded-md px-2 py-0.5 text-[13px] font-bold text-white shadow'
+            style={{ background: tier(outfitScore) }}
+          >
+            outfit {outfitScore}
+          </span>
+        )}
+        <span className='text-[13px] text-muted-foreground'>{readout}</span>
       </div>
 
       <div
@@ -192,6 +202,7 @@ export function MatchWheel({
           return (
             <div
               key={item.id}
+              onMouseLeave={() => onHover(null)}
               className='absolute'
               style={{
                 left: `calc(${((p.x / W) * 100).toFixed(3)}% - ${sz / 2}px)`,
