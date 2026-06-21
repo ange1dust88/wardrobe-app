@@ -1,12 +1,13 @@
 'use client'
 
-import { PlusIcon, ShirtIcon } from 'lucide-react'
+import { PlusIcon, ShirtIcon, UserIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { LoginScreen } from '@/components/auth/LoginScreen'
 import { Onboarding } from '@/components/onboarding/Onboarding'
 import { AddItemModal } from '@/components/items/AddItemModal'
 import { EditItemModal } from '@/components/items/EditItemModal'
+import { ProfileModal } from '@/components/profile/ProfileModal'
 import { DevPanel } from '@/components/DevPanel'
 import { MatchWheel } from '@/components/items/MatchWheel'
 import { OutfitPanel } from '@/components/items/OutfitPanel'
@@ -74,8 +75,8 @@ function AuthedApp() {
 }
 
 function Wardrobe({ initialColorType }: { initialColorType: string | null }) {
-  const { signOut } = useAuth()
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [colorType, setColorType] = useState<string | null>(initialColorType)
   const [showSeasons, setShowSeasons] = useState(false)
@@ -142,8 +143,9 @@ function Wardrobe({ initialColorType }: { initialColorType: string | null }) {
                   <PlusIcon />
                   Add item
                 </Button>
-                <Button variant='outline' onClick={() => signOut()}>
-                  Sign out
+                <Button variant='outline' onClick={() => setProfileOpen(true)}>
+                  <UserIcon />
+                  Profile
                 </Button>
               </div>
             </FrameHeader>
@@ -250,6 +252,14 @@ function Wardrobe({ initialColorType }: { initialColorType: string | null }) {
               ? (updateMutation.error as Error).message
               : undefined
           }
+        />
+      )}
+
+      {profileOpen && (
+        <ProfileModal
+          onClose={() => setProfileOpen(false)}
+          itemCount={items.length}
+          outfitCount={(outfitsQuery.data ?? []).length}
         />
       )}
 
