@@ -126,6 +126,10 @@ export function MatchWheel({
 
   return (
     <div className='relative flex flex-col gap-2'>
+      <style>{`
+        @keyframes wheel-draw { from { stroke-dashoffset: 900 } to { stroke-dashoffset: 0 } }
+      `}</style>
+
       {outfitScore != null && (
         <div
           className='absolute top-0 right-0 z-10 rounded-2xl px-4 py-3 text-white shadow-md'
@@ -173,7 +177,11 @@ export function MatchWheel({
               stroke={arc.color}
               strokeLinecap='round'
               strokeWidth={arc.width}
-              style={{ opacity: arc.opacity }}
+              strokeDasharray={900}
+              style={{
+                opacity: arc.opacity,
+                animation: building ? 'none' : 'wheel-draw 1s ease both',
+              }}
             />
           ))}
         </svg>

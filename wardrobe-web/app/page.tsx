@@ -189,7 +189,10 @@ function Wardrobe({ initialColorType }: { initialColorType: string | null }) {
                 scoreById={scoreById}
                 outfitScore={outfitScore}
                 showSeasons={showSeasons}
-                onSelect={builder.toggle}
+                onSelect={item => {
+                  setHoveredId(null)
+                  builder.toggle(item)
+                }}
                 onHover={setHoveredId}
               />
             )}
