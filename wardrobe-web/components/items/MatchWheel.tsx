@@ -24,6 +24,10 @@ function tier(score: number): string {
   return score >= 24 ? '#2f7d4f' : score >= 18 ? '#c08a2d' : '#b5483a'
 }
 
+function tierLabel(score: number): string {
+  return score >= 24 ? 'In harmony' : score >= 18 ? 'Almost there' : 'Clashing'
+}
+
 function isLightHex(hex: string): boolean {
   const h = hex.replace('#', '')
   if (h.length < 6) return false
@@ -121,21 +125,29 @@ export function MatchWheel({
   })
 
   return (
-    <div className='flex flex-col gap-2'>
+    <div className='relative flex flex-col gap-2'>
       <style>{`
         @keyframes wheel-draw { from { stroke-dashoffset: 900 } to { stroke-dashoffset: 0 } }
         @keyframes wheel-chip { 0% { opacity:0; transform:translate(-50%,-50%) scale(.5) } 60% { opacity:1; transform:translate(-50%,-50%) scale(1.12) } 100% { opacity:1; transform:translate(-50%,-50%) scale(1) } }
       `}</style>
 
-      <div className='relative flex min-h-[26px] items-center justify-center'>
-        {outfitScore != null && (
-          <span
-            className='font-heading absolute left-0 rounded-md px-2 py-0.5 text-[13px] font-bold text-white shadow'
-            style={{ background: tier(outfitScore) }}
-          >
-            outfit {outfitScore}
-          </span>
-        )}
+      {outfitScore != null && (
+        <div
+          className='absolute top-0 right-0 z-10 rounded-2xl px-4 py-3 text-white shadow-md'
+          style={{ background: tier(outfitScore) }}
+        >
+          <div className='text-[11px] font-semibold tracking-[0.14em]'>
+            HARMONY
+          </div>
+          <div className='font-heading mt-0.5 leading-none'>
+            <span className='text-3xl font-bold'>{outfitScore}</span>
+            <span className='text-sm text-white/70'> / 36</span>
+          </div>
+          <div className='mt-1 text-[12px]'>{tierLabel(outfitScore)}</div>
+        </div>
+      )}
+
+      <div className='flex min-h-[26px] items-center justify-center'>
         <span className='text-[13px] text-muted-foreground'>{readout}</span>
       </div>
 
