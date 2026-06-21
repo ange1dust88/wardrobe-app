@@ -8,7 +8,7 @@ import { Onboarding } from '@/components/onboarding/Onboarding'
 import { AddItemModal } from '@/components/items/AddItemModal'
 import { EditItemModal } from '@/components/items/EditItemModal'
 import { DevPanel } from '@/components/DevPanel'
-import { ItemList } from '@/components/items/ItemList'
+import { MatchWheel } from '@/components/items/MatchWheel'
 import { OutfitPanel } from '@/components/items/OutfitPanel'
 import { SavedOutfits } from '@/components/items/SavedOutfits'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -159,7 +159,7 @@ function Wardrobe({ initialColorType }: { initialColorType: string | null }) {
                 </EmptyContent>
               </Empty>
             ) : (
-              <ItemList
+              <MatchWheel
                 items={items}
                 onEdit={setEditingItem}
                 hoveredId={hoveredId}
