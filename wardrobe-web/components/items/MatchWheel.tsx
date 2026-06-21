@@ -58,6 +58,8 @@ export function MatchWheel({
     return { x: CX + R * Math.cos(ang), y: CY + R * Math.sin(ang), ang }
   }
 
+  const crowd = Math.min(1, (2 * Math.PI * R) / (n * 96))
+
   const building = selectedIds.length > 0
   const anchor = !building && hoveredId ? indexById[hoveredId] != null : false
   const anchorItem = anchor
@@ -195,7 +197,8 @@ export function MatchWheel({
           const lit = building
             ? isSel || isMatch
             : !hoveredId || item.id === hoveredId || isMatch
-          const sz = item.wardrobeRole === 'pop' ? 78 : 68
+          const showName = isSrc || isMatch
+          const sz = Math.round((item.wardrobeRole === 'pop' ? 78 : 68) * crowd)
           const img = getItemImageSrc(item)
           return (
             <div
@@ -254,9 +257,9 @@ export function MatchWheel({
                 </button>
               )}
 
-              {lit && (
+              {showName && (
                 <div
-                  className='pointer-events-none absolute left-1/2 w-[104px] -translate-x-1/2 text-center text-[10.5px] leading-tight font-medium text-[#4a443b]'
+                  className='pointer-events-none absolute left-1/2 line-clamp-2 w-[88px] -translate-x-1/2 text-center text-[10.5px] leading-tight font-medium text-[#4a443b]'
                   style={{ top: sz + 6 }}
                 >
                   {item.name}
