@@ -33,14 +33,16 @@ export function OutfitPanel({
   }
 
   return (
-    <aside className='flex w-full flex-col gap-4 border border-black p-4 lg:w-72'>
+    <aside className='flex w-full flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm lg:w-72'>
       <div className='flex items-center justify-between'>
-        <h2 className='text-sm font-medium text-black'>Outfit · {items.length}</h2>
+        <h2 className='text-sm font-medium text-foreground'>
+          Outfit · {items.length}
+        </h2>
         {items.length > 0 && (
           <button
             type='button'
             onClick={onClear}
-            className='text-xs text-black underline'
+            className='text-xs text-muted-foreground underline'
           >
             Clear
           </button>
@@ -58,7 +60,7 @@ export function OutfitPanel({
             return (
               <li key={item.id} className='flex items-center gap-2'>
                 <span
-                  className='relative size-9 shrink-0 overflow-hidden border border-black'
+                  className='relative size-9 shrink-0 overflow-hidden rounded-md border border-border'
                   style={{ backgroundColor: item.color.hex }}
                 >
                   {imageSrc && (
@@ -69,14 +71,14 @@ export function OutfitPanel({
                     />
                   )}
                 </span>
-                <span className='min-w-0 flex-1 truncate text-sm text-black'>
+                <span className='min-w-0 flex-1 truncate text-sm text-foreground'>
                   {item.name}
                 </span>
                 <button
                   type='button'
                   onClick={() => onRemove(item.id)}
                   aria-label='Remove'
-                  className='text-xs text-black'
+                  className='text-xs text-muted-foreground'
                 >
                   ✕
                 </button>
