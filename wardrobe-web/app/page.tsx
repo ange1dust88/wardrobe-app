@@ -8,7 +8,7 @@ import { Onboarding } from '@/components/onboarding/Onboarding'
 import { AddItemModal } from '@/components/items/AddItemModal'
 import { EditItemModal } from '@/components/items/EditItemModal'
 import { DevPanel } from '@/components/DevPanel'
-import { ItemList } from '@/components/items/ItemList'
+import { MatchWheel } from '@/components/items/MatchWheel'
 import { OutfitPanel } from '@/components/items/OutfitPanel'
 import { SavedOutfits } from '@/components/items/SavedOutfits'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -96,6 +96,25 @@ function Wardrobe({ initialColorType }: { initialColorType: string | null }) {
     : new Set(Object.keys(hoverScores))
   const scoreById = building ? builder.scoreById : hoverScores
 
+  let outfitScore: number | null = null
+  const selectedItems = builder.selected
+  if (selectedItems.length >= 2 && matchMap.data) {
+    let sum = 0
+    let count = 0
+    for (let i = 0; i < selectedItems.length; i++) {
+      for (let j = i + 1; j < selectedItems.length; j++) {
+        const a = selectedItems[i].id
+        const b = selectedItems[j].id
+        const s = matchMap.data[a]?.[b] ?? matchMap.data[b]?.[a]
+        if (s != null) {
+          sum += s
+          count += 1
+        }
+      }
+    }
+    if (count) outfitScore = Math.round(sum / count)
+  }
+
   const errorMessage = itemsQuery.error
     ? (itemsQuery.error as Error).message
     : undefined
@@ -159,13 +178,14 @@ function Wardrobe({ initialColorType }: { initialColorType: string | null }) {
                 </EmptyContent>
               </Empty>
             ) : (
-              <ItemList
+              <MatchWheel
                 items={items}
                 onEdit={setEditingItem}
                 hoveredId={hoveredId}
                 selectedIds={builder.selectedIds}
                 matchedIds={matchedIds}
                 scoreById={scoreById}
+                outfitScore={outfitScore}
                 showSeasons={showSeasons}
                 onSelect={builder.toggle}
                 onHover={setHoveredId}
