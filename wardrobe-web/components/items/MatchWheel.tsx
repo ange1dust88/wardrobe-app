@@ -183,7 +183,7 @@ export function MatchWheel({
             ? isSel || isMatch
             : !hoveredId || item.id === hoveredId || isMatch
           const showName = isMatch || (building && isSel)
-          const sz = Math.round((item.wardrobeRole === 'pop' ? 78 : 68) * crowd)
+          const sz = Math.round(72 * crowd)
           const score = scoreById[item.id]
           const labelRad = sz / 2 + 40
           const labelDx = Math.cos(p.ang) * labelRad
