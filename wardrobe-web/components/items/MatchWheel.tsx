@@ -118,21 +118,6 @@ export function MatchWheel({
       })
   })
 
-  const chips = matchEntries
-    .filter(([id]) => indexById[id] != null)
-    .map(([id, score]) => {
-      const bp = pos(indexById[id])
-      const chx = CX + (R + 28) * Math.cos(bp.ang)
-      const chy = CY + (R + 28) * Math.sin(bp.ang)
-      return {
-        id,
-        score,
-        color: tier(score),
-        leftPct: (chx / W) * 100,
-        topPct: (chy / H) * 100,
-      }
-    })
-
   return (
     <div className='flex flex-col gap-2'>
       <style>{`
@@ -197,8 +182,12 @@ export function MatchWheel({
           const lit = building
             ? isSel || isMatch
             : !hoveredId || item.id === hoveredId || isMatch
-          const showName = isSrc || isMatch
+          const showName = isMatch || (building && isSel)
           const sz = Math.round((item.wardrobeRole === 'pop' ? 78 : 68) * crowd)
+          const score = scoreById[item.id]
+          const labelRad = sz / 2 + 40
+          const labelDx = Math.cos(p.ang) * labelRad
+          const labelDy = Math.sin(p.ang) * labelRad
           const img = getItemImageSrc(item)
           return (
             <div
@@ -244,6 +233,14 @@ export function MatchWheel({
                     className='absolute inset-0 h-full w-full object-cover'
                   />
                 )}
+                {isMatch && score != null && (
+                  <span
+                    className='font-heading absolute top-0.5 left-0.5 z-10 rounded-md px-1 text-[11px] leading-tight font-bold text-white shadow'
+                    style={{ background: tier(score) }}
+                  >
+                    {score}
+                  </span>
+                )}
               </button>
 
               {isSrc && !building && (
@@ -259,8 +256,12 @@ export function MatchWheel({
 
               {showName && (
                 <div
-                  className='pointer-events-none absolute left-1/2 line-clamp-2 w-[88px] -translate-x-1/2 text-center text-[10.5px] leading-tight font-medium text-[#4a443b]'
-                  style={{ top: sz + 6 }}
+                  className='pointer-events-none absolute line-clamp-2 w-[84px] text-center text-[10.5px] leading-tight font-medium text-[#4a443b]'
+                  style={{
+                    left: sz / 2,
+                    top: sz / 2,
+                    transform: `translate(-50%,-50%) translate(${labelDx.toFixed(0)}px, ${labelDy.toFixed(0)}px)`,
+                  }}
                 >
                   {item.name}
                   {showSeasons && (
@@ -274,26 +275,6 @@ export function MatchWheel({
           )
         })}
 
-        <div
-          className='absolute inset-0 z-[5]'
-          style={{ pointerEvents: 'none' }}
-        >
-          {chips.map(chip => (
-            <div
-              key={chip.id}
-              className='font-heading absolute rounded-lg px-2 py-0.5 text-[13px] font-bold text-white shadow-md'
-              style={{
-                left: `${chip.leftPct}%`,
-                top: `${chip.topPct}%`,
-                transform: 'translate(-50%,-50%)',
-                background: chip.color,
-                animation: 'wheel-chip .5s ease both',
-              }}
-            >
-              {chip.score}
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   )
