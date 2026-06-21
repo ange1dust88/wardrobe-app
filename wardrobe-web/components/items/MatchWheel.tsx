@@ -90,25 +90,31 @@ export function MatchWheel({
     }
   }
 
-  const arcs = anchorItem
-    ? matchEntries
-        .filter(([id]) => indexById[id] != null)
-        .map(([id, score]) => {
-          const ap = pos(indexById[anchorItem.id])
-          const bp = pos(indexById[id])
-          const mx = (ap.x + bp.x) / 2
-          const my = (ap.y + bp.y) / 2
-          const cpx = mx + (CX - mx) * 0.72
-          const cpy = my + (CY - my) * 0.72
-          return {
-            id,
-            d: `M ${ap.x.toFixed(0)} ${ap.y.toFixed(0)} Q ${cpx.toFixed(0)} ${cpy.toFixed(0)} ${bp.x.toFixed(0)} ${bp.y.toFixed(0)}`,
-            color: tier(score),
-            width: Number((1.4 + score / 9).toFixed(1)),
-            opacity: Number((0.5 + score / 72).toFixed(2)),
-          }
-        })
-    : []
+  const sourceIds = building
+    ? selectedIds.filter(id => indexById[id] != null)
+    : anchorItem
+      ? [anchorItem.id]
+      : []
+
+  const arcs = sourceIds.flatMap(srcId => {
+    const ap = pos(indexById[srcId])
+    return matchEntries
+      .filter(([id]) => indexById[id] != null)
+      .map(([id, score]) => {
+        const bp = pos(indexById[id])
+        const mx = (ap.x + bp.x) / 2
+        const my = (ap.y + bp.y) / 2
+        const cpx = mx + (CX - mx) * 0.72
+        const cpy = my + (CY - my) * 0.72
+        return {
+          key: `${srcId}-${id}`,
+          d: `M ${ap.x.toFixed(0)} ${ap.y.toFixed(0)} Q ${cpx.toFixed(0)} ${cpy.toFixed(0)} ${bp.x.toFixed(0)} ${bp.y.toFixed(0)}`,
+          color: tier(score),
+          width: Number((1.4 + score / 9).toFixed(1)),
+          opacity: Number((0.5 + score / 72).toFixed(2)),
+        }
+      })
+  })
 
   const chips = matchEntries
     .filter(([id]) => indexById[id] != null)
@@ -157,7 +163,7 @@ export function MatchWheel({
           />
           {arcs.map(arc => (
             <path
-              key={arc.id}
+              key={arc.key}
               d={arc.d}
               fill='none'
               stroke={arc.color}
