@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { useState } from 'react'
 import { createOutfit, suggestMatches, type Item } from '@/lib/items'
 
@@ -13,6 +18,7 @@ export function useOutfitBuilder(colorType: string | null) {
     queryFn: () => suggestMatches(selectedIds, colorType ?? undefined),
     enabled: selectedIds.length > 0,
     staleTime: 30_000,
+    placeholderData: keepPreviousData,
   })
 
   const matchedIds = new Set<string>()

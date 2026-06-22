@@ -128,7 +128,6 @@ export function MatchWheel({
     <div className='relative flex flex-col gap-2'>
       <style>{`
         @keyframes wheel-draw { from { stroke-dashoffset: 900 } to { stroke-dashoffset: 0 } }
-        @keyframes wheel-chip { 0% { opacity:0; transform:translate(-50%,-50%) scale(.5) } 60% { opacity:1; transform:translate(-50%,-50%) scale(1.12) } 100% { opacity:1; transform:translate(-50%,-50%) scale(1) } }
       `}</style>
 
       {outfitScore != null && (
@@ -179,7 +178,10 @@ export function MatchWheel({
               strokeLinecap='round'
               strokeWidth={arc.width}
               strokeDasharray={900}
-              style={{ opacity: arc.opacity, animation: 'wheel-draw 1s ease both' }}
+              style={{
+                opacity: arc.opacity,
+                animation: building ? 'none' : 'wheel-draw 1s ease both',
+              }}
             />
           ))}
         </svg>
