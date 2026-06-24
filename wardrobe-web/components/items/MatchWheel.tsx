@@ -74,25 +74,32 @@ export function MatchWheel({
     }
   }
 
-  const arcs = active
-    ? matchEntries
-        .filter(([id]) => indexById[id] != null)
-        .map(([id, score]) => {
-          const ap = pos(indexById[active.id])
-          const bp = pos(indexById[id])
-          const mx = (ap.x + bp.x) / 2
-          const my = (ap.y + bp.y) / 2
-          const cpx = mx + (CX - mx) * 0.72
-          const cpy = my + (CY - my) * 0.72
-          return {
-            key: id,
-            d: `M ${ap.x.toFixed(0)} ${ap.y.toFixed(0)} Q ${cpx.toFixed(0)} ${cpy.toFixed(0)} ${bp.x.toFixed(0)} ${bp.y.toFixed(0)}`,
-            color: getMatchScoreTone(score).solidColor,
-            width: Number((1.4 + matchScoreToPercentage(score) / 36).toFixed(1)),
-            opacity: Number((0.42 + matchScoreToPercentage(score) / 180).toFixed(2)),
-          }
-        })
-    : []
+  const building = selectedIds.length > 0
+  const sourceIds = building
+    ? selectedIds.filter(id => indexById[id] != null)
+    : active
+      ? [active.id]
+      : []
+
+  const arcs = sourceIds.flatMap(srcId => {
+    const ap = pos(indexById[srcId])
+    return matchEntries
+      .filter(([id]) => indexById[id] != null)
+      .map(([id, score]) => {
+        const bp = pos(indexById[id])
+        const mx = (ap.x + bp.x) / 2
+        const my = (ap.y + bp.y) / 2
+        const cpx = mx + (CX - mx) * 0.72
+        const cpy = my + (CY - my) * 0.72
+        return {
+          key: `${srcId}-${id}`,
+          d: `M ${ap.x.toFixed(0)} ${ap.y.toFixed(0)} Q ${cpx.toFixed(0)} ${cpy.toFixed(0)} ${bp.x.toFixed(0)} ${bp.y.toFixed(0)}`,
+          color: getMatchScoreTone(score).solidColor,
+          width: Number((1.4 + matchScoreToPercentage(score) / 36).toFixed(1)),
+          opacity: Number((0.42 + matchScoreToPercentage(score) / 180).toFixed(2)),
+        }
+      })
+  })
 
   const chips = active
     ? matchEntries
@@ -141,7 +148,10 @@ export function MatchWheel({
             strokeLinecap='round'
             strokeWidth={arc.width}
             strokeDasharray={900}
-            style={{ opacity: arc.opacity, animation: 'wheel-draw .35s ease both' }}
+            style={{
+              opacity: arc.opacity,
+              animation: building ? 'none' : 'wheel-draw .35s ease both',
+            }}
           />
         ))}
       </svg>
@@ -157,8 +167,9 @@ export function MatchWheel({
         const p = pos(i)
         const isSel = selectedIds.includes(item.id)
         const isMatch = matchedIds.has(item.id)
-        const isSrc = item.id === activeId
-        const lit = !active || isSrc || isMatch
+        const isHover = item.id === activeId
+        const isSrc = building ? isSel : isHover
+        const lit = building ? isSel || isMatch : !active || isHover || isMatch
         const img = getItemImageSrc(item)
         const boxShadow = isSel
           ? '0 0 0 2px var(--background), 0 0 0 4px #3d5a3d, 0 8px 22px rgba(0,0,0,.18)'
@@ -214,7 +225,7 @@ export function MatchWheel({
               )}
             </button>
 
-            {isSrc && (
+            {isHover && (
               <button
                 type='button'
                 onClick={() => onEdit(item)}

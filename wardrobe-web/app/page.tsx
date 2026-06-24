@@ -110,7 +110,29 @@ function AppShell({ colorType }: { colorType: string | null }) {
   const map = matchMap.data ?? {}
 
   const activeId = hoveredId
-  const scoreById = activeId ? (map[activeId] ?? {}) : {}
+  const building = builder.selectedIds.length > 0
+  const hoverScores = !building && hoveredId ? (map[hoveredId] ?? {}) : {}
+
+  const buildScores: Record<string, number> = {}
+  if (building) {
+    const sel = builder.selectedIds
+    for (const item of items) {
+      if (sel.includes(item.id)) continue
+      let sum = 0
+      let ok = true
+      for (const s of sel) {
+        const sc = map[s]?.[item.id]
+        if (sc == null) {
+          ok = false
+          break
+        }
+        sum += sc
+      }
+      if (ok) buildScores[item.id] = Math.round(sum / sel.length)
+    }
+  }
+
+  const scoreById = building ? buildScores : hoverScores
   const matchedIds = new Set(Object.keys(scoreById))
 
   const harmony =
