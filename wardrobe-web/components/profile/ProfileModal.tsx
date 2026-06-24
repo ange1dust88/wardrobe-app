@@ -42,7 +42,7 @@ function Toggle({
       type='button'
       onClick={onClick}
       className={cn(
-        'rounded-full border px-3 py-1 text-sm capitalize transition-colors',
+        'min-h-10 rounded-full border px-3 py-1 text-sm capitalize transition-[color,background-color,border-color,transform] active:scale-[0.96]',
         on ? 'border-black bg-black text-white' : 'border-black/30 text-black'
       )}
     >
@@ -72,7 +72,12 @@ export function ProfileModal({ onClose, itemCount, outfitCount }: Props) {
   }
 
   function save() {
-    saveMutation.mutate({ who, climate, palettes })
+    saveMutation.mutate(
+      { who, climate, palettes },
+      {
+        onSuccess: onClose,
+      }
+    )
   }
 
   return (
@@ -143,7 +148,7 @@ export function ProfileModal({ onClose, itemCount, outfitCount }: Props) {
                       type='button'
                       onClick={() => togglePalette(palette.id)}
                       className={cn(
-                        'flex flex-col items-center gap-1 rounded-lg border p-2 transition-colors',
+                        'flex min-h-10 flex-col items-center gap-1 rounded-lg border p-2 transition-[border-color,transform] active:scale-[0.96]',
                         selected ? 'border-black' : 'border-transparent'
                       )}
                     >

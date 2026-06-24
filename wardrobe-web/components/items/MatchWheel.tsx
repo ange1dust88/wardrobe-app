@@ -12,7 +12,6 @@ type Props = {
   matchedIds?: Set<string>
   scoreById?: Record<string, number>
   outfitScore?: number | null
-  showSeasons?: boolean
   onHover: (id: string | null) => void
   onSelect: (item: Item) => void
   onEdit: (item: Item) => void
@@ -40,7 +39,6 @@ export function MatchWheel({
   matchedIds = new Set(),
   scoreById = {},
   outfitScore = null,
-  showSeasons,
   onHover,
   onSelect,
   onEdit,
@@ -67,31 +65,6 @@ export function MatchWheel({
   const anchorItem = anchor ? ordered.find(it => it.id === hoveredId)! : null
 
   const matchEntries = Object.entries(scoreById)
-
-  let centerTitle = 'ward'
-  let centerSub = 'hover to explore'
-  let readout = 'Hover any piece — harmonious matches arc across the wheel.'
-
-  if (building) {
-    centerTitle = `${selectedIds.length} selected`
-    centerSub = 'building outfit'
-    readout = `${selectedIds.length} selected · ${matchEntries.length} match${matchEntries.length === 1 ? '' : 'es'}`
-  } else if (anchorItem) {
-    if (matchEntries.length) {
-      const [topId, topScore] = matchEntries.reduce((a, b) =>
-        b[1] > a[1] ? b : a
-      )
-      const top = ordered.find(it => it.id === topId)
-      const topTone = getMatchScoreTone(topScore)
-      centerTitle = anchorItem.name
-      centerSub = `best · ${topTone.shortLabel} · ${topTone.percentage}%`
-      readout = `${anchorItem.name} harmonises with ${matchEntries.length} piece${matchEntries.length === 1 ? '' : 's'} · strongest: ${top?.name} · ${topTone.shortLabel} ${topTone.percentage}%`
-    } else {
-      centerTitle = anchorItem.name
-      centerSub = 'no pairings'
-      readout = `${anchorItem.name} — no matches in other categories.`
-    }
-  }
 
   const sourceIds = building
     ? selectedIds.filter(id => indexById[id] != null)
@@ -127,30 +100,6 @@ export function MatchWheel({
         @keyframes wheel-draw { from { stroke-dashoffset: 900 } to { stroke-dashoffset: 0 } }
       `}</style>
 
-      {outfitScore != null && (
-        <div
-          className='absolute top-0 right-0 z-10 rounded-2xl px-4 py-3 text-white shadow-md'
-          style={{ background: getMatchScoreTone(outfitScore).solidColor }}
-        >
-          <div className='text-[11px] font-semibold tracking-[0.14em]'>
-            HARMONY
-          </div>
-          <div className='font-heading mt-0.5 leading-none'>
-            <span className='text-3xl font-bold'>
-              {matchScoreToPercentage(outfitScore)}
-            </span>
-            <span className='text-sm text-white/70'>%</span>
-          </div>
-          <div className='mt-1 text-[12px]'>
-            {getMatchScoreTone(outfitScore).shortLabel}
-          </div>
-        </div>
-      )}
-
-      <div className='flex min-h-[26px] items-center justify-center'>
-        <span className='text-[13px] text-muted-foreground'>{readout}</span>
-      </div>
-
       <div
         onMouseLeave={() => onHover(null)}
         className='relative mx-auto w-full max-w-[760px]'
@@ -181,25 +130,27 @@ export function MatchWheel({
               strokeDasharray={900}
               style={{
                 opacity: arc.opacity,
-                animation: building ? 'none' : 'wheel-draw 1s ease both',
+                animation: building ? 'none' : 'wheel-draw 0.3s linear both',
               }}
             />
           ))}
         </svg>
 
         <div
-          className='absolute z-[1] w-[150px] -translate-x-1/2 -translate-y-1/2 text-center'
+          className='absolute z-1 w-[150px] -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none'
           style={{
             left: '50%',
             top: `${(CY / H) * 100}%`,
-            pointerEvents: 'none',
           }}
         >
-          <div className='font-heading text-lg leading-tight font-bold text-black'>
-            {centerTitle}
-          </div>
-          <div className='mt-1 text-[12.5px] text-muted-foreground'>
-            {centerSub}
+          <div
+            className={`mt-1 text-[12.5px] text-muted-foreground transition-opacity duration-200`}
+            style={{
+              opacity: !hoveredId || building ? 1 : 0,
+              pointerEvents: 'none',
+            }}
+          >
+            hover any item
           </div>
         </div>
 
@@ -211,7 +162,7 @@ export function MatchWheel({
           const lit = building
             ? isSel || isMatch
             : !hoveredId || item.id === hoveredId || isMatch
-          const showName = isMatch || (building && isSel)
+          const showName = building && (isSel || isMatch)
           const sz = Math.round(72 * crowd)
           const score = scoreById[item.id]
           const labelRad = sz / 2 + 40
@@ -278,8 +229,8 @@ export function MatchWheel({
                 <button
                   type='button'
                   onClick={() => onEdit(item)}
-                  aria-label='Edit'
-                  className='absolute -top-1 -right-1 z-10 rounded-full border border-black bg-white p-1 text-black'
+                  aria-label={`Edit ${item.name}`}
+                  className='absolute -top-1 -right-1 z-10 flex size-6 translate-x-2 -translate-y-2 items-center justify-center rounded-full border bg-white text-black shadow-sm'
                 >
                   <PencilIcon className='size-3' />
                 </button>
@@ -295,11 +246,6 @@ export function MatchWheel({
                   }}
                 >
                   {item.name}
-                  {showSeasons && (
-                    <span className='block text-[9px] text-muted-foreground'>
-                      {item.seasonPaletteCompatibility.join(', ')}
-                    </span>
-                  )}
                 </div>
               )}
             </div>

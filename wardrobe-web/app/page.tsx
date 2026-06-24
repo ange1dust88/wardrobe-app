@@ -8,7 +8,6 @@ import { Onboarding } from '@/components/onboarding/Onboarding'
 import { AddItemModal } from '@/components/items/AddItemModal'
 import { EditItemModal } from '@/components/items/EditItemModal'
 import { ProfileModal } from '@/components/profile/ProfileModal'
-import { DevPanel } from '@/components/DevPanel'
 import { MatchWheel } from '@/components/items/MatchWheel'
 import { OutfitPanel } from '@/components/items/OutfitPanel'
 import { SavedOutfits } from '@/components/items/SavedOutfits'
@@ -71,15 +70,13 @@ function AuthedApp() {
     return <Onboarding onComplete={input => saveMutation.mutate(input)} />
   }
 
-  return <Wardrobe initialColorType={profile.palettes[0] ?? null} />
+  return <Wardrobe colorType={profile.palettes[0] ?? null} />
 }
 
-function Wardrobe({ initialColorType }: { initialColorType: string | null }) {
+function Wardrobe({ colorType }: { colorType: string | null }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
-  const [colorType, setColorType] = useState<string | null>(initialColorType)
-  const [showSeasons, setShowSeasons] = useState(false)
   const [editingItem, setEditingItem] = useState<Item | null>(null)
   const { itemsQuery, createMutation, updateMutation, deleteMutation } =
     useItems()
@@ -207,7 +204,6 @@ function Wardrobe({ initialColorType }: { initialColorType: string | null }) {
                 matchedIds={matchedIds}
                 scoreById={scoreById}
                 outfitScore={outfitScore}
-                showSeasons={showSeasons}
                 onSelect={item => {
                   setHoveredId(null)
                   builder.toggle(item)
@@ -284,13 +280,6 @@ function Wardrobe({ initialColorType }: { initialColorType: string | null }) {
           outfitCount={(outfitsQuery.data ?? []).length}
         />
       )}
-
-      <DevPanel
-        colorType={colorType}
-        onColorType={setColorType}
-        showSeasons={showSeasons}
-        onShowSeasons={setShowSeasons}
-      />
     </main>
   )
 }
