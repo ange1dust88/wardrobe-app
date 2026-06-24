@@ -219,7 +219,7 @@ export function MatchWheel({
                 type='button'
                 onClick={() => onEdit(item)}
                 aria-label={`Edit ${item.name}`}
-                className='absolute -top-1 -right-1 z-10 flex size-6 items-center justify-center rounded-full border border-border bg-background text-foreground shadow-sm'
+                className='absolute -top-1 -left-1 z-10 flex size-6 items-center justify-center rounded-full border border-border bg-background text-foreground shadow-sm'
               >
                 <PencilIcon className='size-3' />
               </button>

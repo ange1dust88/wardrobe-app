@@ -1,7 +1,7 @@
 'use client'
 
 import { PlusIcon, ShirtIcon } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { LoginScreen } from '@/components/auth/LoginScreen'
 import { Onboarding } from '@/components/onboarding/Onboarding'
@@ -24,7 +24,7 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty'
 import { Spinner } from '@/components/ui/spinner'
-import { CATEGORIES, type Item, type MatchMap } from '@/lib/items'
+import { type Item, type MatchMap } from '@/lib/items'
 import { cn } from '@/lib/utils'
 import { useItems } from '@/hooks/useItems'
 import { useProfile } from '@/hooks/useProfile'
@@ -96,7 +96,6 @@ function AppShell({ colorType }: { colorType: string | null }) {
   const [nav, setNav] = useState<'wardrobe' | 'outfits'>('wardrobe')
   const [view, setView] = useState<'circular' | 'list'>('circular')
   const [hoveredId, setHoveredId] = useState<string | null>(null)
-  const [focusId, setFocusId] = useState<string | null>(null)
   const [editingItem, setEditingItem] = useState<Item | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
@@ -110,52 +109,12 @@ function AppShell({ colorType }: { colorType: string | null }) {
   const items = itemsQuery.data ?? []
   const map = matchMap.data ?? {}
 
-  const orderedItems = useMemo(
-    () =>
-      [...items].sort((a, b) => {
-        const ca = CATEGORIES.indexOf(a.category)
-        const cb = CATEGORIES.indexOf(b.category)
-        return ca !== cb ? ca - cb : a.name.localeCompare(b.name)
-      }),
-    [items]
-  )
-
-  const activeId = hoveredId ?? focusId
+  const activeId = hoveredId
   const scoreById = activeId ? (map[activeId] ?? {}) : {}
   const matchedIds = new Set(Object.keys(scoreById))
 
   const harmony =
     builder.selectedIds.length >= 2 ? harmonyOf(builder.selectedIds, map) : null
-
-  function browse(dir: number) {
-    setHoveredId(null)
-    if (!orderedItems.length) return
-    setFocusId(prev => {
-      const cur = prev ? orderedItems.findIndex(i => i.id === prev) : -1
-      const len = orderedItems.length
-      const ni = (((cur + dir) % len) + len) % len
-      return orderedItems[ni].id
-    })
-  }
-
-  useEffect(() => {
-    if (nav !== 'wardrobe' || view !== 'circular') return
-    function onKey(e: KeyboardEvent) {
-      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
-      e.preventDefault()
-      const dir = e.key === 'ArrowRight' ? 1 : -1
-      setHoveredId(null)
-      setFocusId(prev => {
-        if (!orderedItems.length) return prev
-        const cur = prev ? orderedItems.findIndex(i => i.id === prev) : -1
-        const len = orderedItems.length
-        const ni = (((cur + dir) % len) + len) % len
-        return orderedItems[ni].id
-      })
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [nav, view, orderedItems])
 
   const errorMessage = itemsQuery.error
     ? (itemsQuery.error as Error).message
@@ -207,29 +166,6 @@ function AppShell({ colorType }: { colorType: string | null }) {
                   </p>
                 </div>
                 <div className='flex items-center gap-3'>
-                  {view === 'circular' && hasItems && (
-                    <div className='flex items-center gap-2 rounded-xl border border-border bg-card py-1.5 pr-1.5 pl-3.5'>
-                      <span className='text-xs font-semibold tracking-wide text-muted-foreground'>
-                        Browse
-                      </span>
-                      <button
-                        type='button'
-                        onClick={() => browse(-1)}
-                        aria-label='Previous'
-                        className='flex size-[30px] items-center justify-center rounded-[9px] border border-border bg-background text-lg text-foreground'
-                      >
-                        ‹
-                      </button>
-                      <button
-                        type='button'
-                        onClick={() => browse(1)}
-                        aria-label='Next'
-                        className='flex size-[30px] items-center justify-center rounded-[9px] border border-border bg-background text-lg text-foreground'
-                      >
-                        ›
-                      </button>
-                    </div>
-                  )}
                   <div className='flex gap-0.5 rounded-xl bg-muted/60 p-1'>
                     <button
                       type='button'
