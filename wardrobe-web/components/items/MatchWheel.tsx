@@ -162,12 +162,8 @@ export function MatchWheel({
           const lit = building
             ? isSel || isMatch
             : !hoveredId || item.id === hoveredId || isMatch
-          const showName = building && (isSel || isMatch)
           const sz = Math.round(72 * crowd)
           const score = scoreById[item.id]
-          const labelRad = sz / 2 + 40
-          const labelDx = Math.cos(p.ang) * labelRad
-          const labelDy = Math.sin(p.ang) * labelRad
           const img = getItemImageSrc(item)
           return (
             <div
@@ -234,19 +230,6 @@ export function MatchWheel({
                 >
                   <PencilIcon className='size-3' />
                 </button>
-              )}
-
-              {showName && (
-                <div
-                  className='pointer-events-none absolute line-clamp-2 w-[84px] text-center text-[10.5px] leading-tight font-medium text-[#4a443b]'
-                  style={{
-                    left: sz / 2,
-                    top: sz / 2,
-                    transform: `translate(-50%,-50%) translate(${labelDx.toFixed(0)}px, ${labelDy.toFixed(0)}px)`,
-                  }}
-                >
-                  {item.name}
-                </div>
               )}
             </div>
           )
