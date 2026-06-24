@@ -26,7 +26,8 @@ export type ScoreBreakdown = {
 };
 
 const MAX_SCORE = 36;
-const MIN_RECOMMENDABLE_SCORE = 6;
+// 22 / 36 rounds to 61%. Everything below the visible 60% band stays hidden.
+const MIN_RECOMMENDABLE_SCORE = 22;
 
 const SCORE_CAPS: ScoreBreakdown = {
   color: 12,

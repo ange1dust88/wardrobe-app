@@ -84,15 +84,15 @@ export function ItemCard({
             <>
               <span
                 className={cn(
-                  'absolute top-1 left-1 inline-flex h-6 min-w-9 items-center justify-center gap-1 rounded-sm border px-1.5 text-[11px] leading-none font-semibold shadow-sm',
+                  'absolute top-1 left-1 inline-flex h-6 items-center justify-center gap-1 rounded-sm border px-1.5 text-[11px] leading-none font-semibold shadow-sm',
                   tone.badgeClassName
                 )}
-                title={`${tone.label}: ${score}/36`}
+                title={`${tone.label}: ${tone.percentage}%`}
               >
                 <span
                   className={cn('size-1.5 rounded-full', tone.dotClassName)}
                 />
-                {score}
+                {tone.shortLabel} · {tone.percentage}%
               </span>
               <span
                 className={cn(

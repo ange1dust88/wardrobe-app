@@ -1,5 +1,9 @@
 import { PencilIcon } from 'lucide-react'
 import { CATEGORIES, getItemImageSrc, type Item } from '../../lib/items'
+import {
+  getMatchScoreTone,
+  matchScoreToPercentage,
+} from '../../lib/match-score'
 
 type Props = {
   items: Item[]
@@ -19,14 +23,6 @@ const H = 680
 const CX = 380
 const CY = 338
 const R = 248
-
-function tier(score: number): string {
-  return score >= 24 ? '#2f7d4f' : score >= 18 ? '#c08a2d' : '#b5483a'
-}
-
-function tierLabel(score: number): string {
-  return score >= 24 ? 'In harmony' : score >= 18 ? 'Almost there' : 'Clashing'
-}
 
 function isLightHex(hex: string): boolean {
   const h = hex.replace('#', '')
@@ -68,9 +64,7 @@ export function MatchWheel({
 
   const building = selectedIds.length > 0
   const anchor = !building && hoveredId ? indexById[hoveredId] != null : false
-  const anchorItem = anchor
-    ? ordered.find(it => it.id === hoveredId)!
-    : null
+  const anchorItem = anchor ? ordered.find(it => it.id === hoveredId)! : null
 
   const matchEntries = Object.entries(scoreById)
 
@@ -88,9 +82,10 @@ export function MatchWheel({
         b[1] > a[1] ? b : a
       )
       const top = ordered.find(it => it.id === topId)
+      const topTone = getMatchScoreTone(topScore)
       centerTitle = anchorItem.name
-      centerSub = `best · ${top?.name} (${topScore})`
-      readout = `${anchorItem.name} harmonises with ${matchEntries.length} piece${matchEntries.length === 1 ? '' : 's'} · strongest: ${top?.name} (${topScore})`
+      centerSub = `best · ${topTone.shortLabel} · ${topTone.percentage}%`
+      readout = `${anchorItem.name} harmonises with ${matchEntries.length} piece${matchEntries.length === 1 ? '' : 's'} · strongest: ${top?.name} · ${topTone.shortLabel} ${topTone.percentage}%`
     } else {
       centerTitle = anchorItem.name
       centerSub = 'no pairings'
@@ -117,9 +112,11 @@ export function MatchWheel({
         return {
           key: `${srcId}-${id}`,
           d: `M ${ap.x.toFixed(0)} ${ap.y.toFixed(0)} Q ${cpx.toFixed(0)} ${cpy.toFixed(0)} ${bp.x.toFixed(0)} ${bp.y.toFixed(0)}`,
-          color: tier(score),
-          width: Number((1.4 + score / 9).toFixed(1)),
-          opacity: Number((0.5 + score / 72).toFixed(2)),
+          color: getMatchScoreTone(score).solidColor,
+          width: Number((1.4 + matchScoreToPercentage(score) / 36).toFixed(1)),
+          opacity: Number(
+            (0.42 + matchScoreToPercentage(score) / 180).toFixed(2)
+          ),
         }
       })
   })
@@ -133,16 +130,20 @@ export function MatchWheel({
       {outfitScore != null && (
         <div
           className='absolute top-0 right-0 z-10 rounded-2xl px-4 py-3 text-white shadow-md'
-          style={{ background: tier(outfitScore) }}
+          style={{ background: getMatchScoreTone(outfitScore).solidColor }}
         >
           <div className='text-[11px] font-semibold tracking-[0.14em]'>
             HARMONY
           </div>
           <div className='font-heading mt-0.5 leading-none'>
-            <span className='text-3xl font-bold'>{outfitScore}</span>
-            <span className='text-sm text-white/70'> / 36</span>
+            <span className='text-3xl font-bold'>
+              {matchScoreToPercentage(outfitScore)}
+            </span>
+            <span className='text-sm text-white/70'>%</span>
           </div>
-          <div className='mt-1 text-[12px]'>{tierLabel(outfitScore)}</div>
+          <div className='mt-1 text-[12px]'>
+            {getMatchScoreTone(outfitScore).shortLabel}
+          </div>
         </div>
       )}
 
@@ -188,7 +189,11 @@ export function MatchWheel({
 
         <div
           className='absolute z-[1] w-[150px] -translate-x-1/2 -translate-y-1/2 text-center'
-          style={{ left: '50%', top: `${(CY / H) * 100}%`, pointerEvents: 'none' }}
+          style={{
+            left: '50%',
+            top: `${(CY / H) * 100}%`,
+            pointerEvents: 'none',
+          }}
         >
           <div className='font-heading text-lg leading-tight font-bold text-black'>
             {centerTitle}
@@ -260,10 +265,11 @@ export function MatchWheel({
                 )}
                 {isMatch && score != null && (
                   <span
-                    className='font-heading absolute top-0.5 left-0.5 z-10 rounded-md px-1 text-[11px] leading-tight font-bold text-white shadow'
-                    style={{ background: tier(score) }}
+                    className='font-heading absolute top-0.5 left-0.5 z-10 rounded-md px-1 text-[10px] leading-tight font-bold text-white shadow'
+                    style={{ background: getMatchScoreTone(score).solidColor }}
+                    title={`${getMatchScoreTone(score).shortLabel}: ${matchScoreToPercentage(score)}%`}
                   >
-                    {score}
+                    {matchScoreToPercentage(score)}%
                   </span>
                 )}
               </button>
@@ -299,7 +305,6 @@ export function MatchWheel({
             </div>
           )
         })}
-
       </div>
     </div>
   )

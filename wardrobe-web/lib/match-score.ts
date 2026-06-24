@@ -1,68 +1,62 @@
 export type MatchScoreTone = {
   label: string
   shortLabel: string
+  percentage: number
   badgeClassName: string
   barClassName: string
   borderClassName: string
   dotClassName: string
+  solidColor: string
 }
 
-const MATCH_SCORE_TONES: MatchScoreTone[] = [
+export const MAX_MATCH_SCORE = 36
+export const MIN_VISIBLE_MATCH_PERCENTAGE = 60
+
+type MatchScoreStyle = Omit<MatchScoreTone, 'percentage'>
+
+const MATCH_SCORE_TONES: MatchScoreStyle[] = [
   {
-    label: 'Разваленный образ',
-    shortLabel: 'Развал',
-    badgeClassName: 'border-[#8f2b2b] bg-[#fff0ed] text-[#6e1717]',
-    barClassName: 'bg-[#d64232]',
-    borderClassName: 'border-[#d64232]',
-    dotClassName: 'bg-[#d64232]',
-  },
-  {
-    label: 'Сырой образ',
-    shortLabel: 'Сырой',
-    badgeClassName: 'border-[#a75a18] bg-[#fff4e8] text-[#743807]',
-    barClassName: 'bg-[#d9791f]',
-    borderClassName: 'border-[#d9791f]',
-    dotClassName: 'bg-[#d9791f]',
-  },
-  {
-    label: 'Базовый образ',
-    shortLabel: 'Базовый',
+    label: 'Works',
+    shortLabel: 'OK',
     badgeClassName: 'border-[#8d7420] bg-[#fff8d8] text-[#67540d]',
     barClassName: 'bg-[#c5a329]',
     borderClassName: 'border-[#c5a329]',
     dotClassName: 'bg-[#c5a329]',
+    solidColor: '#a68117',
   },
   {
-    label: 'Собранный образ',
-    shortLabel: 'Собранный',
+    label: 'Great match',
+    shortLabel: 'Great',
     badgeClassName: 'border-[#2f7650] bg-[#effaf2] text-[#174b31]',
     barClassName: 'bg-[#3d9862]',
     borderClassName: 'border-[#3d9862]',
     dotClassName: 'bg-[#3d9862]',
+    solidColor: '#2f7d4f',
   },
   {
-    label: 'Сильный образ',
-    shortLabel: 'Сильный',
-    badgeClassName: 'border-[#236f84] bg-[#edf9fb] text-[#124b5c]',
-    barClassName: 'bg-[#2b90a8]',
-    borderClassName: 'border-[#2b90a8]',
-    dotClassName: 'bg-[#2b90a8]',
-  },
-  {
-    label: 'Иконичный образ',
-    shortLabel: 'Икона',
-    badgeClassName: 'border-[#7b5520] bg-[#fff5d6] text-[#4b320b]',
-    barClassName: 'bg-[#c99220]',
-    borderClassName: 'border-[#c99220]',
-    dotClassName: 'bg-[#c99220]',
+    label: 'Perfect match',
+    shortLabel: 'Perfect',
+    badgeClassName: 'border-[#245179] bg-[#eaf4fc] text-[#133050]',
+    barClassName: 'bg-[#428bd2]',
+    borderClassName: 'border-[#428bd2]',
+    dotClassName: 'bg-[#428bd2]',
+    solidColor: '#245179',
   },
 ]
 
+export function matchScoreToPercentage(score: number): number {
+  const boundedScore = Math.max(0, Math.min(MAX_MATCH_SCORE, score))
+  return Math.round((boundedScore / MAX_MATCH_SCORE) * 100)
+}
+
 export function getMatchScoreTone(score: number): MatchScoreTone {
-  if (score <= 5) return MATCH_SCORE_TONES[0]
-  if (score <= 11) return MATCH_SCORE_TONES[1]
-  if (score <= 17) return MATCH_SCORE_TONES[2]
-  if (score <= 23) return MATCH_SCORE_TONES[3]
-  if (score <= 29) return MATCH_SCORE_TONES[4]
-  return MATCH_SCORE_TONES[5]
+  const percentage = matchScoreToPercentage(score)
+  const tone =
+    percentage >= 90
+      ? MATCH_SCORE_TONES[2]
+      : percentage >= 75
+        ? MATCH_SCORE_TONES[1]
+        : MATCH_SCORE_TONES[0]
+
+  return { ...tone, percentage }
 }
