@@ -59,9 +59,14 @@ export function MatchWheel({
   const active = activeId != null ? ordered.find(it => it.id === activeId) : null
   const matchEntries = Object.entries(scoreById)
 
+  const building = selectedIds.length > 0
+
   let centerTitle = 'hover an item'
   let centerSub = 'matches arc across the wheel'
-  if (active) {
+  if (building && matchEntries.length === 0) {
+    centerTitle = 'All set'
+    centerSub = 'create your outfit →'
+  } else if (active) {
     if (matchEntries.length) {
       const [topId, topScore] = matchEntries.reduce((a, b) =>
         b[1] > a[1] ? b : a
@@ -74,7 +79,6 @@ export function MatchWheel({
     }
   }
 
-  const building = selectedIds.length > 0
   const sourceIds = building
     ? selectedIds.filter(id => indexById[id] != null)
     : active
@@ -100,23 +104,6 @@ export function MatchWheel({
         }
       })
   })
-
-  const chips = active
-    ? matchEntries
-        .filter(([id]) => indexById[id] != null)
-        .map(([id, score]) => {
-          const bp = pos(indexById[id])
-          const chx = CX + (R + 30) * Math.cos(bp.ang)
-          const chy = CY + (R + 30) * Math.sin(bp.ang)
-          return {
-            id,
-            score,
-            color: getMatchScoreTone(score).solidColor,
-            leftPct: (chx / BOX) * 100,
-            topPct: (chy / BOX) * 100,
-          }
-        })
-    : []
 
   return (
     <div
@@ -188,8 +175,8 @@ export function MatchWheel({
               width: `${szPct}%`,
               aspectRatio: '1',
               zIndex: isSrc ? 5 : isSel ? 4 : 2,
-              opacity: lit ? 1 : 0.16,
-              filter: lit ? 'none' : 'grayscale(.4)',
+              opacity: lit ? 1 : 0.45,
+              filter: lit ? 'none' : 'grayscale(.25)',
               transition: 'opacity .3s ease, filter .3s ease',
             }}
           >
@@ -206,7 +193,11 @@ export function MatchWheel({
                   ? '1px solid var(--border)'
                   : '1px solid transparent',
                 cursor: 'pointer',
-                transform: isMatch ? 'scale(1.06)' : 'scale(1)',
+                transform: isSel
+                  ? 'scale(1.15)'
+                  : isMatch
+                    ? 'scale(1.06)'
+                    : 'scale(1)',
                 boxShadow,
                 transition: 'transform .25s ease, box-shadow .25s ease',
               }}
@@ -221,6 +212,16 @@ export function MatchWheel({
               {isSel && (
                 <span className='absolute top-1.5 right-1.5 flex size-6 items-center justify-center rounded-full bg-[#3d5a3d] text-[13px] text-white shadow'>
                   ✓
+                </span>
+              )}
+              {isMatch && scoreById[item.id] != null && (
+                <span
+                  className='font-heading absolute top-1.5 left-1.5 rounded-md px-1.5 text-[11px] leading-tight font-bold text-white shadow'
+                  style={{
+                    background: getMatchScoreTone(scoreById[item.id]).solidColor,
+                  }}
+                >
+                  {scoreById[item.id]}
                 </span>
               )}
             </button>
@@ -238,23 +239,6 @@ export function MatchWheel({
           </div>
         )
       })}
-
-      <div className='pointer-events-none absolute inset-0 z-[6]'>
-        {chips.map(chip => (
-          <div
-            key={chip.id}
-            className='font-heading absolute rounded-lg px-2 py-0.5 text-[13px] font-bold text-white shadow-md'
-            style={{
-              left: `${chip.leftPct}%`,
-              top: `${chip.topPct}%`,
-              transform: 'translate(-50%,-50%)',
-              background: chip.color,
-            }}
-          >
-            {chip.score}
-          </div>
-        ))}
-      </div>
     </div>
   )
 }

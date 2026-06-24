@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { getItemImageSrc, type Item } from '@/lib/items'
+import { CATEGORIES, getItemImageSrc, type Item } from '@/lib/items'
 import { getMatchScoreTone } from '@/lib/match-score'
 import { cn } from '@/lib/utils'
 
@@ -58,7 +58,13 @@ export function OutfitBuilder({
         ) : (
           <>
             <div className='mt-4 flex flex-col gap-3'>
-              {items.map(item => {
+              {[...items]
+                .sort(
+                  (a, b) =>
+                    CATEGORIES.indexOf(a.category) -
+                    CATEGORIES.indexOf(b.category)
+                )
+                .map(item => {
                 const img = getItemImageSrc(item)
                 return (
                   <div key={item.id} className='flex items-center gap-3'>
