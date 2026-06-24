@@ -59,7 +59,7 @@ export function MatchWheel({
   const active = activeId != null ? ordered.find(it => it.id === activeId) : null
   const matchEntries = Object.entries(scoreById)
 
-  let centerTitle = 'hover or browse ‹ ›'
+  let centerTitle = 'hover an item'
   let centerSub = 'matches arc across the wheel'
   if (active) {
     if (matchEntries.length) {
