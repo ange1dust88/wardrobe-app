@@ -10,7 +10,7 @@ import { AddItemModal } from '@/components/items/AddItemModal'
 import { EditItemModal } from '@/components/items/EditItemModal'
 import { ProfileModal } from '@/components/profile/ProfileModal'
 import { MatchWheel } from '@/components/items/MatchWheel'
-import { WardrobeGrid } from '@/components/items/WardrobeGrid'
+import { OutfitCarousel } from '@/components/items/OutfitCarousel'
 import { OutfitBuilder } from '@/components/items/OutfitBuilder'
 import { OutfitsView, type SavedLook } from '@/components/items/OutfitsView'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -248,11 +248,11 @@ function AppShell({ colorType }: { colorType: string | null }) {
                   />
                 </div>
               ) : (
-                <WardrobeGrid
+                <OutfitCarousel
                   items={items}
                   selectedIds={builder.selectedIds}
+                  map={map}
                   onSelect={builder.toggle}
-                  onEdit={setEditingItem}
                 />
               )}
             </div>
