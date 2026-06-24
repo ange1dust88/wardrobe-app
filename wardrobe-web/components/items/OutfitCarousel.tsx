@@ -16,25 +16,6 @@ type Props = {
   onSelect: (item: Item) => void
 }
 
-function pairAvg(ids: string[], map: MatchMap): number {
-  let sum = 0
-  let n = 0
-  for (let i = 0; i < ids.length; i++) {
-    for (let j = i + 1; j < ids.length; j++) {
-      const s = map[ids[i]]?.[ids[j]] ?? map[ids[j]]?.[ids[i]]
-      if (s != null) {
-        sum += s
-        n += 1
-      }
-    }
-  }
-  return n ? Math.round(sum / n) : 0
-}
-
-function harmonyWord(h: number): string {
-  return h >= 24 ? 'In harmony' : h >= 18 ? 'Balanced' : 'Some clash'
-}
-
 export function OutfitCarousel({ items, selectedIds, map, onSelect }: Props) {
   const byId = new Map(items.map(i => [i.id, i]))
   const selectedSet = new Set(selectedIds)
@@ -45,8 +26,6 @@ export function OutfitCarousel({ items, selectedIds, map, onSelect }: Props) {
   }
 
   const building = selectedIds.length > 0
-  const harmony = pairAvg(selectedIds, map)
-  const hasHarmony = selectedIds.length >= 2
 
   function fit(item: Item): number {
     let sum = 0
@@ -70,62 +49,11 @@ export function OutfitCarousel({ items, selectedIds, map, onSelect }: Props) {
     })
   )
 
-  let suggestion = 'Pick items to build your look.'
-  if (hasHarmony) {
-    let best: { label: string; name: string; d: number } | null = null
-    for (const lane of lanes) {
-      for (const cand of lane.items) {
-        if (cand.id === selByCat.get(lane.cat)) continue
-        const others = selectedIds.filter(
-          id => byId.get(id)?.category !== lane.cat
-        )
-        const h2 = pairAvg([...others, cand.id], map)
-        const d = h2 - harmony
-        if (d > 0 && (!best || d > best.d)) {
-          best = { label: lane.label, name: cand.name, d }
-        }
-      }
-    }
-    suggestion = best
-      ? `Try ${best.label} → ${best.name}  ·  +${best.d} harmony`
-      : 'This look is dialled in — nice.'
-  }
-
   return (
-    <div className='rounded-[20px] border border-border bg-card pt-6 pb-2 shadow-sm'>
+    <div className='rounded-[20px] border border-border bg-card pb-2 shadow-sm'>
       <style>{`.ds-lane::-webkit-scrollbar{height:0}`}</style>
 
-      <div className='flex items-end justify-between gap-6 px-6'>
-        <div>
-          <div className='font-heading text-[22px] font-bold tracking-tight'>
-            Today&apos;s look
-          </div>
-          <div className='mt-0.5 text-[13.5px] text-muted-foreground'>
-            {suggestion}
-          </div>
-        </div>
-        {hasHarmony && (
-          <div
-            className='flex-none rounded-[15px] px-[18px] py-3 text-white shadow-md'
-            style={{ background: getMatchScoreTone(harmony).solidColor }}
-          >
-            <div className='text-[11px] font-semibold tracking-widest uppercase opacity-85'>
-              Harmony
-            </div>
-            <div className='mt-0.5 flex items-baseline gap-1.5'>
-              <span className='font-heading text-[30px] leading-none font-extrabold'>
-                {harmony}
-              </span>
-              <span className='text-sm opacity-80'>/ 36</span>
-            </div>
-            <div className='mt-0.5 text-[12.5px] font-semibold'>
-              {harmonyWord(harmony)}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className='mt-4 flex flex-col'>
+      <div className='flex flex-col'>
         {lanes.map(lane => (
           <div key={lane.cat} className='border-t border-border py-3.5'>
             <div className='flex items-baseline justify-between px-6 pb-3'>
