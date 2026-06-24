@@ -152,14 +152,13 @@ export function OutfitCarousel({ items, selectedIds, map, onSelect }: Props) {
                   >
                     <button
                       type='button'
-                      disabled={inactive}
                       onClick={() => onSelect(item)}
                       aria-label={item.name}
                       className='relative block size-24 overflow-hidden rounded-[14px] p-0'
                       style={{
                         background: item.color.hex,
                         border: '1px solid var(--border)',
-                        cursor: inactive ? 'default' : 'pointer',
+                        cursor: 'pointer',
                         transform: selected ? 'translateY(-2px)' : 'none',
                         boxShadow: selected
                           ? '0 0 0 2px var(--card), 0 0 0 4px #3d5a3d, 0 8px 20px rgba(0,0,0,.16)'
