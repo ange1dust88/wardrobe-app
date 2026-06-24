@@ -19,7 +19,8 @@ type Props = {
 
 export function OutfitsView({ looks, onDelete, onBuild }: Props) {
   return (
-    <div className='mx-auto max-w-[1200px] px-6 pt-8 pb-[70px] sm:px-8'>
+    <div className='px-6 pt-7 pb-[70px] sm:px-8'>
+      <div className='mx-auto max-w-[1500px]'>
       <div className='mb-6 flex items-end justify-between'>
         <div>
           <h1 className='font-heading text-[28px] leading-none font-bold tracking-tight'>
@@ -99,6 +100,7 @@ export function OutfitsView({ looks, onDelete, onBuild }: Props) {
           ))}
         </div>
       )}
+      </div>
     </div>
   )
 }
