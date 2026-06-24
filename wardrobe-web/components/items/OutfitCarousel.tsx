@@ -134,23 +134,32 @@ export function OutfitCarousel({ items, selectedIds, map, onSelect }: Props) {
               </div>
               <div className='text-xs text-muted-foreground'>{lane.selName}</div>
             </div>
-            <div className='ds-lane flex gap-4 overflow-x-auto px-6 pt-1 pb-1.5'>
+            <div className='ds-lane flex gap-4 overflow-x-auto px-6 pt-3 pb-2'>
               {lane.items.map(item => {
                 const selected = selectedSet.has(item.id)
                 const img = getItemImageSrc(item)
                 const f = fit(item)
-                const showChip = !selected && building
+                const inactive = building && !selected && f === 0
+                const showChip = !selected && building && f > 0
                 return (
-                  <div key={item.id} className='w-24 flex-none'>
+                  <div
+                    key={item.id}
+                    className='w-24 flex-none'
+                    style={{
+                      opacity: inactive ? 0.4 : 1,
+                      filter: inactive ? 'grayscale(1)' : 'none',
+                    }}
+                  >
                     <button
                       type='button'
+                      disabled={inactive}
                       onClick={() => onSelect(item)}
                       aria-label={item.name}
                       className='relative block size-24 overflow-hidden rounded-[14px] p-0'
                       style={{
                         background: item.color.hex,
                         border: '1px solid var(--border)',
-                        cursor: 'pointer',
+                        cursor: inactive ? 'default' : 'pointer',
                         transform: selected ? 'translateY(-2px)' : 'none',
                         boxShadow: selected
                           ? '0 0 0 2px var(--card), 0 0 0 4px #3d5a3d, 0 8px 20px rgba(0,0,0,.16)'
