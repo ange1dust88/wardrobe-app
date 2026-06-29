@@ -59,10 +59,10 @@ export class MatchingService {
       const ctx = { vibe: anchor.vibe, userColorType };
       const scores: Record<string, number> = {};
       for (const candidate of items) {
-        if (
-          candidate.id === anchor.id ||
-          candidate.category === anchor.category
-        ) {
+        if (candidate.id === anchor.id) {
+          continue;
+        }
+        if (!allowConflicts && candidate.category === anchor.category) {
           continue;
         }
         if (

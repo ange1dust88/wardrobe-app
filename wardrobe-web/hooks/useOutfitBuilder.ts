@@ -37,7 +37,7 @@ export function useOutfitBuilder(colorType: string | null) {
       if (prev.some(s => s.id === item.id)) {
         return prev.filter(s => s.id !== item.id)
       }
-      return [...prev.filter(s => s.category !== item.category), item]
+      return [...prev, item]
     })
   }
 

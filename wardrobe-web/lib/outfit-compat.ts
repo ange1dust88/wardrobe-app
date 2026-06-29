@@ -50,7 +50,13 @@ export function findOutfitConflicts(items: Item[]): OutfitConflict[] {
     for (let j = i + 1; j < items.length; j++) {
       const a = items[i]
       const b = items[j]
-      if (categoriesConflict(a.category, b.category)) {
+      if (a.category === b.category) {
+        conflicts.push({
+          a,
+          b,
+          reason: `both ${a.category} — layering, or wear one`,
+        })
+      } else if (categoriesConflict(a.category, b.category)) {
         conflicts.push({
           a,
           b,
