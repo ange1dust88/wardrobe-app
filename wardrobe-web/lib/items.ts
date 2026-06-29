@@ -20,7 +20,6 @@ export const CATEGORIES = [
   'outerwear',
   'dress',
   'bottom',
-  'skirt',
   'shoes',
   'bag',
   'jewelry',
@@ -35,7 +34,6 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   outerwear: 'Outerwear',
   dress: 'Dress',
   bottom: 'Bottom',
-  skirt: 'Skirt',
   shoes: 'Shoes',
   bag: 'Bag',
   jewelry: 'Jewelry',
@@ -49,8 +47,7 @@ export const STACK_POLICY: Record<Category, StackPolicy> = {
   top: 'layered',
   outerwear: 'layered',
   dress: 'single',
-  bottom: 'single',
-  skirt: 'single',
+  bottom: 'layered',
   shoes: 'single',
   bag: 'unlimited',
   jewelry: 'unlimited',
@@ -58,8 +55,12 @@ export const STACK_POLICY: Record<Category, StackPolicy> = {
 }
 
 export const SUBTYPES: Partial<Record<Category, string[]>> = {
+  headwear: ['cap', 'beanie', 'hat', 'beret', 'headband'],
   top: ['t-shirt', 'longsleeve', 'shirt', 'sweater', 'hoodie', 'tank', 'polo'],
   outerwear: ['jacket', 'coat', 'blazer', 'vest', 'cardigan'],
+  dress: ['mini', 'midi', 'maxi', 'gown', 'slip'],
+  bottom: ['trousers', 'jeans', 'shorts', 'leggings', 'skirt', 'sweatpants'],
+  shoes: ['sneakers', 'boots', 'heels', 'sandals', 'flats', 'loafers'],
 }
 
 export const SEASONS = ['spring', 'summer', 'autumn', 'winter'] as const

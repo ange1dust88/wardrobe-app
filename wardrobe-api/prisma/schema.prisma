@@ -14,7 +14,6 @@ enum Category {
   shoes
   accessory
   dress
-  skirt
   outerwear
   bag
   headwear

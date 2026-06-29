@@ -39,14 +39,31 @@ const AXES = [
 const RULES = [
   {
     left: 'dress',
-    right: 'top · bottom · skirt',
+    right: 'top · bottom',
     text: 'A dress is a full look on its own.',
   },
-  { left: 'pants', right: 'skirt', text: 'Same slot — pick one.' },
   {
     left: 'summer piece',
     right: 'winter piece',
     text: 'Made for opposite weather.',
+  },
+]
+
+const STACKING = [
+  {
+    label: 'One at a time',
+    items: 'shoes · dress · headwear',
+    text: 'A single piece per slot — picking another swaps it.',
+  },
+  {
+    label: 'Layer by type',
+    items: 'top · outerwear · bottom',
+    text: 'Stack different types — a tee under a sweater, leggings under a skirt — but only one of each type.',
+  },
+  {
+    label: 'As many as you like',
+    items: 'bag · jewelry · accessory',
+    text: 'Pile on freely — no limit.',
   },
 ]
 
@@ -147,6 +164,36 @@ export default function HowItWorks() {
               <span className='text-[13.5px] text-muted-foreground'>
                 — {rule.text}
               </span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className='mx-auto max-w-[720px] px-6 pb-12 sm:px-8'>
+        <h2 className='font-heading text-[22px] font-bold tracking-tight'>
+          Slots &amp; layering
+        </h2>
+        <p className='mt-1.5 text-[14px] leading-relaxed text-muted-foreground'>
+          How many of each kind you can wear at once — kept realistic, so two
+          pairs of shoes or two pairs of jeans never happen.
+        </p>
+        <div className='mt-5 flex flex-col gap-3'>
+          {STACKING.map(rule => (
+            <div
+              key={rule.label}
+              className='rounded-2xl border border-border bg-card p-4 shadow-sm'
+            >
+              <div className='flex flex-wrap items-baseline gap-x-3 gap-y-1'>
+                <span className='font-heading text-[15px] font-bold'>
+                  {rule.label}
+                </span>
+                <span className='text-[12.5px] tracking-wide text-muted-foreground'>
+                  {rule.items}
+                </span>
+              </div>
+              <p className='mt-1.5 text-[13.5px] leading-snug text-muted-foreground'>
+                {rule.text}
+              </p>
             </div>
           ))}
         </div>

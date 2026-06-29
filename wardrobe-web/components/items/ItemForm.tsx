@@ -7,6 +7,7 @@ import {
   extractItemColor,
   PATTERNS,
   SEASONS,
+  STACK_POLICY,
   SUBTYPES,
   VIBES,
   type Category,
@@ -82,6 +83,10 @@ export function ItemForm({
         ...subtypes.map(value => ({ label: formatOption(value), value })),
       ]
     : []
+  const subtypeHint =
+    STACK_POLICY[values.category] === 'layered'
+      ? 'Lets you layer one of each subtype — a tee under a sweater.'
+      : 'Optional — just helps keep your wardrobe organized.'
 
   async function handleImageChange(file: File | null) {
     patch({ image: file })
@@ -153,9 +158,7 @@ export function ItemForm({
               ))}
             </SelectPopup>
           </Select>
-          <FieldDescription>
-            Lets you layer one of each subtype — a tee under a shirt.
-          </FieldDescription>
+          <FieldDescription>{subtypeHint}</FieldDescription>
         </Field>
       )}
 

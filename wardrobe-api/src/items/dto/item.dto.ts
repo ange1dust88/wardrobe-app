@@ -26,7 +26,6 @@ export enum Category {
   Outerwear = 'outerwear',
   Dress = 'dress',
   Bottom = 'bottom',
-  Skirt = 'skirt',
   Shoes = 'shoes',
   Bag = 'bag',
   Jewelry = 'jewelry',

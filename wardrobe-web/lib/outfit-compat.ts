@@ -2,9 +2,7 @@ import type { Item } from './items'
 
 const CATEGORY_CONFLICTS: [string, string][] = [
   ['top', 'dress'],
-  ['bottom', 'skirt'],
   ['bottom', 'dress'],
-  ['skirt', 'dress'],
 ]
 
 const CATEGORY_CONFLICT_SET = new Set(
