@@ -53,18 +53,12 @@ const RULES = [
 export default function HowItWorks() {
   return (
     <main className='min-h-svh bg-background'>
-      <header className='flex items-center justify-between border-b border-border px-6 py-4 sm:px-8'>
+      <header className='flex items-center border-b border-border px-6 py-4 sm:px-8'>
         <Link href='/' className='flex items-center gap-2.5'>
           <span className='size-[11px] rounded-full' style={{ background: ACCENT }} />
           <span className='font-heading text-[20px] font-bold tracking-tight'>
             dress
           </span>
-        </Link>
-        <Link
-          href='/'
-          className='text-[13px] font-medium text-muted-foreground hover:text-foreground'
-        >
-          ← Back
         </Link>
       </header>
 
