@@ -10,6 +10,7 @@ import { createOutfit, suggestMatches, type Item } from '@/lib/items'
 export function useOutfitBuilder(colorType: string | null) {
   const queryClient = useQueryClient()
   const [selected, setSelected] = useState<Item[]>([])
+  const [layering, setLayering] = useState(false)
 
   const selectedIds = selected.map(item => item.id)
   const sortedKey = [...selectedIds].sort()
@@ -37,7 +38,8 @@ export function useOutfitBuilder(colorType: string | null) {
       if (prev.some(s => s.id === item.id)) {
         return prev.filter(s => s.id !== item.id)
       }
-      return [...prev, item]
+      if (layering) return [...prev, item]
+      return [...prev.filter(s => s.category !== item.category), item]
     })
   }
 
@@ -60,6 +62,8 @@ export function useOutfitBuilder(colorType: string | null) {
   return {
     selected,
     selectedIds,
+    layering,
+    setLayering,
     toggle,
     remove,
     clear,

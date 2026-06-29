@@ -262,6 +262,8 @@ function AppShell({ colorType }: { colorType: string | null }) {
               <OutfitBuilder
                 items={builder.selected}
                 harmony={harmony}
+                layering={builder.layering}
+                onLayering={builder.setLayering}
                 allowConflicts={allowConflicts}
                 onAllowConflicts={() => setAllowConflicts(true)}
                 onRemove={builder.remove}

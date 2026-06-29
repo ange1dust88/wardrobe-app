@@ -5,11 +5,14 @@ import { useState } from 'react'
 import { CATEGORIES, getItemImageSrc, type Item } from '@/lib/items'
 import { getMatchScoreTone } from '@/lib/match-score'
 import { findOutfitConflicts } from '@/lib/outfit-compat'
+import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 
 type Props = {
   items: Item[]
   harmony: number | null
+  layering?: boolean
+  onLayering?: (value: boolean) => void
   allowConflicts?: boolean
   onAllowConflicts?: () => void
   onRemove: (id: string) => void
@@ -22,6 +25,8 @@ type Props = {
 export function OutfitBuilder({
   items,
   harmony,
+  layering,
+  onLayering,
   allowConflicts,
   onAllowConflicts,
   onRemove,
@@ -160,6 +165,13 @@ export function OutfitBuilder({
             </button>
           </>
         )}
+
+        <label className='mt-4 flex cursor-pointer items-center justify-between gap-3'>
+          <span className='text-[13px] font-medium'>
+            Layer multiple per type
+          </span>
+          <Switch checked={!!layering} onCheckedChange={onLayering} />
+        </label>
 
         <div className='my-5 h-px bg-border' />
 
