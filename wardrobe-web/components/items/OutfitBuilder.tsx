@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 import { CATEGORIES, getItemImageSrc, type Item } from '@/lib/items'
 import { getMatchScoreTone } from '@/lib/match-score'
@@ -75,15 +76,23 @@ export function OutfitBuilder({
                 </li>
               ))}
             </ul>
-            {onAllowConflicts && (
-              <button
-                type='button'
-                onClick={onAllowConflicts}
-                className='mt-2.5 text-[12.5px] font-semibold text-foreground underline'
+            <div className='mt-2.5 flex items-center gap-4'>
+              {onAllowConflicts && (
+                <button
+                  type='button'
+                  onClick={onAllowConflicts}
+                  className='text-[12.5px] font-semibold text-foreground underline'
+                >
+                  Wear it anyway
+                </button>
+              )}
+              <Link
+                href='/how-it-works'
+                className='text-[12.5px] text-muted-foreground underline'
               >
-                Wear it anyway
-              </button>
-            )}
+                Why?
+              </Link>
+            </div>
           </div>
         )}
 
@@ -179,6 +188,13 @@ export function OutfitBuilder({
         >
           {saving ? 'Saving…' : 'Save outfit'}
         </button>
+
+        <Link
+          href='/how-it-works'
+          className='mt-3 block text-center text-[12px] text-muted-foreground hover:text-foreground'
+        >
+          How matching works
+        </Link>
       </div>
     </aside>
   )
