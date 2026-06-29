@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { CATEGORIES, getItemImageSrc, type Item } from '@/lib/items'
 import { getMatchScoreTone } from '@/lib/match-score'
+import { findOutfitConflicts } from '@/lib/outfit-compat'
 import { cn } from '@/lib/utils'
 
 type Props = {
@@ -27,6 +28,7 @@ export function OutfitBuilder({
   const [name, setName] = useState('')
   const hasOutfit = items.length > 0
   const canSave = hasOutfit && name.trim().length > 0
+  const conflicts = findOutfitConflicts(items)
 
   function handleSave() {
     if (!canSave) return
@@ -50,6 +52,27 @@ export function OutfitBuilder({
             </span>
           )}
         </div>
+
+        {conflicts.length > 0 && (
+          <div className='mt-3 rounded-xl border border-warning/40 bg-warning/8 p-3'>
+            <div className='text-[12px] font-semibold tracking-wide text-warning uppercase'>
+              Doesn&apos;t go together
+            </div>
+            <ul className='mt-1.5 flex flex-col gap-1.5'>
+              {conflicts.map(c => (
+                <li
+                  key={`${c.a.id}-${c.b.id}`}
+                  className='text-[12.5px] leading-snug text-foreground'
+                >
+                  <span className='font-medium'>{c.a.name}</span>
+                  <span className='text-muted-foreground'> × </span>
+                  <span className='font-medium'>{c.b.name}</span>
+                  <span className='text-muted-foreground'> — {c.reason}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {!hasOutfit ? (
           <p className='mt-3 text-sm leading-relaxed text-muted-foreground'>
