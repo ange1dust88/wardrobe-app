@@ -222,11 +222,13 @@ export type MatchMap = Record<string, Record<string, number>>
 
 export async function fetchMatchMap(
   colorType?: string,
-  allowConflicts?: boolean
+  allowConflicts?: boolean,
+  allowSameCategory?: boolean
 ): Promise<MatchMap> {
   const params = new URLSearchParams()
   if (colorType) params.set('colorType', colorType)
   if (allowConflicts) params.set('allowConflicts', 'true')
+  if (allowSameCategory) params.set('allowSameCategory', 'true')
   const query = params.toString() ? `?${params.toString()}` : ''
   const res = await apiFetch(`/items/matches/map${query}`)
   if (!res.ok) throw new Error(`GET /items/matches/map → ${res.status}`)

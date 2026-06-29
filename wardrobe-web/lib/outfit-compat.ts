@@ -44,13 +44,17 @@ export type OutfitConflict = {
   reason: string
 }
 
-export function findOutfitConflicts(items: Item[]): OutfitConflict[] {
+export function findOutfitConflicts(
+  items: Item[],
+  layering = false
+): OutfitConflict[] {
   const conflicts: OutfitConflict[] = []
   for (let i = 0; i < items.length; i++) {
     for (let j = i + 1; j < items.length; j++) {
       const a = items[i]
       const b = items[j]
       if (a.category === b.category) {
+        if (layering) continue
         conflicts.push({
           a,
           b,

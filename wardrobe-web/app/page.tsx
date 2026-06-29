@@ -105,7 +105,7 @@ function AppShell({ colorType }: { colorType: string | null }) {
     useItems()
   const builder = useOutfitBuilder(colorType)
   const { outfitsQuery, deleteMutation: deleteOutfitMutation } = useOutfits()
-  const matchMap = useMatchMap(colorType, allowConflicts)
+  const matchMap = useMatchMap(colorType, allowConflicts, builder.layering)
 
   const items = itemsQuery.data ?? []
   const map = matchMap.data ?? {}

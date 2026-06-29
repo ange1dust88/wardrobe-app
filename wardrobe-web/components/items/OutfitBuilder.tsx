@@ -38,7 +38,12 @@ export function OutfitBuilder({
   const [name, setName] = useState('')
   const hasOutfit = items.length > 0
   const canSave = hasOutfit && name.trim().length > 0
-  const conflicts = findOutfitConflicts(items)
+  const conflicts = findOutfitConflicts(items, layering)
+
+  const counts = new Map<string, number>()
+  for (const it of items) counts.set(it.category, (counts.get(it.category) ?? 0) + 1)
+  const hasDuplicates = [...counts.values()].some(c => c > 1)
+  const lockLayering = !!layering && hasDuplicates
 
   function handleSave() {
     if (!canSave) return
@@ -166,12 +171,23 @@ export function OutfitBuilder({
           </>
         )}
 
-        <label className='mt-4 flex cursor-pointer items-center justify-between gap-3'>
-          <span className='text-[13px] font-medium'>
-            Layer multiple per type
-          </span>
-          <Switch checked={!!layering} onCheckedChange={onLayering} />
-        </label>
+        <div className='mt-4'>
+          <label className='flex cursor-pointer items-center justify-between gap-3'>
+            <span className='text-[13px] font-medium'>
+              Layer multiple per type
+            </span>
+            <Switch
+              checked={!!layering}
+              onCheckedChange={onLayering}
+              disabled={lockLayering}
+            />
+          </label>
+          {lockLayering && (
+            <p className='mt-1.5 text-[12px] text-muted-foreground'>
+              Remove duplicate pieces to turn this off.
+            </p>
+          )}
+        </div>
 
         <div className='my-5 h-px bg-border' />
 

@@ -44,8 +44,9 @@ export class MatchingService {
     userId: string,
     userColorType?: SeasonPalette,
     allowConflicts = false,
+    allowSameCategory = false,
   ): Promise<MatchMap> {
-    const useCache = !userColorType && !allowConflicts;
+    const useCache = !userColorType && !allowConflicts && !allowSameCategory;
     if (useCache) {
       const cached = this.matchMapCache.get(userId);
       if (cached) {
@@ -62,7 +63,11 @@ export class MatchingService {
         if (candidate.id === anchor.id) {
           continue;
         }
-        if (!allowConflicts && candidate.category === anchor.category) {
+        if (
+          !allowConflicts &&
+          !allowSameCategory &&
+          candidate.category === anchor.category
+        ) {
           continue;
         }
         if (
