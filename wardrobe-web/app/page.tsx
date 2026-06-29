@@ -99,12 +99,13 @@ function AppShell({ colorType }: { colorType: string | null }) {
   const [editingItem, setEditingItem] = useState<Item | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [allowConflicts, setAllowConflicts] = useState(false)
 
   const { itemsQuery, createMutation, updateMutation, deleteMutation } =
     useItems()
   const builder = useOutfitBuilder(colorType)
   const { outfitsQuery, deleteMutation: deleteOutfitMutation } = useOutfits()
-  const matchMap = useMatchMap(colorType)
+  const matchMap = useMatchMap(colorType, allowConflicts)
 
   const items = itemsQuery.data ?? []
   const map = matchMap.data ?? {}
@@ -261,8 +262,13 @@ function AppShell({ colorType }: { colorType: string | null }) {
               <OutfitBuilder
                 items={builder.selected}
                 harmony={harmony}
+                allowConflicts={allowConflicts}
+                onAllowConflicts={() => setAllowConflicts(true)}
                 onRemove={builder.remove}
-                onClear={builder.clear}
+                onClear={() => {
+                  setAllowConflicts(false)
+                  builder.clear()
+                }}
                 onSave={name => builder.saveMutation.mutate(name)}
                 saving={builder.saveMutation.isPending}
                 errorMessage={

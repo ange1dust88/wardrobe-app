@@ -23,6 +23,7 @@ export class MatchingController {
   getMatchMap(
     @CurrentUser() user: AuthUser,
     @Query('colorType') colorType?: string,
+    @Query('allowConflicts') allowConflicts?: string,
   ) {
     const seasons: string[] = [
       SeasonPalette.Spring,
@@ -33,7 +34,11 @@ export class MatchingController {
     const userColorType = seasons.includes(colorType ?? '')
       ? (colorType as SeasonPalette)
       : undefined;
-    return this.matchingService.getMatchMap(user.id, userColorType);
+    return this.matchingService.getMatchMap(
+      user.id,
+      userColorType,
+      allowConflicts === 'true',
+    );
   }
 
   @Get(':anchorId/matches')

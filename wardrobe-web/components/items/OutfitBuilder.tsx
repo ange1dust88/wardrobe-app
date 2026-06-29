@@ -9,6 +9,8 @@ import { cn } from '@/lib/utils'
 type Props = {
   items: Item[]
   harmony: number | null
+  allowConflicts?: boolean
+  onAllowConflicts?: () => void
   onRemove: (id: string) => void
   onClear: () => void
   onSave: (name: string) => void
@@ -19,6 +21,8 @@ type Props = {
 export function OutfitBuilder({
   items,
   harmony,
+  allowConflicts,
+  onAllowConflicts,
   onRemove,
   onClear,
   onSave,
@@ -53,7 +57,7 @@ export function OutfitBuilder({
           )}
         </div>
 
-        {conflicts.length > 0 && (
+        {conflicts.length > 0 && !allowConflicts && (
           <div className='mt-3 rounded-xl border border-warning/40 bg-warning/8 p-3'>
             <div className='text-[12px] font-semibold tracking-wide text-warning uppercase'>
               Doesn&apos;t go together
@@ -71,6 +75,21 @@ export function OutfitBuilder({
                 </li>
               ))}
             </ul>
+            {onAllowConflicts && (
+              <button
+                type='button'
+                onClick={onAllowConflicts}
+                className='mt-2.5 text-[12.5px] font-semibold text-foreground underline'
+              >
+                Wear it anyway
+              </button>
+            )}
+          </div>
+        )}
+
+        {conflicts.length > 0 && allowConflicts && (
+          <div className='mt-3 text-[12.5px] text-muted-foreground'>
+            Scoring this look as-is — bold mix.
           </div>
         )}
 

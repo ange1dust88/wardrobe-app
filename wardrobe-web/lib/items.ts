@@ -220,8 +220,14 @@ export async function fetchMatches(anchorId: string): Promise<MatchResult> {
 
 export type MatchMap = Record<string, Record<string, number>>
 
-export async function fetchMatchMap(colorType?: string): Promise<MatchMap> {
-  const query = colorType ? `?colorType=${colorType}` : ''
+export async function fetchMatchMap(
+  colorType?: string,
+  allowConflicts?: boolean
+): Promise<MatchMap> {
+  const params = new URLSearchParams()
+  if (colorType) params.set('colorType', colorType)
+  if (allowConflicts) params.set('allowConflicts', 'true')
+  const query = params.toString() ? `?${params.toString()}` : ''
   const res = await apiFetch(`/items/matches/map${query}`)
   if (!res.ok) throw new Error(`GET /items/matches/map → ${res.status}`)
   return res.json()

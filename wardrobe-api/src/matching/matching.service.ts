@@ -43,8 +43,9 @@ export class MatchingService {
   async getMatchMap(
     userId: string,
     userColorType?: SeasonPalette,
+    allowConflicts = false,
   ): Promise<MatchMap> {
-    const useCache = !userColorType;
+    const useCache = !userColorType && !allowConflicts;
     if (useCache) {
       const cached = this.matchMapCache.get(userId);
       if (cached) {
@@ -60,9 +61,14 @@ export class MatchingService {
       for (const candidate of items) {
         if (
           candidate.id === anchor.id ||
-          candidate.category === anchor.category ||
-          categoriesConflict(anchor.category, candidate.category) ||
-          seasonsConflict(anchor.seasonWear, candidate.seasonWear)
+          candidate.category === anchor.category
+        ) {
+          continue;
+        }
+        if (
+          !allowConflicts &&
+          (categoriesConflict(anchor.category, candidate.category) ||
+            seasonsConflict(anchor.seasonWear, candidate.seasonWear))
         ) {
           continue;
         }
