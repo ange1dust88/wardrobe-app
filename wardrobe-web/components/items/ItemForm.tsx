@@ -7,6 +7,7 @@ import {
   extractItemColor,
   PATTERNS,
   SEASONS,
+  SUBTYPES,
   VIBES,
   type Category,
   type Pattern,
@@ -55,6 +56,8 @@ const patternItems = PATTERNS.map(value => ({
   value,
 }))
 
+const ANY_SUBTYPE = '__any'
+
 function formatOption(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1)
 }
@@ -72,6 +75,13 @@ export function ItemForm({
   const { values, patch, isValid } = form
   const [extractingColor, setExtractingColor] = useState(false)
   const vibeConflicts = findVibeConflicts(values.vibe)
+  const subtypes = SUBTYPES[values.category]
+  const subtypeItems = subtypes
+    ? [
+        { label: 'Any', value: ANY_SUBTYPE },
+        ...subtypes.map(value => ({ label: formatOption(value), value })),
+      ]
+    : []
 
   async function handleImageChange(file: File | null) {
     patch({ image: file })
@@ -105,7 +115,9 @@ export function ItemForm({
         <Select
           items={categoryItems}
           value={values.category}
-          onValueChange={value => patch({ category: value as Category })}
+          onValueChange={value =>
+            patch({ category: value as Category, subType: null })
+          }
         >
           <SelectTrigger>
             <SelectValue />
@@ -119,7 +131,34 @@ export function ItemForm({
           </SelectPopup>
         </Select>
       </Field>
-    
+
+      {subtypes && (
+        <Field>
+          <FieldLabel>Subtype</FieldLabel>
+          <Select
+            items={subtypeItems}
+            value={values.subType ?? ANY_SUBTYPE}
+            onValueChange={value =>
+              patch({ subType: value === ANY_SUBTYPE ? null : (value as string) })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectPopup alignItemWithTrigger={false}>
+              {subtypeItems.map(item => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectPopup>
+          </Select>
+          <FieldDescription>
+            Lets you layer one of each subtype — a tee under a shirt.
+          </FieldDescription>
+        </Field>
+      )}
+
       <Field>
         <FieldLabel>Pattern</FieldLabel>
         <Select

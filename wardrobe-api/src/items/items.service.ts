@@ -88,6 +88,7 @@ export class ItemsService {
         userId,
         name: dto.name,
         category: dto.category,
+        subType: dto.subType ?? null,
         pattern: dto.pattern,
         vibe: dto.vibe,
         seasonWear: dto.seasonWear,
@@ -116,6 +117,7 @@ export class ItemsService {
     const data: Record<string, unknown> = {};
     if (dto.name !== undefined) data.name = dto.name;
     if (dto.category !== undefined) data.category = dto.category;
+    if (dto.subType !== undefined) data.subType = dto.subType || null;
     if (dto.pattern !== undefined) data.pattern = dto.pattern;
     if (dto.vibe !== undefined) data.vibe = dto.vibe;
     if (dto.seasonWear !== undefined) data.seasonWear = dto.seasonWear;
@@ -217,6 +219,7 @@ export class ItemsService {
       createdAt: row.createdAt.toISOString(),
       name: row.name,
       category: row.category as Category,
+      subType: row.subType,
       imageUrl: row.imageUrl,
       color: {
         hex: row.hex,

@@ -37,6 +37,7 @@ export function EditItemModal({
   const form = useItemForm({
     name: item.name,
     category: item.category,
+    subType: item.subType ?? null,
     hex: item.color.hex,
     pattern: item.pattern as Pattern,
     vibe: item.vibe as Vibe[],
@@ -46,10 +47,11 @@ export function EditItemModal({
 
   function submit() {
     if (!form.isValid) return
-    const { name, category, hex, pattern, vibe, seasonWear, image } = form.values
+    const { name, category, subType, hex, pattern, vibe, seasonWear, image } =
+      form.values
     onSubmit(
       item.id,
-      { name, category, hex, pattern, vibe, seasonWear, image },
+      { name, category, subType, hex, pattern, vibe, seasonWear, image },
       { onSuccess: onClose }
     )
   }

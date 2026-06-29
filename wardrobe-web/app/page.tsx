@@ -105,7 +105,7 @@ function AppShell({ colorType }: { colorType: string | null }) {
     useItems()
   const builder = useOutfitBuilder(colorType)
   const { outfitsQuery, deleteMutation: deleteOutfitMutation } = useOutfits()
-  const matchMap = useMatchMap(colorType, allowConflicts, builder.layering)
+  const matchMap = useMatchMap(colorType, allowConflicts)
 
   const items = itemsQuery.data ?? []
   const map = matchMap.data ?? {}
@@ -262,8 +262,6 @@ function AppShell({ colorType }: { colorType: string | null }) {
               <OutfitBuilder
                 items={builder.selected}
                 harmony={harmony}
-                layering={builder.layering}
-                onLayering={builder.setLayering}
                 allowConflicts={allowConflicts}
                 onAllowConflicts={() => setAllowConflicts(true)}
                 onRemove={builder.remove}

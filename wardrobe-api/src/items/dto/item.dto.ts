@@ -102,6 +102,10 @@ export class CreateItemDto {
   category: Category;
 
   @IsOptional()
+  @IsString()
+  subType?: string;
+
+  @IsOptional()
   @IsHexColor()
   hex?: string;
 
@@ -137,6 +141,7 @@ export interface Item {
   createdAt: string;
   name: string;
   category: Category;
+  subType: string | null;
   color: Color;
   wardrobeRole: WardrobeRole;
   imageUrl: string | null;

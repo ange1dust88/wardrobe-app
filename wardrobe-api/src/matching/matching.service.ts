@@ -4,7 +4,7 @@ import { ItemsService } from '../items/items.service';
 import { MatchQueryDto } from './dto/match-query.dto';
 import { SuggestMatchesDto } from './dto/suggest-matches.dto';
 import { MatchMap, MatchMapCacheService } from './match-map-cache.service';
-import { categoriesConflict } from './category-compat';
+import { categoriesConflict, isLayeredCategory } from './category-compat';
 import { seasonsConflict } from './season-compat';
 import {
   computeTotalScore,
@@ -44,9 +44,8 @@ export class MatchingService {
     userId: string,
     userColorType?: SeasonPalette,
     allowConflicts = false,
-    allowSameCategory = false,
   ): Promise<MatchMap> {
-    const useCache = !userColorType && !allowConflicts && !allowSameCategory;
+    const useCache = !userColorType && !allowConflicts;
     if (useCache) {
       const cached = this.matchMapCache.get(userId);
       if (cached) {
@@ -63,14 +62,11 @@ export class MatchingService {
         if (candidate.id === anchor.id) {
           continue;
         }
-        if (
-          !allowConflicts &&
-          !allowSameCategory &&
-          candidate.category === anchor.category
-        ) {
-          continue;
-        }
-        if (
+        if (candidate.category === anchor.category) {
+          if (!allowConflicts && !isLayeredCategory(anchor.category)) {
+            continue;
+          }
+        } else if (
           !allowConflicts &&
           (categoriesConflict(anchor.category, candidate.category) ||
             seasonsConflict(anchor.seasonWear, candidate.seasonWear))

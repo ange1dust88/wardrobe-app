@@ -5,14 +5,11 @@ import { useState } from 'react'
 import { CATEGORIES, getItemImageSrc, type Item } from '@/lib/items'
 import { getMatchScoreTone } from '@/lib/match-score'
 import { findOutfitConflicts } from '@/lib/outfit-compat'
-import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 
 type Props = {
   items: Item[]
   harmony: number | null
-  layering?: boolean
-  onLayering?: (value: boolean) => void
   allowConflicts?: boolean
   onAllowConflicts?: () => void
   onRemove: (id: string) => void
@@ -25,8 +22,6 @@ type Props = {
 export function OutfitBuilder({
   items,
   harmony,
-  layering,
-  onLayering,
   allowConflicts,
   onAllowConflicts,
   onRemove,
@@ -38,12 +33,7 @@ export function OutfitBuilder({
   const [name, setName] = useState('')
   const hasOutfit = items.length > 0
   const canSave = hasOutfit && name.trim().length > 0
-  const conflicts = findOutfitConflicts(items, layering)
-
-  const counts = new Map<string, number>()
-  for (const it of items) counts.set(it.category, (counts.get(it.category) ?? 0) + 1)
-  const hasDuplicates = [...counts.values()].some(c => c > 1)
-  const lockLayering = !!layering && hasDuplicates
+  const conflicts = findOutfitConflicts(items)
 
   function handleSave() {
     if (!canSave) return
@@ -170,24 +160,6 @@ export function OutfitBuilder({
             </button>
           </>
         )}
-
-        <div className='mt-4'>
-          <label className='flex cursor-pointer items-center justify-between gap-3'>
-            <span className='text-[13px] font-medium'>
-              Layer multiple per type
-            </span>
-            <Switch
-              checked={!!layering}
-              onCheckedChange={onLayering}
-              disabled={lockLayering}
-            />
-          </label>
-          {lockLayering && (
-            <p className='mt-1.5 text-[12px] text-muted-foreground'>
-              Remove duplicate pieces to turn this off.
-            </p>
-          )}
-        </div>
 
         <div className='my-5 h-px bg-border' />
 

@@ -42,6 +42,26 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   accessory: 'Accessory',
 }
 
+export type StackPolicy = 'single' | 'layered' | 'unlimited'
+
+export const STACK_POLICY: Record<Category, StackPolicy> = {
+  headwear: 'single',
+  top: 'layered',
+  outerwear: 'layered',
+  dress: 'single',
+  bottom: 'single',
+  skirt: 'single',
+  shoes: 'single',
+  bag: 'unlimited',
+  jewelry: 'unlimited',
+  accessory: 'unlimited',
+}
+
+export const SUBTYPES: Partial<Record<Category, string[]>> = {
+  top: ['t-shirt', 'longsleeve', 'shirt', 'sweater', 'hoodie', 'tank', 'polo'],
+  outerwear: ['jacket', 'coat', 'blazer', 'vest', 'cardigan'],
+}
+
 export const SEASONS = ['spring', 'summer', 'autumn', 'winter'] as const
 
 export type Season = (typeof SEASONS)[number]
@@ -85,6 +105,7 @@ export type Item = {
   createdAt: string
   name: string
   category: Category
+  subType?: string | null
   color: Color
   wardrobeRole: string
   imageUrl?: string
@@ -97,6 +118,7 @@ export type Item = {
 export type CreateItem = {
   name: string
   category: Category
+  subType?: string | null
   hex: string
   pattern: Pattern
   vibe: Vibe[]
@@ -114,6 +136,7 @@ export async function createItem(body: CreateItem): Promise<Item> {
   const formData = new FormData()
   formData.append('name', body.name)
   formData.append('category', body.category)
+  if (body.subType) formData.append('subType', body.subType)
   formData.append('hex', body.hex)
   formData.append('pattern', body.pattern)
   body.vibe.forEach(vibe => formData.append('vibe', vibe))
@@ -139,6 +162,7 @@ export async function createItem(body: CreateItem): Promise<Item> {
 export type UpdateItem = {
   name: string
   category: Category
+  subType?: string | null
   hex: string
   pattern: Pattern
   vibe: Vibe[]
@@ -153,6 +177,7 @@ export async function updateItem(
   const formData = new FormData()
   formData.append('name', body.name)
   formData.append('category', body.category)
+  if (body.subType) formData.append('subType', body.subType)
   formData.append('hex', body.hex)
   formData.append('pattern', body.pattern)
   body.vibe.forEach(vibe => formData.append('vibe', vibe))
@@ -222,13 +247,11 @@ export type MatchMap = Record<string, Record<string, number>>
 
 export async function fetchMatchMap(
   colorType?: string,
-  allowConflicts?: boolean,
-  allowSameCategory?: boolean
+  allowConflicts?: boolean
 ): Promise<MatchMap> {
   const params = new URLSearchParams()
   if (colorType) params.set('colorType', colorType)
   if (allowConflicts) params.set('allowConflicts', 'true')
-  if (allowSameCategory) params.set('allowSameCategory', 'true')
   const query = params.toString() ? `?${params.toString()}` : ''
   const res = await apiFetch(`/items/matches/map${query}`)
   if (!res.ok) throw new Error(`GET /items/matches/map → ${res.status}`)

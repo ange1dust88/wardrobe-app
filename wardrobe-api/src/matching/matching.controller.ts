@@ -24,7 +24,6 @@ export class MatchingController {
     @CurrentUser() user: AuthUser,
     @Query('colorType') colorType?: string,
     @Query('allowConflicts') allowConflicts?: string,
-    @Query('allowSameCategory') allowSameCategory?: string,
   ) {
     const seasons: string[] = [
       SeasonPalette.Spring,
@@ -39,7 +38,6 @@ export class MatchingController {
       user.id,
       userColorType,
       allowConflicts === 'true',
-      allowSameCategory === 'true',
     );
   }
 

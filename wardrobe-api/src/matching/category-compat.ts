@@ -15,3 +15,12 @@ export function categoriesConflict(a: Category, b: Category): boolean {
   if (a === b) return false;
   return CONFLICT_SET.has([a, b].sort().join('|'));
 }
+
+const LAYERED_CATEGORIES = new Set<Category>([
+  Category.Top,
+  Category.Outerwear,
+]);
+
+export function isLayeredCategory(category: Category): boolean {
+  return LAYERED_CATEGORIES.has(category);
+}
