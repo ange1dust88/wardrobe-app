@@ -2,14 +2,7 @@
 
 import { useItemForm } from '@/hooks/useItemForm'
 import type { CreateItem } from '@/lib/items'
-import {
-  Dialog,
-  DialogHeader,
-  DialogPanel,
-  DialogPopup,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { ItemForm } from './ItemForm'
+import { ItemFormDialog } from './ItemFormDialog'
 
 type Props = {
   open: boolean
@@ -39,25 +32,16 @@ export function AddItemModal({
   }
 
   return (
-    <Dialog
+    <ItemFormDialog
       open={open}
-      onOpenChange={nextOpen => {
-        if (!nextOpen) onClose()
-      }}
-    >
-      <DialogPopup>
-        <DialogHeader>
-          <DialogTitle>New item</DialogTitle>
-        </DialogHeader>
-        <DialogPanel>
-          <ItemForm
-            form={form}
-            onSubmit={submit}
-            pending={pending}
-            errorMessage={errorMessage}
-          />
-        </DialogPanel>
-      </DialogPopup>
-    </Dialog>
+      onClose={onClose}
+      title='New item'
+      subtitle='Catalog a piece — dress learns how it pairs.'
+      submitLabel='Add item'
+      form={form}
+      onSubmit={submit}
+      pending={pending}
+      errorMessage={errorMessage}
+    />
   )
 }

@@ -2,14 +2,7 @@
 
 import { useItemForm } from '@/hooks/useItemForm'
 import type { Item, Pattern, UpdateItem, Vibe } from '@/lib/items'
-import {
-  Dialog,
-  DialogHeader,
-  DialogPanel,
-  DialogPopup,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { ItemForm } from './ItemForm'
+import { ItemFormDialog } from './ItemFormDialog'
 
 type Props = {
   item: Item
@@ -61,29 +54,18 @@ export function EditItemModal({
   }
 
   return (
-    <Dialog
+    <ItemFormDialog
       open
-      onOpenChange={nextOpen => {
-        if (!nextOpen) onClose()
-      }}
-    >
-      <DialogPopup>
-        <DialogHeader>
-          <DialogTitle>Edit item</DialogTitle>
-        </DialogHeader>
-        <DialogPanel>
-          <ItemForm
-            form={form}
-            onSubmit={submit}
-            pending={pending}
-            errorMessage={errorMessage}
-            submitLabel='Save changes'
-            photoLabel='Replace photo'
-            onDelete={handleDelete}
-            deleting={deleting}
-          />
-        </DialogPanel>
-      </DialogPopup>
-    </Dialog>
+      onClose={onClose}
+      title='Edit item'
+      subtitle='Update the details — matches refresh instantly.'
+      submitLabel='Save changes'
+      form={form}
+      onSubmit={submit}
+      pending={pending}
+      errorMessage={errorMessage}
+      onDelete={handleDelete}
+      deleting={deleting}
+    />
   )
 }
