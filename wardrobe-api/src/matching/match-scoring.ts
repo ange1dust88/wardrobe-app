@@ -210,6 +210,15 @@ export function computeSeasonScore(anchor: Item, candidate: Item): number {
   return 0;
 }
 
+function colorTypeFit(item: Item, userColorType: SeasonPalette): number {
+  const palette = item.seasonPaletteCompatibility;
+  if (palette.includes(userColorType)) return COLORTYPE_MATCH_BONUS;
+  if (palette.includes(SeasonPalette.Universal)) {
+    return COLORTYPE_UNIVERSAL_BONUS;
+  }
+  return COLORTYPE_MISMATCH_PENALTY;
+}
+
 export function computePaletteScore(
   anchor: Item,
   candidate: Item,
@@ -217,11 +226,11 @@ export function computePaletteScore(
 ): number {
   const palette = candidate.seasonPaletteCompatibility;
   if (userColorType) {
-    if (palette.includes(userColorType)) return COLORTYPE_MATCH_BONUS;
-    if (palette.includes(SeasonPalette.Universal)) {
-      return COLORTYPE_UNIVERSAL_BONUS;
-    }
-    return COLORTYPE_MISMATCH_PENALTY;
+    return (
+      (colorTypeFit(anchor, userColorType) +
+        colorTypeFit(candidate, userColorType)) /
+      2
+    );
   }
 
   if (hasPaletteOverlap(anchor, candidate)) return 4;
