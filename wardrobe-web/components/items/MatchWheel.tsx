@@ -176,7 +176,7 @@ export function MatchWheel({
         return (
           <div
             key={item.id}
-            className='group absolute'
+            className='absolute'
             style={{
               left: `${((p.x - sz / 2) / BOX) * 100}%`,
               top: `${((p.y - sz / 2) / BOX) * 100}%`,
@@ -190,7 +190,10 @@ export function MatchWheel({
           >
             <button
               type='button'
-              onMouseEnter={() => onHover(item.id)}
+              onMouseEnter={() => {
+                onHover(item.id)
+                setOpenDetailId(prev => (prev && prev !== item.id ? null : prev))
+              }}
               onClick={() => {
                 onSelect(item)
                 setOpenDetailId(null)
@@ -248,20 +251,20 @@ export function MatchWheel({
               </button>
             )}
 
-            {isMatch && breakdownById[item.id] && (
-              <button
-                type='button'
-                onClick={() =>
-                  setOpenDetailId(openDetailId === item.id ? null : item.id)
-                }
-                aria-label='Why this score'
-                className={`absolute -right-1 -bottom-1 z-10 size-5 items-center justify-center rounded-full border border-border bg-background text-[11px] font-bold text-muted-foreground shadow-sm ${
-                  openDetailId === item.id ? 'flex' : 'hidden group-hover:flex'
-                }`}
-              >
-                ?
-              </button>
-            )}
+            {isMatch &&
+              breakdownById[item.id] &&
+              (isHover || openDetailId === item.id) && (
+                <button
+                  type='button'
+                  onClick={() =>
+                    setOpenDetailId(openDetailId === item.id ? null : item.id)
+                  }
+                  aria-label='Why this score'
+                  className='absolute -right-1 -bottom-1 z-10 flex size-5 items-center justify-center rounded-full border border-border bg-background text-[11px] font-bold text-muted-foreground shadow-sm'
+                >
+                  ?
+                </button>
+              )}
 
             {openDetailId === item.id && breakdownById[item.id] && (
               <div className='absolute top-full left-1/2 z-50 -translate-x-1/2 pt-2'>
