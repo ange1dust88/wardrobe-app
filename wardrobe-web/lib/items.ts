@@ -104,6 +104,61 @@ export const FORMALITY_LABELS: Record<Formality, string> = {
   formal: 'Formal',
 }
 
+const SUBTYPE_FORMALITY: Record<string, Formality> = {
+  't-shirt': 'casual',
+  tank: 'casual',
+  hoodie: 'loungewear',
+  longsleeve: 'casual',
+  sweater: 'casual',
+  shirt: 'smart_casual',
+  polo: 'smart_casual',
+  jacket: 'casual',
+  vest: 'casual',
+  cardigan: 'casual',
+  blazer: 'smart_casual',
+  coat: 'smart_casual',
+  shorts: 'casual',
+  leggings: 'loungewear',
+  sweatpants: 'loungewear',
+  jeans: 'casual',
+  trousers: 'smart_casual',
+  skirt: 'smart_casual',
+  sneakers: 'casual',
+  sandals: 'casual',
+  boots: 'smart_casual',
+  loafers: 'smart_casual',
+  flats: 'smart_casual',
+  heels: 'formal',
+  mini: 'casual',
+  midi: 'smart_casual',
+  maxi: 'smart_casual',
+  gown: 'formal',
+  slip: 'casual',
+  cap: 'casual',
+  beanie: 'casual',
+  beret: 'smart_casual',
+  hat: 'smart_casual',
+  headband: 'casual',
+}
+
+const CATEGORY_FORMALITY: Record<Category, Formality> = {
+  headwear: 'casual',
+  top: 'casual',
+  outerwear: 'casual',
+  dress: 'smart_casual',
+  bottom: 'casual',
+  shoes: 'casual',
+  accessory: 'casual',
+}
+
+export function deriveFormality(
+  category: Category,
+  subType: string | null
+): Formality {
+  if (subType && SUBTYPE_FORMALITY[subType]) return SUBTYPE_FORMALITY[subType]
+  return CATEGORY_FORMALITY[category] ?? 'casual'
+}
+
 export const FIT_OPTIONS = ['slim', 'regular', 'relaxed', 'oversized'] as const
 
 export type Fit = (typeof FIT_OPTIONS)[number]
@@ -234,7 +289,9 @@ export async function updateItem(
   return res.json()
 }
 
-export async function extractItemColor(image: File): Promise<{ hex: string }> {
+export async function extractItemColor(
+  image: File
+): Promise<{ hex: string; accentHex?: string | null }> {
   const formData = new FormData()
   formData.append('image', image)
   const res = await apiFetch('/items/extract-color', {

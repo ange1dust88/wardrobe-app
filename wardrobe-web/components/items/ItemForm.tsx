@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import {
   CATEGORIES,
   CATEGORY_LABELS,
+  deriveFormality,
   extractItemColor,
   FIT_LABELS,
   FIT_OPTIONS,
@@ -152,7 +153,7 @@ export function ItemForm({
     if (!file) return
     setExtractingColor(true)
     const result = await extractItemColor(file).catch(() => null)
-    if (result) patch({ hex: result.hex })
+    if (result) patch({ hex: result.hex, accentHex: result.accentHex ?? null })
     setExtractingColor(false)
   }
 
@@ -181,6 +182,7 @@ export function ItemForm({
             patch({
               category,
               subType: null,
+              formality: deriveFormality(category, null),
               fit: FIT_CATEGORIES.has(category)
                 ? (values.fit ?? 'regular')
                 : null,
@@ -222,9 +224,13 @@ export function ItemForm({
             label='Subtype'
             items={subtypeItems}
             value={values.subType ?? ANY_SUBTYPE}
-            onChange={value =>
-              patch({ subType: value === ANY_SUBTYPE ? null : value })
-            }
+            onChange={value => {
+              const subType = value === ANY_SUBTYPE ? null : value
+              patch({
+                subType,
+                formality: deriveFormality(values.category, subType),
+              })
+            }}
           />
         )}
       </div>
