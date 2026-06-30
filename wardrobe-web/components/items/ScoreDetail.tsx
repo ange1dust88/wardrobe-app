@@ -5,7 +5,7 @@ const AXES: { key: keyof ScoreBreakdown; label: string; cap: number }[] = [
   { key: 'role', label: 'Role', cap: 6 },
   { key: 'season', label: 'Season', cap: 5 },
   { key: 'palette', label: 'Palette', cap: 5 },
-  { key: 'vibe', label: 'Vibe', cap: 5 },
+  { key: 'style', label: 'Style', cap: 5 },
   { key: 'pattern', label: 'Pattern', cap: 3 },
 ]
 

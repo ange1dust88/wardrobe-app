@@ -7,6 +7,7 @@ const EMPTY_FORM: CreateItem = {
   name: '',
   category: 'top',
   subType: null,
+  formality: 'casual',
   hex: '#000000',
   pattern: 'solid',
   vibe: [],

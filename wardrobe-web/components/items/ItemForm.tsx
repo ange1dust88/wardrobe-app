@@ -5,12 +5,15 @@ import {
   CATEGORIES,
   CATEGORY_LABELS,
   extractItemColor,
+  FORMALITY_LABELS,
+  FORMALITY_OPTIONS,
   PATTERNS,
   SEASONS,
   STACK_POLICY,
   SUBTYPES,
   VIBES,
   type Category,
+  type Formality,
   type Pattern,
   type Season,
 } from '@/lib/items'
@@ -56,6 +59,11 @@ const categoryItems = CATEGORIES.map(value => ({
 
 const patternItems = PATTERNS.map(value => ({
   label: value.replace(/_/g, ' '),
+  value,
+}))
+
+const formalityItems = FORMALITY_OPTIONS.map(value => ({
+  label: FORMALITY_LABELS[value],
   value,
 }))
 
@@ -170,6 +178,26 @@ export function ItemForm({ form }: { form: ItemFormApi }) {
             </SelectPopup>
           </Select>
         </div>
+      </div>
+
+      <div className='mb-5'>
+        <div className={labelCls}>Formality</div>
+        <Select
+          items={formalityItems}
+          value={values.formality ?? 'casual'}
+          onValueChange={value => patch({ formality: value as Formality })}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectPopup alignItemWithTrigger={false}>
+            {formalityItems.map(item => (
+              <SelectItem key={item.value} value={item.value}>
+                {item.label}
+              </SelectItem>
+            ))}
+          </SelectPopup>
+        </Select>
       </div>
 
       {subtypes && (

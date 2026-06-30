@@ -1,6 +1,7 @@
 import {
   Brightness,
   Color,
+  Formality,
   Item,
   Pattern,
   Saturation,
@@ -21,7 +22,7 @@ export type ScoreBreakdown = {
   role: number;
   season: number;
   palette: number;
-  vibe: number;
+  style: number;
   pattern: number;
 };
 
@@ -33,9 +34,16 @@ const SCORE_CAPS: ScoreBreakdown = {
   role: 6,
   season: 5,
   palette: 5,
-  vibe: 5,
+  style: 5,
   pattern: 3,
 };
+
+const FORMALITY_ORDER: Formality[] = [
+  Formality.Loungewear,
+  Formality.Casual,
+  Formality.SmartCasual,
+  Formality.Formal,
+];
 
 const COLORTYPE_MATCH_BONUS = 8;
 const COLORTYPE_UNIVERSAL_BONUS = 3;
@@ -250,24 +258,42 @@ function vibePairCompatible(a: Vibe, b: Vibe): boolean {
   return !VIBE_INCOMPATIBLE_SET.has([a, b].sort().join('|'));
 }
 
-export function computeVibeScore(candidate: Item, desired: Vibe[]): number {
-  if (desired.length === 0 || candidate.vibe.length === 0) return 0;
+function vibeTagScore(candidateVibes: Vibe[], desired: Vibe[]): number {
+  if (desired.length === 0 || candidateVibes.length === 0) return 0;
 
   let compatible = 0;
   let total = 0;
   for (const a of desired) {
-    for (const c of candidate.vibe) {
+    for (const c of candidateVibes) {
       total += 1;
       if (vibePairCompatible(a, c)) compatible += 1;
     }
   }
 
   const ratio = compatible / total;
-  if (ratio === 1) return SCORE_CAPS.vibe;
-  if (ratio >= 0.75) return 4;
-  if (ratio >= 0.5) return 2;
-  if (ratio > 0) return 0;
-  return -4;
+  if (ratio === 1) return 1;
+  if (ratio >= 0.5) return 0;
+  return -1;
+}
+
+export function computeStyleScore(
+  anchor: Item,
+  candidate: Item,
+  desired: Vibe[],
+): number {
+  let score = 0;
+
+  if (anchor.formality && candidate.formality) {
+    const gap = Math.abs(
+      FORMALITY_ORDER.indexOf(anchor.formality) -
+        FORMALITY_ORDER.indexOf(candidate.formality),
+    );
+    score += gap === 0 ? 4 : gap === 1 ? 2 : gap === 2 ? 0 : -4;
+  }
+
+  score += vibeTagScore(candidate.vibe, desired);
+
+  return clamp(score, -5, SCORE_CAPS.style);
 }
 
 export function computePatternScore(anchor: Item, candidate: Item): number {
@@ -298,7 +324,7 @@ export function computeTotalScore(
     role: computeRoleScore(anchor, candidate),
     season: computeSeasonScore(anchor, candidate),
     palette: computePaletteScore(anchor, candidate, ctx.userColorType),
-    vibe: computeVibeScore(candidate, ctx.vibe),
+    style: computeStyleScore(anchor, candidate, ctx.vibe),
     pattern: computePatternScore(anchor, candidate),
   };
 
@@ -307,7 +333,7 @@ export function computeTotalScore(
     breakdown.role +
     breakdown.season +
     breakdown.palette +
-    breakdown.vibe +
+    breakdown.style +
     breakdown.pattern;
   const total = clamp(Math.round(rawTotal), 0, MAX_SCORE);
 

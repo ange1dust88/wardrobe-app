@@ -1,15 +1,12 @@
 import type { Vibe } from './items'
 
 const VIBE_INCOMPATIBLE: [Vibe, Vibe][] = [
-  ['sporty', 'workwear'],
   ['sporty', 'romantic'],
   ['sporty', 'classic'],
   ['minimalist', 'romantic'],
   ['minimalist', 'vintage'],
-  ['urban', 'romantic'],
-  ['urban', 'classic'],
-  ['workwear', 'romantic'],
-  ['edgy', 'relaxed'],
+  ['edgy', 'romantic'],
+  ['classic', 'edgy'],
 ]
 
 const INCOMPATIBLE_SET = new Set(

@@ -90,6 +90,13 @@ export enum SeasonWear {
   Winter = 'winter',
 }
 
+export enum Formality {
+  Loungewear = 'loungewear',
+  Casual = 'casual',
+  SmartCasual = 'smart_casual',
+  Formal = 'formal',
+}
+
 export class CreateItemDto {
   @IsString()
   @IsNotEmpty()
@@ -108,6 +115,10 @@ export class CreateItemDto {
 
   @IsEnum(Pattern)
   pattern: Pattern;
+
+  @IsOptional()
+  @IsEnum(Formality)
+  formality?: Formality;
 
   @Transform(toArray)
   @IsArray()
@@ -143,6 +154,7 @@ export interface Item {
   wardrobeRole: WardrobeRole;
   imageUrl: string | null;
   pattern: Pattern;
+  formality: Formality | null;
   vibe: Vibe[];
   seasonPaletteCompatibility: SeasonPalette[];
   seasonWear: SeasonWear[];

@@ -10,6 +10,7 @@ import {
   Brightness,
   Category,
   CreateItemDto,
+  Formality,
   Item,
   Pattern,
   Saturation,
@@ -90,6 +91,7 @@ export class ItemsService {
         category: dto.category,
         subType: dto.subType ?? null,
         pattern: dto.pattern,
+        formality: dto.formality ?? null,
         vibe: dto.vibe,
         seasonWear: dto.seasonWear,
         imageUrl,
@@ -119,6 +121,7 @@ export class ItemsService {
     if (dto.category !== undefined) data.category = dto.category;
     if (dto.subType !== undefined) data.subType = dto.subType || null;
     if (dto.pattern !== undefined) data.pattern = dto.pattern;
+    if (dto.formality !== undefined) data.formality = dto.formality ?? null;
     if (dto.vibe !== undefined) data.vibe = dto.vibe;
     if (dto.seasonWear !== undefined) data.seasonWear = dto.seasonWear;
     if (dto.hex !== undefined) {
@@ -206,6 +209,7 @@ export class ItemsService {
       },
       wardrobeRole: row.wardrobeRole as WardrobeRole,
       pattern: row.pattern as Pattern,
+      formality: row.formality as Formality | null,
       vibe: row.vibe as Vibe[],
       seasonPaletteCompatibility:
         row.seasonPaletteCompatibility as SeasonPalette[],

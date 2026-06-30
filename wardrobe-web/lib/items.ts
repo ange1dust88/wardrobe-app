@@ -89,19 +89,31 @@ export const PATTERNS = [
 export type Pattern = (typeof PATTERNS)[number]
 
 export const VIBES = [
-  'casual',
-  'sporty',
   'minimalist',
-  'urban',
-  'workwear',
-  'romantic',
-  'edgy',
-  'vintage',
   'classic',
-  'relaxed',
+  'sporty',
+  'edgy',
+  'romantic',
+  'vintage',
 ] as const
 
 export type Vibe = (typeof VIBES)[number]
+
+export const FORMALITY_OPTIONS = [
+  'loungewear',
+  'casual',
+  'smart_casual',
+  'formal',
+] as const
+
+export type Formality = (typeof FORMALITY_OPTIONS)[number]
+
+export const FORMALITY_LABELS: Record<Formality, string> = {
+  loungewear: 'Loungewear',
+  casual: 'Casual',
+  smart_casual: 'Smart casual',
+  formal: 'Formal',
+}
 
 export type Color = {
   hex: string
@@ -122,6 +134,7 @@ export type Item = {
   wardrobeRole: string
   imageUrl?: string
   pattern: string
+  formality?: string | null
   vibe: string[]
   seasonPaletteCompatibility: string[]
   seasonWear: Season[]
@@ -133,6 +146,7 @@ export type CreateItem = {
   subType?: string | null
   hex: string
   pattern: Pattern
+  formality?: Formality | null
   vibe: Vibe[]
   seasonWear: Season[]
   image?: File | null
@@ -151,6 +165,7 @@ export async function createItem(body: CreateItem): Promise<Item> {
   if (body.subType) formData.append('subType', body.subType)
   formData.append('hex', body.hex)
   formData.append('pattern', body.pattern)
+  if (body.formality) formData.append('formality', body.formality)
   body.vibe.forEach(vibe => formData.append('vibe', vibe))
   body.seasonWear.forEach(season => formData.append('seasonWear', season))
   if (body.image) {
@@ -177,6 +192,7 @@ export type UpdateItem = {
   subType?: string | null
   hex: string
   pattern: Pattern
+  formality?: Formality | null
   vibe: Vibe[]
   seasonWear: Season[]
   image?: File | null
@@ -192,6 +208,7 @@ export async function updateItem(
   if (body.subType) formData.append('subType', body.subType)
   formData.append('hex', body.hex)
   formData.append('pattern', body.pattern)
+  if (body.formality) formData.append('formality', body.formality)
   body.vibe.forEach(vibe => formData.append('vibe', vibe))
   body.seasonWear.forEach(season => formData.append('seasonWear', season))
   if (body.image) {
@@ -243,7 +260,7 @@ export type ScoreBreakdown = {
   role: number
   season: number
   palette: number
-  vibe: number
+  style: number
   pattern: number
 }
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useItemForm } from '@/hooks/useItemForm'
-import type { Item, Pattern, UpdateItem, Vibe } from '@/lib/items'
+import type { Formality, Item, Pattern, UpdateItem, Vibe } from '@/lib/items'
 import { ItemFormDialog } from './ItemFormDialog'
 
 type Props = {
@@ -33,6 +33,7 @@ export function EditItemModal({
     subType: item.subType ?? null,
     hex: item.color.hex,
     pattern: item.pattern as Pattern,
+    formality: (item.formality as Formality | null) ?? null,
     vibe: item.vibe as Vibe[],
     seasonWear: item.seasonWear,
     image: null,
@@ -40,11 +41,30 @@ export function EditItemModal({
 
   function submit() {
     if (!form.isValid) return
-    const { name, category, subType, hex, pattern, vibe, seasonWear, image } =
-      form.values
+    const {
+      name,
+      category,
+      subType,
+      hex,
+      pattern,
+      formality,
+      vibe,
+      seasonWear,
+      image,
+    } = form.values
     onSubmit(
       item.id,
-      { name, category, subType, hex, pattern, vibe, seasonWear, image },
+      {
+        name,
+        category,
+        subType,
+        hex,
+        pattern,
+        formality,
+        vibe,
+        seasonWear,
+        image,
+      },
       { onSuccess: onClose }
     )
   }

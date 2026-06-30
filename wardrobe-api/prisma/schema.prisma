@@ -71,6 +71,13 @@ enum Vibe {
   relaxed
 }
 
+enum Formality {
+  loungewear
+  casual
+  smart_casual
+  formal
+}
+
 enum SeasonWear {
   spring
   summer
@@ -97,6 +104,7 @@ model Item {
 
   wardrobeRole               WardrobeRole
   pattern                    Pattern
+  formality                  Formality?
   vibe                       Vibe[]
   seasonPaletteCompatibility SeasonPalette[]
   seasonWear                 SeasonWear[]

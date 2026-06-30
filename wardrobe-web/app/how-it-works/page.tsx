@@ -41,9 +41,9 @@ const SIGNALS = [
     desc: 'Your seasonal type boosts shades that suit you and docks ones that fight it.',
   },
   {
-    name: 'Vibe',
+    name: 'Style',
     pts: 5,
-    desc: 'Matching style tags score full; known clashers (sporty + romantic) lose points.',
+    desc: 'Mostly formality — loungewear with a suit clashes; a small bonus when the style tags (minimal, edgy, romantic…) agree.',
   },
   {
     name: 'Pattern',

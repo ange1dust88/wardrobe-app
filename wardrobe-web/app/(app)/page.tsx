@@ -63,7 +63,7 @@ export default function WardrobePage() {
         role: 0,
         season: 0,
         palette: 0,
-        vibe: 0,
+        style: 0,
         pattern: 0,
       }
       for (const s of sel) {
@@ -77,7 +77,7 @@ export default function WardrobePage() {
         acc.role += cell.breakdown.role
         acc.season += cell.breakdown.season
         acc.palette += cell.breakdown.palette
-        acc.vibe += cell.breakdown.vibe
+        acc.style += cell.breakdown.style
         acc.pattern += cell.breakdown.pattern
       }
       if (ok) {
@@ -88,7 +88,7 @@ export default function WardrobePage() {
           role: acc.role / n,
           season: acc.season / n,
           palette: acc.palette / n,
-          vibe: acc.vibe / n,
+          style: acc.style / n,
           pattern: acc.pattern / n,
         }
       }
