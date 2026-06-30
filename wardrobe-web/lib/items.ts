@@ -238,7 +238,18 @@ export async function deleteItem(id: string): Promise<void> {
   if (!res.ok) throw new Error(`DELETE /items/${id} → ${res.status}`)
 }
 
-export type MatchMap = Record<string, Record<string, number>>
+export type ScoreBreakdown = {
+  color: number
+  role: number
+  season: number
+  palette: number
+  vibe: number
+  pattern: number
+}
+
+export type MatchCell = { score: number; breakdown: ScoreBreakdown }
+
+export type MatchMap = Record<string, Record<string, MatchCell>>
 
 export async function fetchMatchMap(
   colorType?: string,

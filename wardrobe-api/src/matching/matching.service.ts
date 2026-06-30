@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { SeasonPalette } from '../items/dto/item.dto';
 import { ItemsService } from '../items/items.service';
-import { MatchMap, MatchMapCacheService } from './match-map-cache.service';
+import { MatchCell, MatchMap, MatchMapCacheService } from './match-map-cache.service';
 import { categoriesConflict } from './category-compat';
 import { seasonsConflict } from './season-compat';
 import { computeTotalScore, isRecommendableScore } from './match-scoring';
@@ -30,7 +30,7 @@ export class MatchingService {
     const map: MatchMap = {};
     for (const anchor of items) {
       const ctx = { vibe: anchor.vibe, userColorType };
-      const scores: Record<string, number> = {};
+      const scores: Record<string, MatchCell> = {};
       for (const candidate of items) {
         if (candidate.id === anchor.id) {
           continue;
@@ -46,9 +46,9 @@ export class MatchingService {
         ) {
           continue;
         }
-        const { total } = computeTotalScore(anchor, candidate, ctx);
+        const { total, breakdown } = computeTotalScore(anchor, candidate, ctx);
         if (isRecommendableScore(total)) {
-          scores[candidate.id] = total;
+          scores[candidate.id] = { score: total, breakdown };
         }
       }
       map[anchor.id] = scores;

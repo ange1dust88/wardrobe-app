@@ -18,7 +18,7 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty'
 import { Spinner } from '@/components/ui/spinner'
-import { type Item } from '@/lib/items'
+import { type Item, type ScoreBreakdown } from '@/lib/items'
 import { harmonyOf } from '@/lib/harmony'
 import { cn } from '@/lib/utils'
 import { useItems } from '@/hooks/useItems'
@@ -47,28 +47,59 @@ export default function WardrobePage() {
   const map = matchMap.data ?? {}
 
   const building = builder.selectedIds.length > 0
-  const hoverScores = !building && hoveredId ? (map[hoveredId] ?? {}) : {}
+  const hoverCells = !building && hoveredId ? (map[hoveredId] ?? {}) : {}
 
-  const buildScores: Record<string, number> = {}
+  const scoreById: Record<string, number> = {}
+  const breakdownById: Record<string, ScoreBreakdown> = {}
+
   if (building) {
     const sel = builder.selectedIds
     for (const item of items) {
       if (sel.includes(item.id)) continue
       let sum = 0
       let ok = true
+      const acc: ScoreBreakdown = {
+        color: 0,
+        role: 0,
+        season: 0,
+        palette: 0,
+        vibe: 0,
+        pattern: 0,
+      }
       for (const s of sel) {
-        const sc = map[s]?.[item.id]
-        if (sc == null) {
+        const cell = map[s]?.[item.id]
+        if (cell == null) {
           ok = false
           break
         }
-        sum += sc
+        sum += cell.score
+        acc.color += cell.breakdown.color
+        acc.role += cell.breakdown.role
+        acc.season += cell.breakdown.season
+        acc.palette += cell.breakdown.palette
+        acc.vibe += cell.breakdown.vibe
+        acc.pattern += cell.breakdown.pattern
       }
-      if (ok) buildScores[item.id] = Math.round(sum / sel.length)
+      if (ok) {
+        const n = sel.length
+        scoreById[item.id] = Math.round(sum / n)
+        breakdownById[item.id] = {
+          color: acc.color / n,
+          role: acc.role / n,
+          season: acc.season / n,
+          palette: acc.palette / n,
+          vibe: acc.vibe / n,
+          pattern: acc.pattern / n,
+        }
+      }
+    }
+  } else {
+    for (const [id, cell] of Object.entries(hoverCells)) {
+      scoreById[id] = cell.score
+      breakdownById[id] = cell.breakdown
     }
   }
 
-  const scoreById = building ? buildScores : hoverScores
   const matchedIds = new Set(Object.keys(scoreById))
 
   const harmony =
@@ -149,6 +180,7 @@ export default function WardrobePage() {
                 selectedIds={builder.selectedIds}
                 matchedIds={matchedIds}
                 scoreById={scoreById}
+                breakdownById={breakdownById}
                 onHover={setHoveredId}
                 onSelect={builder.toggle}
                 onEdit={setEditingItem}

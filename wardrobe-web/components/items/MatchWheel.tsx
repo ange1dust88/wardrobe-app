@@ -2,7 +2,9 @@ import { PencilIcon } from 'lucide-react'
 import { CATEGORIES, getItemImageSrc, type Item } from '../../lib/items'
 import { getMatchScoreTone, matchScoreToPercentage } from '../../lib/match-score'
 import { BRAND_ACCENT } from '../../lib/theme'
+import type { ScoreBreakdown } from '../../lib/items'
 import { ScoreBadge } from './ScoreBadge'
+import { ScoreDetail } from './ScoreDetail'
 
 type Props = {
   items: Item[]
@@ -10,6 +12,7 @@ type Props = {
   selectedIds?: string[]
   matchedIds?: Set<string>
   scoreById?: Record<string, number>
+  breakdownById?: Record<string, ScoreBreakdown>
   onHover: (id: string | null) => void
   onSelect: (item: Item) => void
   onEdit: (item: Item) => void
@@ -35,6 +38,7 @@ export function MatchWheel({
   selectedIds = [],
   matchedIds = new Set(),
   scoreById = {},
+  breakdownById = {},
   onHover,
   onSelect,
   onEdit,
@@ -170,7 +174,7 @@ export function MatchWheel({
         return (
           <div
             key={item.id}
-            className='absolute'
+            className='group absolute'
             style={{
               left: `${((p.x - sz / 2) / BOX) * 100}%`,
               top: `${((p.y - sz / 2) / BOX) * 100}%`,
@@ -237,6 +241,12 @@ export function MatchWheel({
               >
                 <PencilIcon className='size-3' />
               </button>
+            )}
+
+            {isMatch && breakdownById[item.id] && (
+              <div className='pointer-events-none absolute top-full left-1/2 z-50 hidden -translate-x-1/2 pt-2 group-hover:block'>
+                <ScoreDetail breakdown={breakdownById[item.id]} />
+              </div>
             )}
           </div>
         )
