@@ -3,44 +3,132 @@ import Link from 'next/link'
 const ACCENT = '#3d5a3d'
 const MAX_AXIS = 12
 
+const TOC = [
+  { id: 'start', label: 'Quick start' },
+  { id: 'adding', label: 'Adding a piece' },
+  { id: 'browse', label: 'Browsing' },
+  { id: 'building', label: 'Building an outfit' },
+  { id: 'score', label: 'The harmony score' },
+  { id: 'rules', label: 'Rules & overrides' },
+  { id: 'slots', label: 'Slots & layering' },
+]
+
+const STEPS = [
+  {
+    title: 'Set your color type',
+    text: 'Onboarding asks for your seasonal palette — spring, summer, autumn or winter. It quietly nudges every score toward shades that suit you, and you can change it anytime from your profile.',
+  },
+  {
+    title: 'Add your pieces',
+    text: 'Snap a photo and we read the main color for you, or pick a swatch by hand. Tag the type, pattern, vibe and the seasons you’d wear it.',
+  },
+  {
+    title: 'Build a look',
+    text: 'Tap a piece — matching pieces across the other slots light up with a score. Add a few, watch the harmony, name it and save.',
+  },
+]
+
+const SET_FIELDS = [
+  {
+    name: 'Photo',
+    text: 'Optional, but recommended — we pull the dominant color straight from it. JPG, PNG, WebP or GIF up to 5 MB.',
+  },
+  {
+    name: 'Color',
+    text: 'Filled in automatically from the photo. No photo, or want a different shade? Pick the swatch by hand.',
+  },
+  {
+    name: 'Type & subtype',
+    text: 'The slot it lives in (top, bottom, shoes…) plus an optional finer type (t-shirt, jeans, heels…). Subtype is what lets layered slots stack one of each — a tee under a sweater.',
+  },
+  {
+    name: 'Pattern',
+    text: 'Solid, subtle, bold, graphic or texture. Two loud patterns in one look cost points; everything else mixes freely.',
+  },
+  {
+    name: 'Vibe',
+    text: 'One or more style tags — casual, edgy, romantic and so on. Some pairs clash, and the form warns you right as you pick them.',
+  },
+  {
+    name: 'Seasons',
+    text: 'When you’d actually reach for it. Pieces made for the same weather pair better; opposite-weather pieces are kept apart.',
+  },
+]
+
+const AUTO_FIELDS = [
+  {
+    name: 'Temperature, brightness, saturation',
+    text: 'Warm vs cool, light vs dark, muted vs vivid — read from the color so pairings can reason about it.',
+  },
+  {
+    name: 'Role',
+    text: 'Each piece becomes a core (neutral base), a tonal (soft color) or a pop (vivid statement). This drives the “calm base + one statement” logic.',
+  },
+  {
+    name: 'Palette fit',
+    text: 'Which seasonal color types the shade flatters — compared against your own type to push or dock points.',
+  },
+]
+
 const AXES = [
   {
     name: 'Color',
     weight: 12,
-    text: 'How the colors sit together — neutrals are easy, complementary or analogous hues work, clashing temperatures and two loud colors hurt.',
+    text: 'The biggest signal. Neutrals go with everything; colors that sit next to each other (analogous) or opposite (complementary) on the wheel work best; matching warm/cool temperature helps; two loud, vivid colors fight.',
   },
   {
     name: 'Role',
     weight: 6,
-    text: 'Each piece is a core / tonal / pop. A calm base with one statement reads best; two statement pieces fight.',
+    text: 'A core base with one tonal or pop reads intentional. Two vivid pops together clash and lose points.',
   },
   {
     name: 'Season',
     weight: 5,
-    text: 'How much the “when to wear” seasons overlap — pieces meant for the same weather pair better.',
+    text: 'How much the pieces’ wear-seasons overlap. Same-weather pieces pair best; summer-only with winter-only is penalized hard.',
   },
   {
     name: 'Palette',
     weight: 5,
-    text: 'Seasonal color type (spring / summer / autumn / winter). Your color type from onboarding nudges this.',
+    text: 'Seasonal color type. Your type from onboarding boosts pieces in your palette and docks ones that fight it; universal and neutral shades stay safe either way.',
   },
   {
     name: 'Vibe',
     weight: 5,
-    text: 'Style vibes — casual, edgy, romantic… some pairs clash by a compatibility matrix.',
+    text: 'Style tags like casual, edgy, romantic. Matching vibes score full; known clashers (e.g. sporty + romantic) lose points.',
   },
   {
     name: 'Pattern',
     weight: 3,
-    text: 'Solids mix with anything; two bold patterns together clash.',
+    text: 'Solids mix with anything and one patterned piece is fine — but two bold or graphic patterns together clash.',
   },
 ]
 
-const RULES = [
+const TONES = [
+  {
+    band: 'Works',
+    range: '60–74%',
+    color: '#a68117',
+    text: 'Solid, wearable pairing.',
+  },
+  {
+    band: 'Great match',
+    range: '75–89%',
+    color: '#2f7d4f',
+    text: 'These clearly belong together.',
+  },
+  {
+    band: 'Perfect match',
+    range: '90%+',
+    color: '#245179',
+    text: 'About as good as it gets.',
+  },
+]
+
+const STRUCTURAL_RULES = [
   {
     left: 'dress',
     right: 'top · bottom',
-    text: 'A dress is a full look on its own.',
+    text: 'A dress is the whole look on its own.',
   },
   {
     left: 'summer piece',
@@ -67,31 +155,58 @@ const STACKING = [
   },
 ]
 
+function SectionHeading({ id, kicker, title, intro }: {
+  id: string
+  kicker: string
+  title: string
+  intro: string
+}) {
+  return (
+    <div id={id} className='scroll-mt-8'>
+      <div className='text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase'>
+        {kicker}
+      </div>
+      <h2 className='font-heading mt-2 text-[24px] font-bold tracking-tight'>
+        {title}
+      </h2>
+      <p className='mt-2 text-[14.5px] leading-relaxed text-muted-foreground'>
+        {intro}
+      </p>
+    </div>
+  )
+}
+
 export default function HowItWorks() {
   return (
     <main className='min-h-svh bg-background'>
       <header className='flex items-center border-b border-border px-6 py-4 sm:px-8'>
         <Link href='/' className='flex items-center gap-2.5'>
-          <span className='size-[11px] rounded-full' style={{ background: ACCENT }} />
+          <span
+            className='size-[11px] rounded-full'
+            style={{ background: ACCENT }}
+          />
           <span className='font-heading text-[20px] font-bold tracking-tight'>
             dress
           </span>
         </Link>
       </header>
 
-      <section className='mx-auto max-w-[720px] px-6 pt-14 pb-8 text-center sm:px-8'>
+      <section className='mx-auto max-w-[720px] px-6 pt-14 pb-10 text-center sm:px-8'>
         <div className='text-[12px] font-semibold tracking-[0.16em] text-muted-foreground uppercase'>
-          How it works
+          The guide
         </div>
         <h1 className='font-heading mt-3 text-[40px] leading-[1.05] font-bold tracking-tight'>
-          Every pairing gets a harmony score
+          From a closet of photos to outfits that work
         </h1>
-        <p className='mx-auto mt-4 max-w-[520px] text-[15.5px] leading-relaxed text-muted-foreground'>
-          Two pieces are scored out of 36 — higher means they go together
-          better. The wheel highlights strong matches, and an outfit&apos;s
-          harmony is the average across its pieces.
+        <p className='mx-auto mt-4 max-w-[540px] text-[15.5px] leading-relaxed text-muted-foreground'>
+          dress scores how well any two pieces go together, then helps you stack
+          them into looks. Here’s everything it does — and how to get the most
+          out of it.
         </p>
-        <div className='mt-6 inline-flex items-baseline gap-2 rounded-2xl px-5 py-3 text-white shadow-md' style={{ background: ACCENT }}>
+        <div
+          className='mt-6 inline-flex items-baseline gap-2 rounded-2xl px-5 py-3 text-white shadow-md'
+          style={{ background: ACCENT }}
+        >
           <span className='font-heading text-[30px] leading-none font-extrabold'>
             28
           </span>
@@ -100,127 +215,347 @@ export default function HowItWorks() {
         </div>
       </section>
 
-      <section className='mx-auto max-w-[720px] px-6 pb-12 sm:px-8'>
-        <h2 className='font-heading text-[22px] font-bold tracking-tight'>
-          What we look at
-        </h2>
-        <p className='mt-1.5 text-[14px] text-muted-foreground'>
-          Six signals add up to the score — bar shows how much each can weigh.
-        </p>
-        <div className='mt-5 flex flex-col gap-3'>
-          {AXES.map(axis => (
-            <div
-              key={axis.name}
-              className='rounded-2xl border border-border bg-card p-5 shadow-sm'
-            >
-              <div className='flex items-baseline justify-between'>
-                <span className='font-heading text-[17px] font-bold'>
-                  {axis.name}
-                </span>
-                <span className='font-heading text-[15px] font-bold text-muted-foreground'>
-                  {axis.weight}
-                  <span className='text-[12px] font-normal'> pts</span>
-                </span>
-              </div>
-              <div className='mt-3 h-2 overflow-hidden rounded-full bg-muted'>
+      <div className='mx-auto grid max-w-[960px] gap-10 px-6 pb-16 sm:px-8 lg:grid-cols-[170px_minmax(0,1fr)] lg:gap-12'>
+        <nav className='hidden lg:block'>
+          <div className='sticky top-8'>
+            <div className='mb-3 text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase'>
+              On this page
+            </div>
+            <ul className='flex flex-col gap-2'>
+              {TOC.map(item => (
+                <li key={item.id}>
+                  <a
+                    href={`#${item.id}`}
+                    className='text-[13.5px] text-muted-foreground hover:text-foreground'
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </nav>
+
+        <div className='flex flex-col gap-14'>
+          <section>
+            <SectionHeading
+              id='start'
+              kicker='Step by step'
+              title='Quick start'
+              intro='Three moves and you have your first scored outfit.'
+            />
+            <ol className='mt-5 flex flex-col gap-3'>
+              {STEPS.map((step, i) => (
+                <li
+                  key={step.title}
+                  className='flex gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm'
+                >
+                  <span
+                    className='font-heading flex size-8 flex-none items-center justify-center rounded-full text-[15px] font-bold text-white'
+                    style={{ background: ACCENT }}
+                  >
+                    {i + 1}
+                  </span>
+                  <div>
+                    <h3 className='font-heading text-[16px] font-bold'>
+                      {step.title}
+                    </h3>
+                    <p className='mt-1 text-[13.5px] leading-snug text-muted-foreground'>
+                      {step.text}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          <section>
+            <SectionHeading
+              id='adding'
+              kicker='Your wardrobe'
+              title='Adding a piece'
+              intro='You describe a few things; the rest we read from the color so the engine has something to reason about.'
+            />
+            <h3 className='font-heading mt-5 text-[15px] font-bold'>
+              What you set
+            </h3>
+            <div className='mt-3 flex flex-col gap-2.5'>
+              {SET_FIELDS.map(field => (
                 <div
-                  className='h-full rounded-full'
-                  style={{
-                    width: `${(axis.weight / MAX_AXIS) * 100}%`,
-                    background: ACCENT,
-                  }}
-                />
+                  key={field.name}
+                  className='rounded-xl border border-border bg-card p-4 shadow-sm'
+                >
+                  <div className='text-[13.5px] font-semibold'>
+                    {field.name}
+                  </div>
+                  <p className='mt-1 text-[13px] leading-snug text-muted-foreground'>
+                    {field.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div
+              className='mt-5 rounded-2xl border p-5'
+              style={{ borderColor: `${ACCENT}55`, background: `${ACCENT}0f` }}
+            >
+              <h3 className='font-heading text-[15px] font-bold'>
+                What we read for you
+              </h3>
+              <p className='mt-1.5 text-[13px] leading-relaxed text-muted-foreground'>
+                You never set these — they’re derived from the color the moment
+                you save.
+              </p>
+              <div className='mt-3 flex flex-col gap-2.5'>
+                {AUTO_FIELDS.map(field => (
+                  <div key={field.name}>
+                    <div className='text-[13.5px] font-semibold'>
+                      {field.name}
+                    </div>
+                    <p className='mt-0.5 text-[13px] leading-snug text-muted-foreground'>
+                      {field.text}
+                    </p>
+                  </div>
+                ))}
               </div>
-              <p className='mt-3 text-[13.5px] leading-snug text-muted-foreground'>
-                {axis.text}
+            </div>
+          </section>
+
+          <section>
+            <SectionHeading
+              id='browse'
+              kicker='Finding matches'
+              title='Browsing your wardrobe'
+              intro='Two ways to look at the same scored closet.'
+            />
+            <div className='mt-5 flex flex-col gap-3'>
+              <div className='rounded-2xl border border-border bg-card p-5 shadow-sm'>
+                <h3 className='font-heading text-[15px] font-bold'>
+                  Hover to preview
+                </h3>
+                <p className='mt-1 text-[13.5px] leading-snug text-muted-foreground'>
+                  Point at any piece and its matches across the other slots light
+                  up, each with a score badge. Nothing is added yet — it’s a
+                  preview.
+                </p>
+              </div>
+              <div className='rounded-2xl border border-border bg-card p-5 shadow-sm'>
+                <h3 className='font-heading text-[15px] font-bold'>
+                  Circular & list views
+                </h3>
+                <p className='mt-1 text-[13.5px] leading-snug text-muted-foreground'>
+                  The wheel lays your wardrobe out head-to-toe; the list is an
+                  outfit carousel. Same scores, whichever you prefer.
+                </p>
+              </div>
+              <div className='rounded-2xl border border-border bg-card p-5 shadow-sm'>
+                <h3 className='font-heading text-[15px] font-bold'>
+                  Grayed-out pieces
+                </h3>
+                <p className='mt-1 text-[13.5px] leading-snug text-muted-foreground'>
+                  A dimmed piece scores too low to recommend with your current
+                  pick — but it’s never locked. Select it anyway if that’s the
+                  look you want.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <SectionHeading
+              id='building'
+              kicker='Putting it together'
+              title='Building an outfit'
+              intro='Tap pieces into the builder and it keeps the look honest as you go.'
+            />
+            <ul className='mt-5 flex flex-col gap-3'>
+              <li className='rounded-2xl border border-border bg-card p-4 text-[13.5px] leading-snug text-muted-foreground shadow-sm'>
+                <span className='font-semibold text-foreground'>Add pieces</span>{' '}
+                — tapping adds them to the builder. Selection follows realistic
+                slot rules (see Slots &amp; layering below).
+              </li>
+              <li className='rounded-2xl border border-border bg-card p-4 text-[13.5px] leading-snug text-muted-foreground shadow-sm'>
+                <span className='font-semibold text-foreground'>
+                  Watch the harmony
+                </span>{' '}
+                — with two or more pieces you get a harmony score: the average
+                match across every pair in the look.
+              </li>
+              <li className='rounded-2xl border border-border bg-card p-4 text-[13.5px] leading-snug text-muted-foreground shadow-sm'>
+                <span className='font-semibold text-foreground'>
+                  Handle conflicts
+                </span>{' '}
+                — if two pieces don’t belong together you get a notice. Hit{' '}
+                <span className='font-semibold text-foreground'>
+                  Wear it anyway
+                </span>{' '}
+                to score it as-is, or swap one out.
+              </li>
+              <li className='rounded-2xl border border-border bg-card p-4 text-[13.5px] leading-snug text-muted-foreground shadow-sm'>
+                <span className='font-semibold text-foreground'>Save it</span> —
+                give it a name and it lands under Outfits, harmony and all.
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <SectionHeading
+              id='score'
+              kicker='The math, plainly'
+              title='The harmony score'
+              intro='Every pair of pieces is scored out of 36 — higher means they sit together better. Six signals add up; the bar shows how much each can weigh.'
+            />
+            <div className='mt-5 flex flex-col gap-3'>
+              {AXES.map(axis => (
+                <div
+                  key={axis.name}
+                  className='rounded-2xl border border-border bg-card p-5 shadow-sm'
+                >
+                  <div className='flex items-baseline justify-between'>
+                    <span className='font-heading text-[17px] font-bold'>
+                      {axis.name}
+                    </span>
+                    <span className='font-heading text-[15px] font-bold text-muted-foreground'>
+                      {axis.weight}
+                      <span className='text-[12px] font-normal'> pts</span>
+                    </span>
+                  </div>
+                  <div className='mt-3 h-2 overflow-hidden rounded-full bg-muted'>
+                    <div
+                      className='h-full rounded-full'
+                      style={{
+                        width: `${(axis.weight / MAX_AXIS) * 100}%`,
+                        background: ACCENT,
+                      }}
+                    />
+                  </div>
+                  <p className='mt-3 text-[13.5px] leading-snug text-muted-foreground'>
+                    {axis.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <h3 className='font-heading mt-7 text-[16px] font-bold'>
+              Reading the number
+            </h3>
+            <p className='mt-1.5 text-[13.5px] leading-relaxed text-muted-foreground'>
+              We only suggest pairs that clear about 60% (22 of 36). Anything
+              weaker stays out of the highlights — though you can still pick it
+              by hand. An outfit’s harmony is the average across all its pairs.
+            </p>
+            <div className='mt-4 flex flex-col gap-2.5'>
+              {TONES.map(tone => (
+                <div
+                  key={tone.band}
+                  className='flex items-center gap-3 rounded-xl border border-border bg-card p-3.5 shadow-sm'
+                >
+                  <span
+                    className='size-3 flex-none rounded-full'
+                    style={{ background: tone.color }}
+                  />
+                  <span className='font-heading w-[120px] flex-none text-[14px] font-bold'>
+                    {tone.band}
+                  </span>
+                  <span className='w-[64px] flex-none text-[13px] font-semibold text-muted-foreground'>
+                    {tone.range}
+                  </span>
+                  <span className='text-[13px] text-muted-foreground'>
+                    {tone.text}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section>
+            <SectionHeading
+              id='rules'
+              kicker='Two kinds of no'
+              title='Rules & overrides'
+              intro='Some combinations are filtered out; others just earn a low score. The difference matters.'
+            />
+
+            <h3 className='font-heading mt-5 text-[16px] font-bold'>
+              Structural conflicts — overridable
+            </h3>
+            <p className='mt-1.5 text-[13.5px] leading-relaxed text-muted-foreground'>
+              These aren’t about taste, they’re about what physically layers.
+              They’re kept out of suggestions, but “Wear it anyway” lets you
+              override them for a deliberate look.
+            </p>
+            <div className='mt-3 flex flex-col gap-3'>
+              {STRUCTURAL_RULES.map(rule => (
+                <div
+                  key={rule.left}
+                  className='flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl border border-border bg-card p-4 shadow-sm'
+                >
+                  <span className='rounded-lg bg-muted px-2.5 py-1 text-[13px] font-semibold'>
+                    {rule.left}
+                  </span>
+                  <span className='text-muted-foreground'>×</span>
+                  <span className='rounded-lg bg-muted px-2.5 py-1 text-[13px] font-semibold'>
+                    {rule.right}
+                  </span>
+                  <span className='text-[13.5px] text-muted-foreground'>
+                    — {rule.text}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div
+              className='mt-5 rounded-2xl border p-5'
+              style={{ borderColor: `${ACCENT}55`, background: `${ACCENT}0f` }}
+            >
+              <h3 className='font-heading text-[16px] font-bold'>
+                Honest scoring — never faked
+              </h3>
+              <p className='mt-2 text-[13.5px] leading-relaxed text-muted-foreground'>
+                Clashing colors, clashing vibes and two loud patterns are never
+                blocked and never overridden. They simply earn a low number — a
+                bad combo gets a small score, and we won’t pretend it looks good.
               </p>
             </div>
-          ))}
-        </div>
-      </section>
+          </section>
 
-      <section className='mx-auto max-w-[720px] px-6 pb-12 sm:px-8'>
-        <h2 className='font-heading text-[22px] font-bold tracking-tight'>
-          Rules you can break
-        </h2>
-        <p className='mt-1.5 text-[14px] leading-relaxed text-muted-foreground'>
-          These are about what you wear together, not taste — kept out of
-          suggestions, but you can override them with “Wear it anyway” for a
-          deliberate look.
-        </p>
-        <div className='mt-5 flex flex-col gap-3'>
-          {RULES.map(rule => (
-            <div
-              key={rule.left}
-              className='flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl border border-border bg-card p-4 shadow-sm'
-            >
-              <span className='rounded-lg bg-muted px-2.5 py-1 text-[13px] font-semibold'>
-                {rule.left}
-              </span>
-              <span className='text-muted-foreground'>×</span>
-              <span className='rounded-lg bg-muted px-2.5 py-1 text-[13px] font-semibold'>
-                {rule.right}
-              </span>
-              <span className='text-[13.5px] text-muted-foreground'>
-                — {rule.text}
-              </span>
+          <section>
+            <SectionHeading
+              id='slots'
+              kicker='How many at once'
+              title='Slots & layering'
+              intro='How many of each kind you can wear together — kept realistic, so two pairs of shoes or two pairs of jeans never happen.'
+            />
+            <div className='mt-5 flex flex-col gap-3'>
+              {STACKING.map(rule => (
+                <div
+                  key={rule.label}
+                  className='rounded-2xl border border-border bg-card p-4 shadow-sm'
+                >
+                  <div className='flex flex-wrap items-baseline gap-x-3 gap-y-1'>
+                    <span className='font-heading text-[15px] font-bold'>
+                      {rule.label}
+                    </span>
+                    <span className='text-[12.5px] tracking-wide text-muted-foreground'>
+                      {rule.items}
+                    </span>
+                  </div>
+                  <p className='mt-1.5 text-[13.5px] leading-snug text-muted-foreground'>
+                    {rule.text}
+                  </p>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </section>
 
-      <section className='mx-auto max-w-[720px] px-6 pb-12 sm:px-8'>
-        <h2 className='font-heading text-[22px] font-bold tracking-tight'>
-          Slots &amp; layering
-        </h2>
-        <p className='mt-1.5 text-[14px] leading-relaxed text-muted-foreground'>
-          How many of each kind you can wear at once — kept realistic, so two
-          pairs of shoes or two pairs of jeans never happen.
-        </p>
-        <div className='mt-5 flex flex-col gap-3'>
-          {STACKING.map(rule => (
-            <div
-              key={rule.label}
-              className='rounded-2xl border border-border bg-card p-4 shadow-sm'
+            <Link
+              href='/'
+              className='mt-10 inline-block text-[13px] font-medium text-muted-foreground hover:text-foreground'
             >
-              <div className='flex flex-wrap items-baseline gap-x-3 gap-y-1'>
-                <span className='font-heading text-[15px] font-bold'>
-                  {rule.label}
-                </span>
-                <span className='text-[12.5px] tracking-wide text-muted-foreground'>
-                  {rule.items}
-                </span>
-              </div>
-              <p className='mt-1.5 text-[13.5px] leading-snug text-muted-foreground'>
-                {rule.text}
-              </p>
-            </div>
-          ))}
+              ← Back to wardrobe
+            </Link>
+          </section>
         </div>
-      </section>
-
-      <section className='mx-auto max-w-[720px] px-6 pb-16 sm:px-8'>
-        <div
-          className='rounded-2xl border p-5'
-          style={{ borderColor: `${ACCENT}55`, background: `${ACCENT}0f` }}
-        >
-          <h2 className='font-heading text-[18px] font-bold tracking-tight'>
-            Rules we don&apos;t fake
-          </h2>
-          <p className='mt-2 text-[14px] leading-relaxed text-muted-foreground'>
-            Color, vibe and pattern are never blocked and never overridden —
-            they just score honestly. A clashing-color combo simply gets a low
-            number; we won&apos;t pretend it looks good.
-          </p>
-        </div>
-
-        <Link
-          href='/'
-          className='mt-10 inline-block text-[13px] font-medium text-muted-foreground hover:text-foreground'
-        >
-          ← Back to wardrobe
-        </Link>
-      </section>
+      </div>
     </main>
   )
 }
