@@ -14,11 +14,8 @@ enum Category {
   shoes
   accessory
   dress
-  skirt
   outerwear
-  bag
   headwear
-  jewelry
 }
 
 enum Temperature {
@@ -88,6 +85,7 @@ model Item {
   userId   String?
   name     String
   category Category
+  subType  String?
   imageUrl String?
 
   hex         String

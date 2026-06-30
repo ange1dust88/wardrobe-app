@@ -1,13 +1,13 @@
 'use client'
 
 import { PlusIcon } from 'lucide-react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { BrandMark } from '@/components/BrandMark'
+import { BRAND_ACCENT } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 
-type Nav = 'wardrobe' | 'outfits'
-
 type Props = {
-  nav: Nav
-  onNav: (nav: Nav) => void
   savedCount: number
   userInitial: string
   onAddItem: () => void
@@ -16,58 +16,45 @@ type Props = {
 
 function navTab(active: boolean): string {
   return cn(
-    'relative rounded-[9px] px-[18px] py-2 text-[13.5px] font-semibold transition-colors',
-    active
-      ? 'bg-background text-foreground shadow-sm'
-      : 'text-muted-foreground'
+    'rounded-[9px] px-[18px] py-2 text-[13.5px] font-semibold transition-colors',
+    active ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'
   )
 }
 
 export function AppHeader({
-  nav,
-  onNav,
   savedCount,
   userInitial,
   onAddItem,
   onProfile,
 }: Props) {
+  const pathname = usePathname()
+  const onOutfits = pathname === '/outfits'
+
   return (
     <header className='sticky top-0 z-30 flex items-center gap-5 border-b border-border bg-background/80 px-6 py-[15px] backdrop-blur-md sm:px-8'>
-      <div className='flex flex-none items-center gap-2.5'>
-        <span className='size-[11px] rounded-full bg-[#3d5a3d]' />
-        <span className='font-heading text-[23px] font-bold tracking-tight'>
-          dress
-        </span>
-      </div>
+      <BrandMark />
 
-      <div className='flex flex-1 justify-center'>
+      <nav className='flex flex-1 justify-center'>
         <div className='flex gap-0.5 rounded-xl bg-muted/60 p-1'>
-          <button
-            type='button'
-            onClick={() => onNav('wardrobe')}
-            className={navTab(nav === 'wardrobe')}
-          >
+          <Link href='/' className={navTab(!onOutfits)}>
             Wardrobe
-          </button>
-          <button
-            type='button'
-            onClick={() => onNav('outfits')}
-            className={navTab(nav === 'outfits')}
-          >
+          </Link>
+          <Link href='/outfits' className={navTab(onOutfits)}>
             Outfits
             {savedCount > 0 && (
               <span
                 className={cn(
                   'ml-1.5 rounded-[9px] px-1.5 py-px text-[11px] font-bold text-white',
-                  nav === 'outfits' ? 'bg-[#3d5a3d]' : 'bg-muted-foreground'
+                  !onOutfits && 'bg-muted-foreground'
                 )}
+                style={onOutfits ? { background: BRAND_ACCENT } : undefined}
               >
                 {savedCount}
               </span>
             )}
-          </button>
+          </Link>
         </div>
-      </div>
+      </nav>
 
       <div className='flex flex-none items-center gap-3'>
         <button

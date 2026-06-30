@@ -6,6 +6,7 @@ type ArrayField = 'vibe' | 'seasonWear'
 const EMPTY_FORM: CreateItem = {
   name: '',
   category: 'top',
+  subType: null,
   hex: '#000000',
   pattern: 'solid',
   vibe: [],

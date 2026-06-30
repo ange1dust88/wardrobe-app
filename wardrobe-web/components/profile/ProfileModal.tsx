@@ -43,7 +43,9 @@ function Toggle({
       onClick={onClick}
       className={cn(
         'min-h-10 rounded-full border px-3 py-1 text-sm capitalize transition-[color,background-color,border-color,transform] active:scale-[0.96]',
-        on ? 'border-black bg-black text-white' : 'border-black/30 text-black'
+        on
+          ? 'border-transparent bg-foreground text-white'
+          : 'border-border text-foreground hover:bg-muted'
       )}
     >
       {label}
@@ -94,7 +96,7 @@ export function ProfileModal({ onClose, itemCount, outfitCount }: Props) {
         <DialogPanel>
           <div className='flex flex-col gap-6'>
             <div className='flex flex-col gap-1'>
-              <span className='text-sm font-medium text-black'>
+              <span className='text-sm font-medium text-foreground'>
                 {user?.email ?? 'Signed in'}
               </span>
               <span className='text-sm text-muted-foreground'>
@@ -149,7 +151,7 @@ export function ProfileModal({ onClose, itemCount, outfitCount }: Props) {
                       onClick={() => togglePalette(palette.id)}
                       className={cn(
                         'flex min-h-10 flex-col items-center gap-1 rounded-lg border p-2 transition-[border-color,transform] active:scale-[0.96]',
-                        selected ? 'border-black' : 'border-transparent'
+                        selected ? 'border-foreground' : 'border-transparent'
                       )}
                     >
                       <div className='grid grid-cols-2 gap-0.5'>

@@ -11,8 +11,9 @@ import {
   type Who,
 } from '@/lib/onboarding'
 import type { ProfileInput } from '@/lib/profile'
+import { BRAND_ACCENT } from '@/lib/theme'
 
-const ACCENT = '#8ec63a'
+const ACCENT = BRAND_ACCENT
 const FONT = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const PILL =
   'inline-flex cursor-pointer items-center justify-center rounded-full bg-[#111] px-[30px] py-[15px] text-[20px] font-bold text-white'
@@ -170,10 +171,11 @@ export function Onboarding({ onComplete }: Props) {
                     const selected = palettes.includes(palette.id)
                     const faded = palettes.length > 0 && !selected
                     return (
-                      <div
+                      <button
                         key={palette.id}
+                        type='button'
                         onClick={() => togglePalette(palette.id)}
-                        className='flex cursor-pointer flex-col items-center gap-[11px]'
+                        className='flex cursor-pointer flex-col items-center gap-[11px] bg-transparent'
                       >
                         <div
                           className='rounded-[22px] p-2 transition-[border-color,filter] duration-200'
@@ -201,7 +203,7 @@ export function Onboarding({ onComplete }: Props) {
                         >
                           {palette.label}
                         </div>
-                      </div>
+                      </button>
                     )
                   })}
                 </div>
@@ -222,12 +224,13 @@ export function Onboarding({ onComplete }: Props) {
 
           <div className='flex min-h-[24px] items-center justify-center gap-[9px] text-[17px] text-[#8a8a8a]'>
             {(step === 2 || step === 3) && (
-              <span
+              <button
+                type='button'
                 onClick={back}
                 className='cursor-pointer px-1 py-0.5 text-[14px] text-[#8a8a8a]'
               >
                 ◄
-              </span>
+              </button>
             )}
             <span>step {step} / 3</span>
           </div>

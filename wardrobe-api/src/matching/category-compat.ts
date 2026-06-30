@@ -2,9 +2,7 @@ import { Category } from '../items/dto/item.dto';
 
 const CATEGORY_CONFLICTS: [Category, Category][] = [
   [Category.Top, Category.Dress],
-  [Category.Bottom, Category.Skirt],
   [Category.Bottom, Category.Dress],
-  [Category.Skirt, Category.Dress],
 ];
 
 const CONFLICT_SET = new Set(

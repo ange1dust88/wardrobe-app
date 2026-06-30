@@ -1,13 +1,17 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 import { CATEGORIES, getItemImageSrc, type Item } from '@/lib/items'
-import { getMatchScoreTone } from '@/lib/match-score'
+import { findOutfitConflicts } from '@/lib/outfit-compat'
 import { cn } from '@/lib/utils'
+import { ScoreBadge } from './ScoreBadge'
 
 type Props = {
   items: Item[]
   harmony: number | null
+  allowConflicts?: boolean
+  onAllowConflicts?: () => void
   onRemove: (id: string) => void
   onClear: () => void
   onSave: (name: string) => void
@@ -18,6 +22,8 @@ type Props = {
 export function OutfitBuilder({
   items,
   harmony,
+  allowConflicts,
+  onAllowConflicts,
   onRemove,
   onClear,
   onSave,
@@ -27,6 +33,7 @@ export function OutfitBuilder({
   const [name, setName] = useState('')
   const hasOutfit = items.length > 0
   const canSave = hasOutfit && name.trim().length > 0
+  const conflicts = findOutfitConflicts(items)
 
   function handleSave() {
     if (!canSave) return
@@ -42,14 +49,53 @@ export function OutfitBuilder({
             Build an outfit
           </h2>
           {harmony != null && items.length >= 2 && (
-            <span
-              className='font-heading rounded-[9px] px-2.5 py-0.5 text-[13px] font-bold text-white'
-              style={{ background: getMatchScoreTone(harmony).solidColor }}
-            >
-              {harmony} / 36
-            </span>
+            <ScoreBadge score={harmony} />
           )}
         </div>
+
+        {conflicts.length > 0 && !allowConflicts && (
+          <div className='mt-3 rounded-xl border border-warning/40 bg-warning/8 p-3'>
+            <div className='text-[12px] font-semibold tracking-wide text-warning uppercase'>
+              Doesn&apos;t go together
+            </div>
+            <ul className='mt-1.5 flex flex-col gap-1.5'>
+              {conflicts.map(c => (
+                <li
+                  key={`${c.a.id}-${c.b.id}`}
+                  className='text-[12.5px] leading-snug text-foreground'
+                >
+                  <span className='font-medium'>{c.a.name}</span>
+                  <span className='text-muted-foreground'> × </span>
+                  <span className='font-medium'>{c.b.name}</span>
+                  <span className='text-muted-foreground'> — {c.reason}</span>
+                </li>
+              ))}
+            </ul>
+            <div className='mt-2.5 flex items-center gap-4'>
+              {onAllowConflicts && (
+                <button
+                  type='button'
+                  onClick={onAllowConflicts}
+                  className='text-[12.5px] font-semibold text-foreground underline'
+                >
+                  Wear it anyway
+                </button>
+              )}
+              <Link
+                href='/how-it-works'
+                className='text-[12.5px] text-muted-foreground underline'
+              >
+                Why?
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {conflicts.length > 0 && allowConflicts && (
+          <div className='mt-3 text-[12.5px] text-muted-foreground'>
+            Scoring this look as-is — bold mix.
+          </div>
+        )}
 
         {!hasOutfit ? (
           <p className='mt-3 text-sm leading-relaxed text-muted-foreground'>
@@ -137,6 +183,13 @@ export function OutfitBuilder({
         >
           {saving ? 'Saving…' : 'Save outfit'}
         </button>
+
+        <Link
+          href='/how-it-works'
+          className='mt-3 block text-center text-[12px] text-muted-foreground hover:text-foreground'
+        >
+          How matching works
+        </Link>
       </div>
     </aside>
   )

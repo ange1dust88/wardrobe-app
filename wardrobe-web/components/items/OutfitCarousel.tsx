@@ -7,7 +7,8 @@ import {
   type Item,
   type MatchMap,
 } from '@/lib/items'
-import { getMatchScoreTone } from '@/lib/match-score'
+import { BRAND_ACCENT } from '@/lib/theme'
+import { ScoreBadge } from './ScoreBadge'
 
 type Props = {
   items: Item[]
@@ -89,7 +90,7 @@ export function OutfitCarousel({ items, selectedIds, map, onSelect }: Props) {
                         cursor: 'pointer',
                         transform: selected ? 'translateY(-2px)' : 'none',
                         boxShadow: selected
-                          ? '0 0 0 2px var(--card), 0 0 0 4px #3d5a3d, 0 8px 20px rgba(0,0,0,.16)'
+                          ? `0 0 0 2px var(--card), 0 0 0 4px ${BRAND_ACCENT}, 0 8px 20px rgba(0,0,0,.16)`
                           : '0 1px 3px rgba(0,0,0,.08)',
                         transition: 'box-shadow .2s ease, transform .2s ease',
                       }}
@@ -102,17 +103,19 @@ export function OutfitCarousel({ items, selectedIds, map, onSelect }: Props) {
                         />
                       )}
                       {selected && (
-                        <span className='absolute top-1.5 right-1.5 flex size-6 items-center justify-center rounded-full bg-[#3d5a3d] text-[13px] text-white shadow'>
+                        <span
+                          className='absolute top-1.5 right-1.5 flex size-6 items-center justify-center rounded-full text-[13px] text-white shadow'
+                          style={{ background: BRAND_ACCENT }}
+                        >
                           ✓
                         </span>
                       )}
                       {showChip && (
-                        <span
-                          className='font-heading absolute bottom-1.5 left-1.5 rounded-md px-1.5 text-[12px] font-bold text-white shadow'
-                          style={{ background: getMatchScoreTone(f).solidColor }}
-                        >
-                          {f}
-                        </span>
+                        <ScoreBadge
+                          score={f}
+                          variant='chip'
+                          className='absolute bottom-1.5 left-1.5'
+                        />
                       )}
                     </button>
                     <div

@@ -1,37 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { Category, Item, SeasonPalette } from '../items/dto/item.dto';
+import { Injectable } from '@nestjs/common';
+import { SeasonPalette } from '../items/dto/item.dto';
 import { ItemsService } from '../items/items.service';
-import { MatchQueryDto } from './dto/match-query.dto';
-import { SuggestMatchesDto } from './dto/suggest-matches.dto';
 import { MatchMap, MatchMapCacheService } from './match-map-cache.service';
 import { categoriesConflict } from './category-compat';
 import { seasonsConflict } from './season-compat';
-import {
-  computeTotalScore,
-  isRecommendableScore,
-  ScoreBreakdown,
-} from './match-scoring';
-
-export type ScoredMatch = {
-  item: Item;
-  score: number;
-  breakdown: ScoreBreakdown;
-};
-
-export type MatchResult = {
-  anchor: Item;
-  matches: Record<Category, ScoredMatch[]>;
-};
-
-export type SuggestMatch = {
-  item: Item;
-  score: number;
-};
-
-export type SuggestResult = {
-  selected: Item[];
-  matches: Record<Category, SuggestMatch[]>;
-};
+import { computeTotalScore, isRecommendableScore } from './match-scoring';
 
 @Injectable()
 export class MatchingService {
@@ -43,8 +16,9 @@ export class MatchingService {
   async getMatchMap(
     userId: string,
     userColorType?: SeasonPalette,
+    allowConflicts = false,
   ): Promise<MatchMap> {
-    const useCache = !userColorType;
+    const useCache = !userColorType && !allowConflicts;
     if (useCache) {
       const cached = this.matchMapCache.get(userId);
       if (cached) {
@@ -58,11 +32,17 @@ export class MatchingService {
       const ctx = { vibe: anchor.vibe, userColorType };
       const scores: Record<string, number> = {};
       for (const candidate of items) {
-        if (
-          candidate.id === anchor.id ||
-          candidate.category === anchor.category ||
-          categoriesConflict(anchor.category, candidate.category) ||
-          seasonsConflict(anchor.seasonWear, candidate.seasonWear)
+        if (candidate.id === anchor.id) {
+          continue;
+        }
+        if (candidate.category === anchor.category) {
+          if (!allowConflicts) {
+            continue;
+          }
+        } else if (
+          !allowConflicts &&
+          (categoriesConflict(anchor.category, candidate.category) ||
+            seasonsConflict(anchor.seasonWear, candidate.seasonWear))
         ) {
           continue;
         }
@@ -77,102 +57,5 @@ export class MatchingService {
       this.matchMapCache.set(userId, map);
     }
     return map;
-  }
-
-  async getMatches(
-    userId: string,
-    anchorId: string,
-    query: MatchQueryDto,
-  ): Promise<MatchResult> {
-    const anchor = await this.itemsService.findOne(userId, anchorId);
-
-    let candidates = (await this.itemsService.findAll(userId)).filter(
-      (item) =>
-        item.id !== anchor.id &&
-        item.category !== anchor.category &&
-        !categoriesConflict(anchor.category, item.category) &&
-        !seasonsConflict(anchor.seasonWear, item.seasonWear),
-    );
-
-    if (query.category) {
-      candidates = candidates.filter((c) => c.category === query.category);
-    }
-    if (query.season) {
-      candidates = candidates.filter((c) =>
-        c.seasonWear.includes(query.season!),
-      );
-    }
-
-    const ctx = {
-      userColorType: query.userColorType,
-      vibe: query.vibe?.length ? query.vibe : anchor.vibe,
-    };
-
-    const scored: ScoredMatch[] = candidates
-      .map((item) => {
-        const { total, breakdown } = computeTotalScore(anchor, item, ctx);
-        return { item, score: total, breakdown };
-      })
-      .filter((s) => isRecommendableScore(s.score))
-      .sort((a, b) => b.score - a.score);
-
-    const matches = {} as Record<Category, ScoredMatch[]>;
-    for (const category of Object.values(Category)) {
-      matches[category] = scored.filter((s) => s.item.category === category);
-    }
-
-    return { anchor, matches };
-  }
-
-  async suggestMatches(
-    userId: string,
-    dto: SuggestMatchesDto,
-  ): Promise<SuggestResult> {
-    const missing = await this.itemsService.missingIds(userId, dto.itemIds);
-    if (missing.length > 0) {
-      throw new BadRequestException(`Unknown item ids: ${missing.join(', ')}`);
-    }
-
-    const selected = await this.itemsService.findByIds(userId, dto.itemIds);
-    const selectedIds = new Set(dto.itemIds);
-    const selectedCategories = new Set(selected.map((s) => s.category));
-
-    let candidates = (await this.itemsService.findAll(userId)).filter(
-      (item) =>
-        !selectedIds.has(item.id) &&
-        !selectedCategories.has(item.category) &&
-        !selected.some((s) => categoriesConflict(s.category, item.category)) &&
-        !selected.some((s) => seasonsConflict(s.seasonWear, item.seasonWear)),
-    );
-    if (dto.season) {
-      candidates = candidates.filter((c) => c.seasonWear.includes(dto.season!));
-    }
-
-    const ctx = {
-      userColorType: dto.userColorType,
-      vibe: dto.vibe?.length
-        ? dto.vibe
-        : [...new Set(selected.flatMap((s) => s.vibe))],
-    };
-
-    const scored: SuggestMatch[] = candidates
-      .map((item) => {
-        const totals = selected.map(
-          (s) => computeTotalScore(s, item, ctx).total,
-        );
-        const score = Math.round(
-          totals.reduce((sum, t) => sum + t, 0) / totals.length,
-        );
-        return { item, score };
-      })
-      .filter((s) => isRecommendableScore(s.score))
-      .sort((a, b) => b.score - a.score);
-
-    const matches = {} as Record<Category, SuggestMatch[]>;
-    for (const category of Object.values(Category)) {
-      matches[category] = scored.filter((s) => s.item.category === category);
-    }
-
-    return { selected, matches };
   }
 }

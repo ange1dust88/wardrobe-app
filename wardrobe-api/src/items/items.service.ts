@@ -88,6 +88,7 @@ export class ItemsService {
         userId,
         name: dto.name,
         category: dto.category,
+        subType: dto.subType ?? null,
         pattern: dto.pattern,
         vibe: dto.vibe,
         seasonWear: dto.seasonWear,
@@ -116,6 +117,7 @@ export class ItemsService {
     const data: Record<string, unknown> = {};
     if (dto.name !== undefined) data.name = dto.name;
     if (dto.category !== undefined) data.category = dto.category;
+    if (dto.subType !== undefined) data.subType = dto.subType || null;
     if (dto.pattern !== undefined) data.pattern = dto.pattern;
     if (dto.vibe !== undefined) data.vibe = dto.vibe;
     if (dto.seasonWear !== undefined) data.seasonWear = dto.seasonWear;
@@ -182,31 +184,6 @@ export class ItemsService {
     return { deleted: true, id };
   }
 
-  async setImage(
-    userId: string,
-    id: string,
-    file: UploadedItemImage,
-  ): Promise<Item> {
-    const current = await this.findOne(userId, id);
-    const imageUrl = await this.storage.uploadImage(file);
-
-    let row: DbItem;
-    try {
-      row = await this.prisma.item.update({
-        where: { id },
-        data: { imageUrl },
-      });
-    } catch (err) {
-      await this.storage.deleteImage(imageUrl);
-      throw err;
-    }
-
-    if (current.imageUrl) {
-      await this.storage.deleteImage(current.imageUrl);
-    }
-    return this.toItem(row);
-  }
-
   async extractColor(image: UploadedItemImage): Promise<{ hex: string }> {
     return { hex: await extractDominantHex(image.buffer) };
   }
@@ -217,6 +194,7 @@ export class ItemsService {
       createdAt: row.createdAt.toISOString(),
       name: row.name,
       category: row.category as Category,
+      subType: row.subType,
       imageUrl: row.imageUrl,
       color: {
         hex: row.hex,

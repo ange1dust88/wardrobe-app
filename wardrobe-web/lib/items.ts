@@ -20,10 +20,7 @@ export const CATEGORIES = [
   'outerwear',
   'dress',
   'bottom',
-  'skirt',
   'shoes',
-  'bag',
-  'jewelry',
   'accessory',
 ] as const
 
@@ -35,11 +32,46 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   outerwear: 'Outerwear',
   dress: 'Dress',
   bottom: 'Bottom',
-  skirt: 'Skirt',
   shoes: 'Shoes',
-  bag: 'Bag',
-  jewelry: 'Jewelry',
   accessory: 'Accessory',
+}
+
+export type StackPolicy = 'single' | 'layered' | 'unlimited'
+
+export const STACK_POLICY: Record<Category, StackPolicy> = {
+  headwear: 'single',
+  top: 'layered',
+  outerwear: 'layered',
+  dress: 'single',
+  bottom: 'layered',
+  shoes: 'single',
+  accessory: 'unlimited',
+}
+
+export const SUBTYPES: Partial<Record<Category, string[]>> = {
+  headwear: ['cap', 'beanie', 'hat', 'beret', 'headband'],
+  top: ['t-shirt', 'longsleeve', 'shirt', 'sweater', 'hoodie', 'tank', 'polo'],
+  outerwear: ['jacket', 'coat', 'blazer', 'vest', 'cardigan'],
+  dress: ['mini', 'midi', 'maxi', 'gown', 'slip'],
+  bottom: ['trousers', 'jeans', 'shorts', 'leggings', 'skirt', 'sweatpants'],
+  shoes: ['sneakers', 'boots', 'heels', 'sandals', 'flats', 'loafers'],
+  accessory: [
+    'bag',
+    'jewelry',
+    'belt',
+    'watch',
+    'sunglasses',
+    'scarf',
+    'gloves',
+    'necklace',
+    'ring',
+    'earrings',
+    'bracelet',
+  ],
+}
+
+export const BASE_SUBTYPES: Partial<Record<Category, string[]>> = {
+  bottom: ['leggings'],
 }
 
 export const SEASONS = ['spring', 'summer', 'autumn', 'winter'] as const
@@ -85,6 +117,7 @@ export type Item = {
   createdAt: string
   name: string
   category: Category
+  subType?: string | null
   color: Color
   wardrobeRole: string
   imageUrl?: string
@@ -97,6 +130,7 @@ export type Item = {
 export type CreateItem = {
   name: string
   category: Category
+  subType?: string | null
   hex: string
   pattern: Pattern
   vibe: Vibe[]
@@ -114,6 +148,7 @@ export async function createItem(body: CreateItem): Promise<Item> {
   const formData = new FormData()
   formData.append('name', body.name)
   formData.append('category', body.category)
+  if (body.subType) formData.append('subType', body.subType)
   formData.append('hex', body.hex)
   formData.append('pattern', body.pattern)
   body.vibe.forEach(vibe => formData.append('vibe', vibe))
@@ -139,6 +174,7 @@ export async function createItem(body: CreateItem): Promise<Item> {
 export type UpdateItem = {
   name: string
   category: Category
+  subType?: string | null
   hex: string
   pattern: Pattern
   vibe: Vibe[]
@@ -153,6 +189,7 @@ export async function updateItem(
   const formData = new FormData()
   formData.append('name', body.name)
   formData.append('category', body.category)
+  if (body.subType) formData.append('subType', body.subType)
   formData.append('hex', body.hex)
   formData.append('pattern', body.pattern)
   body.vibe.forEach(vibe => formData.append('vibe', vibe))
@@ -201,54 +238,18 @@ export async function deleteItem(id: string): Promise<void> {
   if (!res.ok) throw new Error(`DELETE /items/${id} → ${res.status}`)
 }
 
-export type ScoredMatch = {
-  item: Item
-  score: number
-  breakdown: Record<string, number>
-}
-
-export type MatchResult = {
-  anchor: Item
-  matches: Record<Category, ScoredMatch[]>
-}
-
-export async function fetchMatches(anchorId: string): Promise<MatchResult> {
-  const res = await apiFetch(`/items/${anchorId}/matches`)
-  if (!res.ok) throw new Error(`GET /items/${anchorId}/matches → ${res.status}`)
-  return res.json()
-}
-
 export type MatchMap = Record<string, Record<string, number>>
 
-export async function fetchMatchMap(colorType?: string): Promise<MatchMap> {
-  const query = colorType ? `?colorType=${colorType}` : ''
+export async function fetchMatchMap(
+  colorType?: string,
+  allowConflicts?: boolean
+): Promise<MatchMap> {
+  const params = new URLSearchParams()
+  if (colorType) params.set('colorType', colorType)
+  if (allowConflicts) params.set('allowConflicts', 'true')
+  const query = params.toString() ? `?${params.toString()}` : ''
   const res = await apiFetch(`/items/matches/map${query}`)
   if (!res.ok) throw new Error(`GET /items/matches/map → ${res.status}`)
-  return res.json()
-}
-
-export type SuggestMatch = {
-  item: Item
-  score: number
-}
-
-export type SuggestResult = {
-  selected: Item[]
-  matches: Record<Category, SuggestMatch[]>
-}
-
-export async function suggestMatches(
-  itemIds: string[],
-  colorType?: string,
-): Promise<SuggestResult> {
-  const res = await apiFetch('/items/matches', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(
-      colorType ? { itemIds, userColorType: colorType } : { itemIds },
-    ),
-  })
-  if (!res.ok) throw new Error(`POST /items/matches → ${res.status}`)
   return res.json()
 }
 

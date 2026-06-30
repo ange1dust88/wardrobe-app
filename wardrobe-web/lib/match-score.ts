@@ -10,7 +10,6 @@ export type MatchScoreTone = {
 }
 
 export const MAX_MATCH_SCORE = 36
-export const MIN_VISIBLE_MATCH_PERCENTAGE = 60
 
 type MatchScoreStyle = Omit<MatchScoreTone, 'percentage'>
 
@@ -43,6 +42,12 @@ const MATCH_SCORE_TONES: MatchScoreStyle[] = [
     solidColor: '#245179',
   },
 ]
+
+export const SCORE_TIER_COLORS = {
+  works: MATCH_SCORE_TONES[0].solidColor,
+  great: MATCH_SCORE_TONES[1].solidColor,
+  perfect: MATCH_SCORE_TONES[2].solidColor,
+}
 
 export function matchScoreToPercentage(score: number): number {
   const boundedScore = Math.max(0, Math.min(MAX_MATCH_SCORE, score))

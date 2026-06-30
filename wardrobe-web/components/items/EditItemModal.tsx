@@ -2,14 +2,7 @@
 
 import { useItemForm } from '@/hooks/useItemForm'
 import type { Item, Pattern, UpdateItem, Vibe } from '@/lib/items'
-import {
-  Dialog,
-  DialogHeader,
-  DialogPanel,
-  DialogPopup,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { ItemForm } from './ItemForm'
+import { ItemFormDialog } from './ItemFormDialog'
 
 type Props = {
   item: Item
@@ -37,6 +30,7 @@ export function EditItemModal({
   const form = useItemForm({
     name: item.name,
     category: item.category,
+    subType: item.subType ?? null,
     hex: item.color.hex,
     pattern: item.pattern as Pattern,
     vibe: item.vibe as Vibe[],
@@ -46,10 +40,11 @@ export function EditItemModal({
 
   function submit() {
     if (!form.isValid) return
-    const { name, category, hex, pattern, vibe, seasonWear, image } = form.values
+    const { name, category, subType, hex, pattern, vibe, seasonWear, image } =
+      form.values
     onSubmit(
       item.id,
-      { name, category, hex, pattern, vibe, seasonWear, image },
+      { name, category, subType, hex, pattern, vibe, seasonWear, image },
       { onSuccess: onClose }
     )
   }
@@ -59,29 +54,18 @@ export function EditItemModal({
   }
 
   return (
-    <Dialog
+    <ItemFormDialog
       open
-      onOpenChange={nextOpen => {
-        if (!nextOpen) onClose()
-      }}
-    >
-      <DialogPopup>
-        <DialogHeader>
-          <DialogTitle>Edit item</DialogTitle>
-        </DialogHeader>
-        <DialogPanel>
-          <ItemForm
-            form={form}
-            onSubmit={submit}
-            pending={pending}
-            errorMessage={errorMessage}
-            submitLabel='Save changes'
-            photoLabel='Replace photo'
-            onDelete={handleDelete}
-            deleting={deleting}
-          />
-        </DialogPanel>
-      </DialogPopup>
-    </Dialog>
+      onClose={onClose}
+      title='Edit item'
+      subtitle='Update the details — matches refresh instantly.'
+      submitLabel='Save changes'
+      form={form}
+      onSubmit={submit}
+      pending={pending}
+      errorMessage={errorMessage}
+      onDelete={handleDelete}
+      deleting={deleting}
+    />
   )
 }

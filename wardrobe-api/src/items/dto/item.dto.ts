@@ -26,10 +26,7 @@ export enum Category {
   Outerwear = 'outerwear',
   Dress = 'dress',
   Bottom = 'bottom',
-  Skirt = 'skirt',
   Shoes = 'shoes',
-  Bag = 'bag',
-  Jewelry = 'jewelry',
   Accessory = 'accessory',
 }
 
@@ -102,6 +99,10 @@ export class CreateItemDto {
   category: Category;
 
   @IsOptional()
+  @IsString()
+  subType?: string;
+
+  @IsOptional()
   @IsHexColor()
   hex?: string;
 
@@ -137,6 +138,7 @@ export interface Item {
   createdAt: string;
   name: string;
   category: Category;
+  subType: string | null;
   color: Color;
   wardrobeRole: WardrobeRole;
   imageUrl: string | null;

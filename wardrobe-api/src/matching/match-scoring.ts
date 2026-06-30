@@ -26,7 +26,6 @@ export type ScoreBreakdown = {
 };
 
 const MAX_SCORE = 36;
-// 22 / 36 rounds to 61%. Everything below the visible 60% band stays hidden.
 const MIN_RECOMMENDABLE_SCORE = 22;
 
 const SCORE_CAPS: ScoreBreakdown = {
@@ -288,7 +287,6 @@ export function computeTotalScore(
   ctx: MatchContext,
 ): {
   total: number;
-  rawTotal: number;
   breakdown: ScoreBreakdown;
 } {
   const breakdown: ScoreBreakdown = {
@@ -313,7 +311,7 @@ export function computeTotalScore(
     breakdown.pattern;
   const total = clamp(Math.round(rawTotal), 0, MAX_SCORE);
 
-  return { total, rawTotal, breakdown };
+  return { total, breakdown };
 }
 
 export function isRecommendableScore(score: number): boolean {
