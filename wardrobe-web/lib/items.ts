@@ -115,6 +115,17 @@ export const FORMALITY_LABELS: Record<Formality, string> = {
   formal: 'Formal',
 }
 
+export const FIT_OPTIONS = ['slim', 'regular', 'relaxed', 'oversized'] as const
+
+export type Fit = (typeof FIT_OPTIONS)[number]
+
+export const FIT_LABELS: Record<Fit, string> = {
+  slim: 'Slim',
+  regular: 'Regular',
+  relaxed: 'Relaxed',
+  oversized: 'Oversized',
+}
+
 export type Color = {
   hex: string
   hue: number
@@ -136,6 +147,7 @@ export type Item = {
   imageUrl?: string
   pattern: string
   formality?: string | null
+  fit?: string | null
   vibe: string[]
   seasonPaletteCompatibility: string[]
   seasonWear: Season[]
@@ -149,6 +161,7 @@ export type CreateItem = {
   accentHex?: string | null
   pattern: Pattern
   formality?: Formality | null
+  fit?: Fit | null
   vibe: Vibe[]
   seasonWear: Season[]
   image?: File | null
@@ -169,6 +182,7 @@ export async function createItem(body: CreateItem): Promise<Item> {
   if (body.accentHex) formData.append('accentHex', body.accentHex)
   formData.append('pattern', body.pattern)
   if (body.formality) formData.append('formality', body.formality)
+  if (body.fit) formData.append('fit', body.fit)
   body.vibe.forEach(vibe => formData.append('vibe', vibe))
   body.seasonWear.forEach(season => formData.append('seasonWear', season))
   if (body.image) {
@@ -197,6 +211,7 @@ export type UpdateItem = {
   accentHex?: string | null
   pattern: Pattern
   formality?: Formality | null
+  fit?: Fit | null
   vibe: Vibe[]
   seasonWear: Season[]
   image?: File | null
@@ -214,6 +229,7 @@ export async function updateItem(
   if (body.accentHex) formData.append('accentHex', body.accentHex)
   formData.append('pattern', body.pattern)
   if (body.formality) formData.append('formality', body.formality)
+  if (body.fit) formData.append('fit', body.fit)
   body.vibe.forEach(vibe => formData.append('vibe', vibe))
   body.seasonWear.forEach(season => formData.append('seasonWear', season))
   if (body.image) {

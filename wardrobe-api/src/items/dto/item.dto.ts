@@ -97,6 +97,13 @@ export enum Formality {
   Formal = 'formal',
 }
 
+export enum Fit {
+  Slim = 'slim',
+  Regular = 'regular',
+  Relaxed = 'relaxed',
+  Oversized = 'oversized',
+}
+
 export class CreateItemDto {
   @IsString()
   @IsNotEmpty()
@@ -123,6 +130,10 @@ export class CreateItemDto {
   @IsOptional()
   @IsEnum(Formality)
   formality?: Formality;
+
+  @IsOptional()
+  @IsEnum(Fit)
+  fit?: Fit;
 
   @Transform(toArray)
   @IsArray()
@@ -160,6 +171,7 @@ export interface Item {
   imageUrl: string | null;
   pattern: Pattern;
   formality: Formality | null;
+  fit: Fit | null;
   vibe: Vibe[];
   seasonPaletteCompatibility: SeasonPalette[];
   seasonWear: SeasonWear[];

@@ -5,6 +5,8 @@ import {
   CATEGORIES,
   CATEGORY_LABELS,
   extractItemColor,
+  FIT_LABELS,
+  FIT_OPTIONS,
   FORMALITY_LABELS,
   FORMALITY_OPTIONS,
   PATTERNS,
@@ -13,6 +15,7 @@ import {
   SUBTYPES,
   VIBES,
   type Category,
+  type Fit,
   type Formality,
   type Pattern,
   type Season,
@@ -64,6 +67,11 @@ const patternItems = PATTERNS.map(value => ({
 
 const formalityItems = FORMALITY_OPTIONS.map(value => ({
   label: FORMALITY_LABELS[value],
+  value,
+}))
+
+const fitItems = FIT_OPTIONS.map(value => ({
+  label: FIT_LABELS[value],
   value,
 }))
 
@@ -180,24 +188,45 @@ export function ItemForm({ form }: { form: ItemFormApi }) {
         </div>
       </div>
 
-      <div className='mb-5'>
-        <div className={labelCls}>Formality</div>
-        <Select
-          items={formalityItems}
-          value={values.formality ?? 'casual'}
-          onValueChange={value => patch({ formality: value as Formality })}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectPopup alignItemWithTrigger={false}>
-            {formalityItems.map(item => (
-              <SelectItem key={item.value} value={item.value}>
-                {item.label}
-              </SelectItem>
-            ))}
-          </SelectPopup>
-        </Select>
+      <div className='mb-5 grid grid-cols-2 gap-4'>
+        <div>
+          <div className={labelCls}>Formality</div>
+          <Select
+            items={formalityItems}
+            value={values.formality ?? 'casual'}
+            onValueChange={value => patch({ formality: value as Formality })}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectPopup alignItemWithTrigger={false}>
+              {formalityItems.map(item => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectPopup>
+          </Select>
+        </div>
+        <div>
+          <div className={labelCls}>Fit</div>
+          <Select
+            items={fitItems}
+            value={values.fit ?? 'regular'}
+            onValueChange={value => patch({ fit: value as Fit })}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectPopup alignItemWithTrigger={false}>
+              {fitItems.map(item => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectPopup>
+          </Select>
+        </div>
       </div>
 
       {subtypes && (

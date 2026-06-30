@@ -8,6 +8,7 @@ const EMPTY_FORM: CreateItem = {
   category: 'top',
   subType: null,
   formality: 'casual',
+  fit: 'regular',
   hex: '#000000',
   accentHex: null,
   pattern: 'solid',

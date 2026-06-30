@@ -1,7 +1,14 @@
 'use client'
 
 import { useItemForm } from '@/hooks/useItemForm'
-import type { Formality, Item, Pattern, UpdateItem, Vibe } from '@/lib/items'
+import type {
+  Fit,
+  Formality,
+  Item,
+  Pattern,
+  UpdateItem,
+  Vibe,
+} from '@/lib/items'
 import { ItemFormDialog } from './ItemFormDialog'
 
 type Props = {
@@ -35,6 +42,7 @@ export function EditItemModal({
     accentHex: item.accent?.hex ?? null,
     pattern: item.pattern as Pattern,
     formality: (item.formality as Formality | null) ?? null,
+    fit: (item.fit as Fit | null) ?? null,
     vibe: item.vibe as Vibe[],
     seasonWear: item.seasonWear,
     image: null,
@@ -50,6 +58,7 @@ export function EditItemModal({
       accentHex,
       pattern,
       formality,
+      fit,
       vibe,
       seasonWear,
       image,
@@ -64,6 +73,7 @@ export function EditItemModal({
         accentHex,
         pattern,
         formality,
+        fit,
         vibe,
         seasonWear,
         image,
