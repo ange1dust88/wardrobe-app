@@ -36,7 +36,7 @@ export function AddItemModal({
       open={open}
       onClose={onClose}
       title='New item'
-      subtitle='Catalog a piece — dress learns how it pairs.'
+      subtitle='matches refresh instantly'
       submitLabel='Add item'
       form={form}
       onSubmit={submit}

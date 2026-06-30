@@ -6,14 +6,12 @@ import {
   Pattern,
   Saturation,
   SeasonPalette,
-  Vibe,
   WardrobeRole,
 } from '../items/dto/item.dto';
 import { warmthGap } from './season-compat';
 
 export type MatchContext = {
   userColorType?: SeasonPalette;
-  vibe: Vibe[];
   strictTemperature?: boolean;
 };
 
@@ -237,61 +235,14 @@ export function computePaletteScore(
   return -2;
 }
 
-const VIBE_INCOMPATIBLE: [Vibe, Vibe][] = [
-  [Vibe.Sporty, Vibe.Workwear],
-  [Vibe.Sporty, Vibe.Romantic],
-  [Vibe.Sporty, Vibe.Classic],
-  [Vibe.Minimalist, Vibe.Romantic],
-  [Vibe.Minimalist, Vibe.Vintage],
-  [Vibe.Urban, Vibe.Romantic],
-  [Vibe.Urban, Vibe.Classic],
-  [Vibe.Workwear, Vibe.Romantic],
-  [Vibe.Edgy, Vibe.Relaxed],
-];
+export function computeStyleScore(anchor: Item, candidate: Item): number {
+  if (!anchor.formality || !candidate.formality) return 0;
 
-const VIBE_INCOMPATIBLE_SET = new Set(
-  VIBE_INCOMPATIBLE.map(([a, b]) => [a, b].sort().join('|')),
-);
-
-function vibePairCompatible(a: Vibe, b: Vibe): boolean {
-  if (a === b) return true;
-  return !VIBE_INCOMPATIBLE_SET.has([a, b].sort().join('|'));
-}
-
-function vibeTagScore(candidateVibes: Vibe[], desired: Vibe[]): number {
-  if (desired.length === 0 || candidateVibes.length === 0) return 0;
-
-  let compatible = 0;
-  let total = 0;
-  for (const a of desired) {
-    for (const c of candidateVibes) {
-      total += 1;
-      if (vibePairCompatible(a, c)) compatible += 1;
-    }
-  }
-
-  const ratio = compatible / total;
-  if (ratio === 1) return 1;
-  if (ratio >= 0.5) return 0;
-  return -1;
-}
-
-export function computeStyleScore(
-  anchor: Item,
-  candidate: Item,
-  desired: Vibe[],
-): number {
-  let score = 0;
-
-  if (anchor.formality && candidate.formality) {
-    const gap = Math.abs(
-      FORMALITY_ORDER.indexOf(anchor.formality) -
-        FORMALITY_ORDER.indexOf(candidate.formality),
-    );
-    score += gap === 0 ? 4 : gap === 1 ? 2 : gap === 2 ? 0 : -4;
-  }
-
-  score += vibeTagScore(candidate.vibe, desired);
+  const gap = Math.abs(
+    FORMALITY_ORDER.indexOf(anchor.formality) -
+      FORMALITY_ORDER.indexOf(candidate.formality),
+  );
+  const score = gap === 0 ? 5 : gap === 1 ? 3 : gap === 2 ? 0 : -4;
 
   return clamp(score, -5, SCORE_CAPS.style);
 }
@@ -341,7 +292,7 @@ export function computeTotalScore(
     role: computeRoleScore(anchor, candidate),
     season: computeSeasonScore(anchor, candidate),
     palette: computePaletteScore(anchor, candidate, ctx.userColorType),
-    style: computeStyleScore(anchor, candidate, ctx.vibe),
+    style: computeStyleScore(anchor, candidate),
     pattern: computePatternScore(anchor, candidate),
   };
 

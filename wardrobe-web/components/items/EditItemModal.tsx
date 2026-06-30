@@ -8,7 +8,6 @@ import {
   type Item,
   type Pattern,
   type UpdateItem,
-  type Vibe,
 } from '@/lib/items'
 import { ItemFormDialog } from './ItemFormDialog'
 
@@ -44,7 +43,6 @@ export function EditItemModal({
     pattern: item.pattern as Pattern,
     formality: (item.formality as Formality | null) ?? null,
     fit: (item.fit as Fit | null) ?? null,
-    vibe: item.vibe as Vibe[],
     seasonWear: item.seasonWear,
     image: null,
   })
@@ -60,7 +58,6 @@ export function EditItemModal({
       pattern,
       formality,
       fit,
-      vibe,
       seasonWear,
       image,
     } = form.values
@@ -75,7 +72,6 @@ export function EditItemModal({
         pattern,
         formality,
         fit,
-        vibe,
         seasonWear,
         image,
       },
@@ -92,7 +88,7 @@ export function EditItemModal({
       open
       onClose={onClose}
       title='Edit item'
-      subtitle='Update the details — matches refresh instantly.'
+      subtitle='matches refresh instantly'
       submitLabel='Save changes'
       form={form}
       onSubmit={submit}

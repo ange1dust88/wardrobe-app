@@ -29,7 +29,7 @@ export class MatchingService {
     const items = await this.itemsService.findAll(userId);
     const map: MatchMap = {};
     for (const anchor of items) {
-      const ctx = { vibe: anchor.vibe, userColorType };
+      const ctx = { userColorType };
       const scores: Record<string, MatchCell> = {};
       for (const candidate of items) {
         if (candidate.id === anchor.id) {

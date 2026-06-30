@@ -88,17 +88,6 @@ export const PATTERNS = [
 
 export type Pattern = (typeof PATTERNS)[number]
 
-export const VIBES = [
-  'minimalist',
-  'classic',
-  'sporty',
-  'edgy',
-  'romantic',
-  'vintage',
-] as const
-
-export type Vibe = (typeof VIBES)[number]
-
 export const FORMALITY_OPTIONS = [
   'loungewear',
   'casual',
@@ -148,7 +137,6 @@ export type Item = {
   pattern: string
   formality?: string | null
   fit?: string | null
-  vibe: string[]
   seasonPaletteCompatibility: string[]
   seasonWear: Season[]
 }
@@ -162,7 +150,6 @@ export type CreateItem = {
   pattern: Pattern
   formality?: Formality | null
   fit?: Fit | null
-  vibe: Vibe[]
   seasonWear: Season[]
   image?: File | null
 }
@@ -183,7 +170,6 @@ export async function createItem(body: CreateItem): Promise<Item> {
   formData.append('pattern', body.pattern)
   if (body.formality) formData.append('formality', body.formality)
   if (body.fit) formData.append('fit', body.fit)
-  body.vibe.forEach(vibe => formData.append('vibe', vibe))
   body.seasonWear.forEach(season => formData.append('seasonWear', season))
   if (body.image) {
     formData.append('image', body.image)
@@ -212,7 +198,6 @@ export type UpdateItem = {
   pattern: Pattern
   formality?: Formality | null
   fit?: Fit | null
-  vibe: Vibe[]
   seasonWear: Season[]
   image?: File | null
 }
@@ -230,7 +215,6 @@ export async function updateItem(
   formData.append('pattern', body.pattern)
   if (body.formality) formData.append('formality', body.formality)
   if (body.fit) formData.append('fit', body.fit)
-  body.vibe.forEach(vibe => formData.append('vibe', vibe))
   body.seasonWear.forEach(season => formData.append('seasonWear', season))
   if (body.image) {
     formData.append('image', body.image)

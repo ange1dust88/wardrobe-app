@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { CreateItem } from '../lib/items'
 
-type ArrayField = 'vibe' | 'seasonWear'
+type ArrayField = 'seasonWear'
 
 const EMPTY_FORM: CreateItem = {
   name: '',
@@ -12,7 +12,6 @@ const EMPTY_FORM: CreateItem = {
   hex: '#000000',
   accentHex: null,
   pattern: 'solid',
-  vibe: [],
   seasonWear: [],
   image: null,
 }
@@ -31,7 +30,7 @@ export function useItemForm(initial?: CreateItem) {
       const next = current.includes(value)
         ? current.filter(x => x !== value)
         : [...current, value]
-      return { ...v, [field]: next }
+      return { ...v, [field]: next } as CreateItem
     })
   }
 
@@ -41,9 +40,7 @@ export function useItemForm(initial?: CreateItem) {
   }
 
   const isValid =
-    values.name.trim().length > 0 &&
-    values.vibe.length > 0 &&
-    values.seasonWear.length > 0
+    values.name.trim().length > 0 && values.seasonWear.length > 0
 
   return { values, patch, toggle, reset, isValid, fileInputKey }
 }

@@ -138,12 +138,6 @@ export class CreateItemDto {
   @Transform(toArray)
   @IsArray()
   @ArrayNotEmpty()
-  @IsEnum(Vibe, { each: true })
-  vibe: Vibe[];
-
-  @Transform(toArray)
-  @IsArray()
-  @ArrayNotEmpty()
   @IsEnum(SeasonWear, { each: true })
   seasonWear: SeasonWear[];
 }
@@ -172,7 +166,6 @@ export interface Item {
   pattern: Pattern;
   formality: Formality | null;
   fit: Fit | null;
-  vibe: Vibe[];
   seasonPaletteCompatibility: SeasonPalette[];
   seasonWear: SeasonWear[];
 }

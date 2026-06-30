@@ -19,7 +19,6 @@ import {
   SeasonWear,
   Temperature,
   UpdateItemDto,
-  Vibe,
   WardrobeRole,
 } from './dto/item.dto';
 import { deriveColor, deriveItemData } from './item-derivation';
@@ -94,7 +93,7 @@ export class ItemsService {
         pattern: dto.pattern,
         formality: dto.formality ?? null,
         fit: dto.fit ?? null,
-        vibe: dto.vibe,
+        vibe: [],
         seasonWear: dto.seasonWear,
         imageUrl,
         hex: derived.color.hex,
@@ -127,7 +126,6 @@ export class ItemsService {
     if (dto.formality !== undefined) data.formality = dto.formality ?? null;
     if (dto.fit !== undefined) data.fit = dto.fit ?? null;
     if (dto.accentHex !== undefined) data.accentHex = dto.accentHex || null;
-    if (dto.vibe !== undefined) data.vibe = dto.vibe;
     if (dto.seasonWear !== undefined) data.seasonWear = dto.seasonWear;
     if (dto.hex !== undefined) {
       const derived = deriveItemData(dto.hex);
@@ -217,7 +215,6 @@ export class ItemsService {
       pattern: row.pattern as Pattern,
       formality: row.formality as Formality | null,
       fit: row.fit as Fit | null,
-      vibe: row.vibe as Vibe[],
       seasonPaletteCompatibility:
         row.seasonPaletteCompatibility as SeasonPalette[],
       seasonWear: row.seasonWear as SeasonWear[],

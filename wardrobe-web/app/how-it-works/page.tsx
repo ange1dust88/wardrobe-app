@@ -43,7 +43,7 @@ const SIGNALS = [
   {
     name: 'Style',
     pts: 5,
-    desc: 'Mostly formality — loungewear with a suit clashes; a small bonus when the style tags (minimal, edgy, romantic…) agree.',
+    desc: 'Formality match — loungewear with a suit clashes; same dressiness sits right.',
   },
   {
     name: 'Pattern',
