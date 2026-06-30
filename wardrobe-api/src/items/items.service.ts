@@ -21,7 +21,7 @@ import {
   Vibe,
   WardrobeRole,
 } from './dto/item.dto';
-import { deriveItemData } from './item-derivation';
+import { deriveColor, deriveItemData } from './item-derivation';
 import { StorageService, UploadedImage } from '../storage/storage.service';
 import { MatchMapCacheService } from '../matching/match-map-cache.service';
 
@@ -96,6 +96,7 @@ export class ItemsService {
         seasonWear: dto.seasonWear,
         imageUrl,
         hex: derived.color.hex,
+        accentHex: dto.accentHex ?? null,
         hue: derived.color.hue,
         temperature: derived.color.temperature,
         brightness: derived.color.brightness,
@@ -122,6 +123,7 @@ export class ItemsService {
     if (dto.subType !== undefined) data.subType = dto.subType || null;
     if (dto.pattern !== undefined) data.pattern = dto.pattern;
     if (dto.formality !== undefined) data.formality = dto.formality ?? null;
+    if (dto.accentHex !== undefined) data.accentHex = dto.accentHex || null;
     if (dto.vibe !== undefined) data.vibe = dto.vibe;
     if (dto.seasonWear !== undefined) data.seasonWear = dto.seasonWear;
     if (dto.hex !== undefined) {
@@ -207,6 +209,7 @@ export class ItemsService {
         saturation: row.saturation as Saturation,
         isNeutral: row.isNeutral,
       },
+      accent: row.accentHex ? deriveColor(row.accentHex) : null,
       wardrobeRole: row.wardrobeRole as WardrobeRole,
       pattern: row.pattern as Pattern,
       formality: row.formality as Formality | null,

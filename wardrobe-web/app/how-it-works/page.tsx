@@ -23,7 +23,7 @@ const SIGNALS = [
   {
     name: 'Color',
     pts: 12,
-    desc: 'Neutrals go with everything; neighbours or opposites on the wheel work best; two loud colors fight.',
+    desc: 'Neutrals go with everything; neighbours or opposites on the wheel work best; two loud colors fight. A second (accent) color earns a little extra when it picks up the other piece’s main shade.',
   },
   {
     name: 'Role',

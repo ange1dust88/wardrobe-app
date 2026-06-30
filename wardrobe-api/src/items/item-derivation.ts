@@ -51,7 +51,7 @@ function hexToHsl(hex: string): Hsl {
   return { h, s, l };
 }
 
-function deriveColor(hex: string): Color {
+export function deriveColor(hex: string): Color {
   const { h, s, l } = hexToHsl(hex);
   const hue = Math.round(h);
   const isNeutral = s < 0.15;

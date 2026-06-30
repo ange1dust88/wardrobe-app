@@ -339,6 +339,37 @@ export function ItemForm({ form }: { form: ItemFormApi }) {
         </div>
       </div>
 
+      <div className='mb-6 flex items-center gap-3'>
+        <span className={cn(labelCls, 'mb-0')}>Accent</span>
+        {values.accentHex ? (
+          <>
+            <input
+              type='color'
+              aria-label='Accent color'
+              value={values.accentHex}
+              onChange={e => patch({ accentHex: e.target.value })}
+              className='size-7 cursor-pointer rounded-lg border border-input bg-background p-1'
+            />
+            <button
+              type='button'
+              onClick={() => patch({ accentHex: null })}
+              className='text-[12.5px] font-semibold text-muted-foreground underline'
+            >
+              Remove
+            </button>
+          </>
+        ) : (
+          <button
+            type='button'
+            onClick={() => patch({ accentHex: '#888888' })}
+            className='text-[12.5px] font-semibold text-foreground underline'
+          >
+            + Add a second color
+          </button>
+        )}
+        <span className='text-[12px] text-muted-foreground'>optional</span>
+      </div>
+
       <div className='mb-2.5 flex items-baseline justify-between'>
         <div className={cn(labelCls, 'mb-0')}>
           Vibe <span className='text-warning'>*</span>

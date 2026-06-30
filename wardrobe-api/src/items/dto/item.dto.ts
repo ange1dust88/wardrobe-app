@@ -113,6 +113,10 @@ export class CreateItemDto {
   @IsHexColor()
   hex?: string;
 
+  @IsOptional()
+  @IsHexColor()
+  accentHex?: string;
+
   @IsEnum(Pattern)
   pattern: Pattern;
 
@@ -151,6 +155,7 @@ export interface Item {
   category: Category;
   subType: string | null;
   color: Color;
+  accent: Color | null;
   wardrobeRole: WardrobeRole;
   imageUrl: string | null;
   pattern: Pattern;

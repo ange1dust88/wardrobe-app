@@ -96,6 +96,7 @@ model Item {
   imageUrl String?
 
   hex         String
+  accentHex   String?
   hue         Int
   temperature Temperature
   brightness  Brightness

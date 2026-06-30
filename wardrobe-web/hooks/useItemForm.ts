@@ -9,6 +9,7 @@ const EMPTY_FORM: CreateItem = {
   subType: null,
   formality: 'casual',
   hex: '#000000',
+  accentHex: null,
   pattern: 'solid',
   vibe: [],
   seasonWear: [],

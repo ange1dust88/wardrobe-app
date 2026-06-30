@@ -131,6 +131,7 @@ export type Item = {
   category: Category
   subType?: string | null
   color: Color
+  accent?: Color | null
   wardrobeRole: string
   imageUrl?: string
   pattern: string
@@ -145,6 +146,7 @@ export type CreateItem = {
   category: Category
   subType?: string | null
   hex: string
+  accentHex?: string | null
   pattern: Pattern
   formality?: Formality | null
   vibe: Vibe[]
@@ -164,6 +166,7 @@ export async function createItem(body: CreateItem): Promise<Item> {
   formData.append('category', body.category)
   if (body.subType) formData.append('subType', body.subType)
   formData.append('hex', body.hex)
+  if (body.accentHex) formData.append('accentHex', body.accentHex)
   formData.append('pattern', body.pattern)
   if (body.formality) formData.append('formality', body.formality)
   body.vibe.forEach(vibe => formData.append('vibe', vibe))
@@ -191,6 +194,7 @@ export type UpdateItem = {
   category: Category
   subType?: string | null
   hex: string
+  accentHex?: string | null
   pattern: Pattern
   formality?: Formality | null
   vibe: Vibe[]
@@ -207,6 +211,7 @@ export async function updateItem(
   formData.append('category', body.category)
   if (body.subType) formData.append('subType', body.subType)
   formData.append('hex', body.hex)
+  if (body.accentHex) formData.append('accentHex', body.accentHex)
   formData.append('pattern', body.pattern)
   if (body.formality) formData.append('formality', body.formality)
   body.vibe.forEach(vibe => formData.append('vibe', vibe))

@@ -307,6 +307,19 @@ export function computePatternScore(anchor: Item, candidate: Item): number {
   return 2;
 }
 
+function accentTieIn(accent: Color | null, otherPrimary: Color): number {
+  if (!accent) return 0;
+  const s = computeColorScore(accent, otherPrimary);
+  return s >= 9 ? 1 : s <= 4 ? -1 : 0;
+}
+
+function accentAdjust(anchor: Item, candidate: Item): number {
+  const bonus =
+    accentTieIn(anchor.accent, candidate.color) +
+    accentTieIn(candidate.accent, anchor.color);
+  return clamp(bonus, -2, 2);
+}
+
 export function computeTotalScore(
   anchor: Item,
   candidate: Item,
@@ -316,10 +329,14 @@ export function computeTotalScore(
   breakdown: ScoreBreakdown;
 } {
   const breakdown: ScoreBreakdown = {
-    color: computeColorScore(
-      anchor.color,
-      candidate.color,
-      ctx.strictTemperature,
+    color: clamp(
+      computeColorScore(
+        anchor.color,
+        candidate.color,
+        ctx.strictTemperature,
+      ) + accentAdjust(anchor, candidate),
+      -6,
+      SCORE_CAPS.color,
     ),
     role: computeRoleScore(anchor, candidate),
     season: computeSeasonScore(anchor, candidate),
