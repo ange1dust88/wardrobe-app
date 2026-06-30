@@ -8,8 +8,7 @@ const ACCENT = '#3d5a3d'
 const SECTIONS: [string, string][] = [
   ['quickstart', 'Quick start'],
   ['adding', 'Adding a piece'],
-  ['browsing', 'Browsing'],
-  ['building', 'Building an outfit'],
+  ['using', 'Using it'],
   ['harmony', 'The harmony score'],
   ['color', 'Color, in depth'],
   ['rules', 'Rules & overrides'],
@@ -48,6 +47,22 @@ const SIGNALS = [
     desc: 'One patterned piece is fine; two bold patterns together clash.',
   },
 ]
+
+const EXAMPLE = {
+  a: { name: 'Grey trousers', color: '#8c857a' },
+  b: { name: 'Navy striped shirt', color: '#2c3550' },
+  total: 28,
+  tier: { label: 'Great match', color: '#2f7d4f' },
+  breakdown: [
+    { name: 'Color', pts: 9, cap: 12 },
+    { name: 'Role', pts: 6, cap: 6 },
+    { name: 'Season', pts: 5, cap: 5 },
+    { name: 'Palette', pts: 3, cap: 5 },
+    { name: 'Vibe', pts: 2, cap: 5 },
+    { name: 'Pattern', pts: 3, cap: 3 },
+  ],
+  why: 'A neutral base, one calm stripe, same seasons — an easy, polished pair.',
+}
 
 const READ_SWATCHES = [
   '#1a1815',
@@ -121,8 +136,7 @@ function classify(diff: number): string {
 const SECTION_KICKER: Record<string, string> = {
   quickstart: 'Step by step',
   adding: 'Your wardrobe',
-  browsing: 'Finding matches',
-  building: 'Putting it together',
+  using: 'Find & build',
   harmony: 'The math, plainly',
   color: 'The biggest signal',
   rules: 'Two kinds of no',
@@ -342,7 +356,6 @@ export default function HowItWorks() {
         </aside>
 
         <div className='min-w-0 flex-1 lg:max-w-[760px]'>
-          {/* QUICK START */}
           <section
             id='quickstart'
             className='mb-[84px] scroll-mt-24'
@@ -377,7 +390,6 @@ export default function HowItWorks() {
             </div>
           </section>
 
-          {/* ADDING */}
           <section
             id='adding'
             className='mb-[84px] scroll-mt-24'
@@ -456,74 +468,35 @@ export default function HowItWorks() {
             </div>
           </section>
 
-          {/* BROWSING */}
-          <section
-            id='browsing'
-            className='mb-[84px] scroll-mt-24'
-          >
-            {kicker('browsing')}
-            <h2 className={h2cls}>Browsing</h2>
+          <section id='using' className='mb-[84px] scroll-mt-24'>
+            {kicker('using')}
+            <h2 className={h2cls}>Using it</h2>
             <p className={introCls}>
-              Two ways to look at the same scored closet.
+              Find matches on the wheel, then stack them into a look.
             </p>
-            <div className='grid gap-3.5 sm:grid-cols-3'>
-              <div className='rounded-[18px] border border-border bg-card p-5 shadow-sm'>
-                <div className='mb-3.5 flex items-center gap-1.5'>
-                  <span
-                    className='size-9 rounded-[9px]'
-                    style={{ background: '#cf6a3c', boxShadow: '0 0 0 2px var(--color-card), 0 0 0 4px #c08a2d' }}
-                  />
-                  <span className='h-0.5 flex-1' style={{ background: '#c08a2d' }} />
-                  <span className='size-[30px] rounded-lg' style={{ background: '#23252a' }} />
-                </div>
-                <div className='text-[15px] font-bold'>Hover to preview</div>
-                <div className='mt-1 text-[13.5px] leading-snug text-muted-foreground'>
-                  Point at a piece — its matches light up with score badges.
-                  Nothing&apos;s added yet.
-                </div>
-              </div>
-              <div className='rounded-[18px] border border-border bg-card p-5 shadow-sm'>
-                <div className='mb-3.5 flex items-center gap-2'>
-                  <span
-                    className='size-7 rounded-full border-2'
-                    style={{ borderColor: ACCENT }}
-                  />
-                  <span className='flex flex-col gap-1'>
-                    <span className='h-1 w-6 rounded-full bg-muted-foreground/40' />
-                    <span className='h-1 w-5 rounded-full bg-muted-foreground/40' />
-                  </span>
-                </div>
-                <div className='text-[15px] font-bold'>Circular &amp; list views</div>
-                <div className='mt-1 text-[13.5px] leading-snug text-muted-foreground'>
-                  The wheel lays it head-to-toe; the list is an outfit carousel.
-                  Same scores.
-                </div>
-              </div>
-              <div className='rounded-[18px] border border-border bg-card p-5 shadow-sm'>
-                <div className='mb-3.5 flex items-center gap-1.5'>
-                  <span className='size-[30px] rounded-lg' style={{ background: '#cf6a3c' }} />
-                  <span className='size-[30px] rounded-lg opacity-20 grayscale' style={{ background: '#23252a' }} />
-                  <span className='size-[30px] rounded-lg opacity-20 grayscale' style={{ background: '#6e5236' }} />
-                </div>
-                <div className='text-[15px] font-bold'>Grayed-out pieces</div>
-                <div className='mt-1 text-[13.5px] leading-snug text-muted-foreground'>
-                  Too low to recommend with your current pick — but never locked.
-                  Pick it anyway.
-                </div>
-              </div>
-            </div>
-          </section>
 
-          {/* BUILDING */}
-          <section
-            id='building'
-            className='mb-[84px] scroll-mt-24'
-          >
-            {kicker('building')}
-            <h2 className={h2cls}>Building an outfit</h2>
-            <p className={introCls}>
-              Tap pieces into the builder; it keeps the look honest as you go.
-            </p>
+            <div className='mb-8 flex flex-col gap-3.5'>
+              {[
+                ['Hover to preview', "Point at a piece and its matches light up with score badges — nothing's added yet."],
+                ['Circular & list views', 'The wheel lays it head-to-toe; the list is an outfit carousel — same scores.'],
+                ['Grayed-out pieces', 'Too low to recommend with your current pick, but never locked — pick it anyway.'],
+              ].map(([title, text]) => (
+                <div key={title} className='flex gap-3'>
+                  <span
+                    className='mt-[7px] size-1.5 flex-none rounded-full'
+                    style={{ background: ACCENT }}
+                  />
+                  <div className='text-[14.5px] leading-relaxed'>
+                    <span className='font-bold'>{title}</span>
+                    <span className='text-muted-foreground'> — {text}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className='mb-4 text-[13px] font-bold text-foreground'>
+              Then build the look
+            </div>
             <div className='flex flex-col border-l-2 border-border pl-6'>
               {[
                 ['Add pieces', 'Tapping adds them — selection follows realistic slot rules.'],
@@ -551,7 +524,6 @@ export default function HowItWorks() {
             </div>
           </section>
 
-          {/* HARMONY */}
           <section
             id='harmony'
             className='mb-[84px] scroll-mt-24'
@@ -633,9 +605,63 @@ export default function HowItWorks() {
                 {tier.note}
               </div>
             </div>
+
+            <div className='mt-5 rounded-[20px] border border-border bg-card p-6 shadow-sm'>
+              <div className='mb-3 text-[11px] font-bold tracking-[0.12em] text-muted-foreground uppercase'>
+                A real example
+              </div>
+              <div className='flex flex-wrap items-center gap-x-3 gap-y-2'>
+                <span className='flex items-center gap-2'>
+                  <span
+                    className='size-5 rounded-md border border-black/10'
+                    style={{ background: EXAMPLE.a.color }}
+                  />
+                  <span className='text-[14px] font-semibold'>{EXAMPLE.a.name}</span>
+                </span>
+                <span className='text-muted-foreground'>×</span>
+                <span className='flex items-center gap-2'>
+                  <span
+                    className='size-5 rounded-md border border-black/10'
+                    style={{ background: EXAMPLE.b.color }}
+                  />
+                  <span className='text-[14px] font-semibold'>{EXAMPLE.b.name}</span>
+                </span>
+                <span
+                  className='ml-auto flex items-baseline gap-1.5 rounded-xl px-3 py-1 text-white'
+                  style={{ background: EXAMPLE.tier.color }}
+                >
+                  <span className='font-heading text-[18px] leading-none font-extrabold'>
+                    {EXAMPLE.total}
+                  </span>
+                  <span className='text-[12px] opacity-80'>/ 36</span>
+                  <span className='text-[12px] font-semibold'>· {EXAMPLE.tier.label}</span>
+                </span>
+              </div>
+              <div className='mt-4 flex flex-col gap-2'>
+                {EXAMPLE.breakdown.map(b => (
+                  <div key={b.name} className='flex items-center gap-3'>
+                    <span className='w-[58px] flex-none text-[13px] font-semibold'>
+                      {b.name}
+                    </span>
+                    <span className='h-2 flex-1 overflow-hidden rounded-full bg-muted'>
+                      <span
+                        className='block h-full rounded-full'
+                        style={{ width: `${(b.pts / b.cap) * 100}%`, background: ACCENT }}
+                      />
+                    </span>
+                    <span className='w-7 flex-none text-right text-[13px] font-bold text-muted-foreground'>
+                      +{b.pts}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p className='mt-4 text-[13px] leading-relaxed text-muted-foreground'>
+                {EXAMPLE.why} An outfit&apos;s harmony averages a score like this
+                across every pair.
+              </p>
+            </div>
           </section>
 
-          {/* COLOR */}
           <section
             id='color'
             className='mb-[84px] scroll-mt-24'
@@ -817,7 +843,6 @@ export default function HowItWorks() {
             </div>
           </section>
 
-          {/* RULES */}
           <section
             id='rules'
             className='mb-[84px] scroll-mt-24'
@@ -873,7 +898,6 @@ export default function HowItWorks() {
             </div>
           </section>
 
-          {/* SLOTS */}
           <section
             id='slots'
             className='scroll-mt-24'
