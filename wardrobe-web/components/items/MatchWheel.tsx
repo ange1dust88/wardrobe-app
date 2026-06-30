@@ -256,9 +256,10 @@ export function MatchWheel({
               (isHover || openDetailId === item.id) && (
                 <button
                   type='button'
-                  onClick={() =>
-                    setOpenDetailId(openDetailId === item.id ? null : item.id)
-                  }
+                  onMouseEnter={() => setOpenDetailId(item.id)}
+                  onMouseLeave={() => setOpenDetailId(null)}
+                  onFocus={() => setOpenDetailId(item.id)}
+                  onBlur={() => setOpenDetailId(null)}
                   aria-label='Why this score'
                   className='absolute -right-1 -bottom-1 z-10 flex size-5 items-center justify-center rounded-full border border-border bg-background text-[11px] font-bold text-muted-foreground shadow-sm'
                 >
@@ -267,7 +268,7 @@ export function MatchWheel({
               )}
 
             {openDetailId === item.id && breakdownById[item.id] && (
-              <div className='absolute top-full left-1/2 z-50 -translate-x-1/2 pt-2'>
+              <div className='pointer-events-none absolute top-full left-1/2 z-50 -translate-x-1/2 pt-2'>
                 <ScoreDetail breakdown={breakdownById[item.id]} />
               </div>
             )}
