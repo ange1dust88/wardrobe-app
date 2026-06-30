@@ -184,31 +184,6 @@ export class ItemsService {
     return { deleted: true, id };
   }
 
-  async setImage(
-    userId: string,
-    id: string,
-    file: UploadedItemImage,
-  ): Promise<Item> {
-    const current = await this.findOne(userId, id);
-    const imageUrl = await this.storage.uploadImage(file);
-
-    let row: DbItem;
-    try {
-      row = await this.prisma.item.update({
-        where: { id },
-        data: { imageUrl },
-      });
-    } catch (err) {
-      await this.storage.deleteImage(imageUrl);
-      throw err;
-    }
-
-    if (current.imageUrl) {
-      await this.storage.deleteImage(current.imageUrl);
-    }
-    return this.toItem(row);
-  }
-
   async extractColor(image: UploadedItemImage): Promise<{ hex: string }> {
     return { hex: await extractDominantHex(image.buffer) };
   }
