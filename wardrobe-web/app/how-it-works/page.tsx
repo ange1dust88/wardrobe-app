@@ -9,6 +9,7 @@ const TOC = [
   { id: 'browse', label: 'Browsing' },
   { id: 'building', label: 'Building an outfit' },
   { id: 'score', label: 'The harmony score' },
+  { id: 'color', label: 'Color, in depth' },
   { id: 'rules', label: 'Rules & overrides' },
   { id: 'slots', label: 'Slots & layering' },
 ]
@@ -121,6 +122,54 @@ const TONES = [
     range: '90%+',
     color: '#245179',
     text: 'About as good as it gets.',
+  },
+]
+
+const COLOR_WHEEL = [
+  {
+    name: 'Same shade',
+    angle: '0–12°',
+    verdict: 'Solid',
+    text: 'Near-identical hues — a tonal, one-color look. Gets a nudge up when one piece is lighter and one darker.',
+  },
+  {
+    name: 'Analogous',
+    angle: '≤ 35°',
+    verdict: 'Best',
+    text: 'Neighbours on the wheel — blue with teal, rust with orange. The easiest strong pairing.',
+  },
+  {
+    name: 'Complementary',
+    angle: '≥ 165°',
+    verdict: 'Best',
+    text: 'Opposites — blue with orange, green with red. High contrast, reads deliberate.',
+  },
+  {
+    name: 'Split / triadic',
+    angle: '105–165°',
+    verdict: 'Good',
+    text: 'Evenly spaced around the wheel. Works, with a bolder, more playful edge.',
+  },
+  {
+    name: 'Off-angle',
+    angle: '70–105°',
+    verdict: 'Weakest',
+    text: 'Neither close enough nor opposite — the awkward middle that scores lowest.',
+  },
+]
+
+const COLOR_ADJUST = [
+  {
+    name: 'Temperature',
+    text: 'Warm-with-warm or cool-with-cool adds a point. Mixing a warm and a cool color docks points — softened if the two already form a wheel harmony.',
+  },
+  {
+    name: 'Brightness',
+    text: 'Matching lightness adds a touch. A big light-vs-dark jump between otherwise similar colors costs a little.',
+  },
+  {
+    name: 'Saturation',
+    text: 'Two loud, vivid colors fight — a real penalty. One vivid piece against a calmer one is the sweet spot; two muted tones stay safe.',
   },
 ]
 
@@ -466,6 +515,93 @@ export default function HowItWorks() {
                 </div>
               ))}
             </div>
+          </section>
+
+          <section>
+            <SectionHeading
+              id='color'
+              kicker='The 12-point axis'
+              title='Color, in depth'
+              intro='Color carries the most weight — up to 12 of the 36 points. Here is exactly what moves it.'
+            />
+
+            <div
+              className='mt-5 rounded-2xl border p-5'
+              style={{ borderColor: `${ACCENT}55`, background: `${ACCENT}0f` }}
+            >
+              <h3 className='font-heading text-[16px] font-bold'>
+                Neutrals are the easy win
+              </h3>
+              <p className='mt-2 text-[13.5px] leading-relaxed text-muted-foreground'>
+                Black, white, grey, cream and other near-greys (very low
+                saturation) are treated as easy-going — they score high against
+                almost any piece. Two neutrals together are nearly perfect, best
+                when their lightness is close. A neutral next to a bright,
+                saturated color scores even higher when there is a clear
+                light-vs-dark contrast.
+              </p>
+            </div>
+
+            <h3 className='font-heading mt-7 text-[16px] font-bold'>
+              Two real colors → the wheel
+            </h3>
+            <p className='mt-1.5 text-[13.5px] leading-relaxed text-muted-foreground'>
+              When neither piece is a neutral, we measure the angle between
+              their hues on the color wheel.
+            </p>
+            <div className='mt-4 flex flex-col gap-2.5'>
+              {COLOR_WHEEL.map(rel => (
+                <div
+                  key={rel.name}
+                  className='rounded-2xl border border-border bg-card p-4 shadow-sm'
+                >
+                  <div className='flex flex-wrap items-baseline gap-x-3 gap-y-1'>
+                    <span className='font-heading text-[15px] font-bold'>
+                      {rel.name}
+                    </span>
+                    <span className='rounded-md bg-muted px-2 py-0.5 text-[12px] text-muted-foreground'>
+                      {rel.angle}
+                    </span>
+                    <span className='ml-auto text-[11px] font-bold tracking-[0.1em] text-muted-foreground uppercase'>
+                      {rel.verdict}
+                    </span>
+                  </div>
+                  <p className='mt-1.5 text-[13px] leading-snug text-muted-foreground'>
+                    {rel.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <h3 className='font-heading mt-7 text-[16px] font-bold'>
+              Then three adjustments
+            </h3>
+            <p className='mt-1.5 text-[13.5px] leading-relaxed text-muted-foreground'>
+              On top of the wheel relationship, three smaller signals tune the
+              score up or down.
+            </p>
+            <div className='mt-4 flex flex-col gap-2.5'>
+              {COLOR_ADJUST.map(adjust => (
+                <div
+                  key={adjust.name}
+                  className='rounded-xl border border-border bg-card p-4 shadow-sm'
+                >
+                  <div className='text-[13.5px] font-semibold'>
+                    {adjust.name}
+                  </div>
+                  <p className='mt-1 text-[13px] leading-snug text-muted-foreground'>
+                    {adjust.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <p className='mt-5 text-[13.5px] leading-relaxed text-muted-foreground'>
+              That is why a mostly-neutral wardrobe pairs with almost
+              everything, and why two bright, saturated pieces rarely top the
+              list — the engine reads them as competing rather than
+              complementing.
+            </p>
           </section>
 
           <section>
