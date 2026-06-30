@@ -62,8 +62,8 @@ const STACKING = [
   },
   {
     label: 'As many as you like',
-    items: 'bag · jewelry · accessory',
-    text: 'Pile on freely — no limit.',
+    items: 'accessory — bag · jewelry · belt · scarf…',
+    text: 'Finishing pieces stack freely — no limit.',
   },
 ]
 

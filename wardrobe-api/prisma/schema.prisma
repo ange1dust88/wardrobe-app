@@ -15,9 +15,7 @@ enum Category {
   accessory
   dress
   outerwear
-  bag
   headwear
-  jewelry
 }
 
 enum Temperature {

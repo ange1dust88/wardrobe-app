@@ -21,8 +21,6 @@ export const CATEGORIES = [
   'dress',
   'bottom',
   'shoes',
-  'bag',
-  'jewelry',
   'accessory',
 ] as const
 
@@ -35,8 +33,6 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   dress: 'Dress',
   bottom: 'Bottom',
   shoes: 'Shoes',
-  bag: 'Bag',
-  jewelry: 'Jewelry',
   accessory: 'Accessory',
 }
 
@@ -49,8 +45,6 @@ export const STACK_POLICY: Record<Category, StackPolicy> = {
   dress: 'single',
   bottom: 'layered',
   shoes: 'single',
-  bag: 'unlimited',
-  jewelry: 'unlimited',
   accessory: 'unlimited',
 }
 
@@ -61,6 +55,19 @@ export const SUBTYPES: Partial<Record<Category, string[]>> = {
   dress: ['mini', 'midi', 'maxi', 'gown', 'slip'],
   bottom: ['trousers', 'jeans', 'shorts', 'leggings', 'skirt', 'sweatpants'],
   shoes: ['sneakers', 'boots', 'heels', 'sandals', 'flats', 'loafers'],
+  accessory: [
+    'bag',
+    'jewelry',
+    'belt',
+    'watch',
+    'sunglasses',
+    'scarf',
+    'gloves',
+    'necklace',
+    'ring',
+    'earrings',
+    'bracelet',
+  ],
 }
 
 export const SEASONS = ['spring', 'summer', 'autumn', 'winter'] as const
