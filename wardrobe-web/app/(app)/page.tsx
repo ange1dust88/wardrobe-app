@@ -40,7 +40,7 @@ export default function WardrobePage() {
   const [allowConflicts, setAllowConflicts] = useState(false)
 
   const { itemsQuery, updateMutation, deleteMutation } = useItems()
-  const builder = useOutfitBuilder(colorType)
+  const builder = useOutfitBuilder()
   const matchMap = useMatchMap(colorType, allowConflicts)
 
   const items = itemsQuery.data ?? []

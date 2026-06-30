@@ -3,8 +3,10 @@
 import { Infinity as InfinityIcon, Layers, Square } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
+import { BrandMark } from '@/components/BrandMark'
+import { BRAND_ACCENT } from '@/lib/theme'
 
-const ACCENT = '#3d5a3d'
+const ACCENT = BRAND_ACCENT
 
 const SECTIONS: [string, string][] = [
   ['quickstart', 'Quick start'],
@@ -289,13 +291,8 @@ export default function HowItWorks() {
         .guide-range::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fbfaf6;border:none;box-shadow:0 2px 8px rgba(0,0,0,.4)}
       `}</style>
 
-      <header className='sticky top-0 z-40 flex items-center justify-between border-b border-border px-6 py-4 backdrop-blur-md sm:px-8'>
-        <Link href='/' className='flex items-center gap-2.5'>
-          <span className='size-[11px] rounded-full' style={{ background: ACCENT }} />
-          <span className='font-heading text-[20px] font-bold tracking-tight'>
-            dress
-          </span>
-        </Link>
+      <header className='sticky top-0 z-40 flex items-center justify-between border-b border-border bg-background/80 px-6 py-4 backdrop-blur-md sm:px-8'>
+        <BrandMark size={20} />
         <span className='text-[12px] font-bold tracking-[0.16em] text-muted-foreground uppercase'>
           The guide
         </span>
@@ -947,7 +944,7 @@ export default function HowItWorks() {
               {[
                 { Icon: Square, title: 'One at a time', items: 'shoes · dress · headwear', text: 'A single piece per slot — picking another swaps it.' },
                 { Icon: Layers, title: 'Layer it yourself', items: 'top · outerwear · bottom', text: 'A tee under a sweater, leggings under a skirt — add layers by hand.' },
-                { Icon: InfinityIcon, title: 'As many as you like', items: 'bag · jewelry · belt · scarf', text: 'Finishing pieces stack freely — no limit.' },
+                { Icon: InfinityIcon, title: 'As many as you like', items: 'accessory — bag · jewelry · belt', text: 'Finishing pieces stack freely — no limit.' },
               ].map(slot => (
                 <div
                   key={slot.title}

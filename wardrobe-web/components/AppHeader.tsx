@@ -3,9 +3,9 @@
 import { PlusIcon } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { BrandMark } from '@/components/BrandMark'
+import { BRAND_ACCENT } from '@/lib/theme'
 import { cn } from '@/lib/utils'
-
-const ACCENT = '#3d5a3d'
 
 type Props = {
   savedCount: number
@@ -32,12 +32,7 @@ export function AppHeader({
 
   return (
     <header className='sticky top-0 z-30 flex items-center gap-5 border-b border-border bg-background/80 px-6 py-[15px] backdrop-blur-md sm:px-8'>
-      <Link href='/' className='flex flex-none items-center gap-2.5'>
-        <span className='size-[11px] rounded-full' style={{ background: ACCENT }} />
-        <span className='font-heading text-[23px] font-bold tracking-tight'>
-          dress
-        </span>
-      </Link>
+      <BrandMark />
 
       <nav className='flex flex-1 justify-center'>
         <div className='flex gap-0.5 rounded-xl bg-muted/60 p-1'>
@@ -52,7 +47,7 @@ export function AppHeader({
                   'ml-1.5 rounded-[9px] px-1.5 py-px text-[11px] font-bold text-white',
                   !onOutfits && 'bg-muted-foreground'
                 )}
-                style={onOutfits ? { background: ACCENT } : undefined}
+                style={onOutfits ? { background: BRAND_ACCENT } : undefined}
               >
                 {savedCount}
               </span>

@@ -10,7 +10,6 @@ export type MatchScoreTone = {
 }
 
 export const MAX_MATCH_SCORE = 36
-export const MIN_VISIBLE_MATCH_PERCENTAGE = 60
 
 type MatchScoreStyle = Omit<MatchScoreTone, 'percentage'>
 

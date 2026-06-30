@@ -238,23 +238,6 @@ export async function deleteItem(id: string): Promise<void> {
   if (!res.ok) throw new Error(`DELETE /items/${id} → ${res.status}`)
 }
 
-export type ScoredMatch = {
-  item: Item
-  score: number
-  breakdown: Record<string, number>
-}
-
-export type MatchResult = {
-  anchor: Item
-  matches: Record<Category, ScoredMatch[]>
-}
-
-export async function fetchMatches(anchorId: string): Promise<MatchResult> {
-  const res = await apiFetch(`/items/${anchorId}/matches`)
-  if (!res.ok) throw new Error(`GET /items/${anchorId}/matches → ${res.status}`)
-  return res.json()
-}
-
 export type MatchMap = Record<string, Record<string, number>>
 
 export async function fetchMatchMap(
@@ -267,31 +250,6 @@ export async function fetchMatchMap(
   const query = params.toString() ? `?${params.toString()}` : ''
   const res = await apiFetch(`/items/matches/map${query}`)
   if (!res.ok) throw new Error(`GET /items/matches/map → ${res.status}`)
-  return res.json()
-}
-
-export type SuggestMatch = {
-  item: Item
-  score: number
-}
-
-export type SuggestResult = {
-  selected: Item[]
-  matches: Record<Category, SuggestMatch[]>
-}
-
-export async function suggestMatches(
-  itemIds: string[],
-  colorType?: string,
-): Promise<SuggestResult> {
-  const res = await apiFetch('/items/matches', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(
-      colorType ? { itemIds, userColorType: colorType } : { itemIds },
-    ),
-  })
-  if (!res.ok) throw new Error(`POST /items/matches → ${res.status}`)
   return res.json()
 }
 

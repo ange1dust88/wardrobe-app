@@ -3,9 +3,9 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { CATEGORIES, getItemImageSrc, type Item } from '@/lib/items'
-import { getMatchScoreTone } from '@/lib/match-score'
 import { findOutfitConflicts } from '@/lib/outfit-compat'
 import { cn } from '@/lib/utils'
+import { ScoreBadge } from './ScoreBadge'
 
 type Props = {
   items: Item[]
@@ -49,12 +49,7 @@ export function OutfitBuilder({
             Build an outfit
           </h2>
           {harmony != null && items.length >= 2 && (
-            <span
-              className='font-heading rounded-[9px] px-2.5 py-0.5 text-[13px] font-bold text-white'
-              style={{ background: getMatchScoreTone(harmony).solidColor }}
-            >
-              {harmony} / 36
-            </span>
+            <ScoreBadge score={harmony} />
           )}
         </div>
 

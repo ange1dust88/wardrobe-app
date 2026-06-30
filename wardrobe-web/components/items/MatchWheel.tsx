@@ -1,6 +1,8 @@
 import { PencilIcon } from 'lucide-react'
 import { CATEGORIES, getItemImageSrc, type Item } from '../../lib/items'
 import { getMatchScoreTone, matchScoreToPercentage } from '../../lib/match-score'
+import { BRAND_ACCENT } from '../../lib/theme'
+import { ScoreBadge } from './ScoreBadge'
 
 type Props = {
   items: Item[]
@@ -159,7 +161,7 @@ export function MatchWheel({
         const lit = building ? isSel || isMatch : !active || isHover || isMatch
         const img = getItemImageSrc(item)
         const boxShadow = isSel
-          ? '0 0 0 2px var(--background), 0 0 0 4px #3d5a3d, 0 8px 22px rgba(0,0,0,.18)'
+          ? `0 0 0 2px var(--background), 0 0 0 4px ${BRAND_ACCENT}, 0 8px 22px rgba(0,0,0,.18)`
           : isSrc
             ? '0 0 0 2px var(--background), 0 0 0 4px #c08a2d, 0 10px 26px rgba(0,0,0,.2)'
             : isMatch
@@ -210,19 +212,19 @@ export function MatchWheel({
                 />
               )}
               {isSel && (
-                <span className='absolute top-1.5 right-1.5 flex size-6 items-center justify-center rounded-full bg-[#3d5a3d] text-[13px] text-white shadow'>
+                <span
+                  className='absolute top-1.5 right-1.5 flex size-6 items-center justify-center rounded-full text-[13px] text-white shadow'
+                  style={{ background: BRAND_ACCENT }}
+                >
                   ✓
                 </span>
               )}
               {isMatch && scoreById[item.id] != null && (
-                <span
-                  className='font-heading absolute top-1.5 left-1.5 rounded-md px-1.5 text-[11px] leading-tight font-bold text-white shadow'
-                  style={{
-                    background: getMatchScoreTone(scoreById[item.id]).solidColor,
-                  }}
-                >
-                  {scoreById[item.id]}
-                </span>
+                <ScoreBadge
+                  score={scoreById[item.id]}
+                  variant='chip'
+                  className='absolute top-1.5 left-1.5 text-[11px] leading-tight'
+                />
               )}
             </button>
 

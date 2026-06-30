@@ -1,8 +1,8 @@
 'use client'
 
 import { getItemImageSrc, type Item } from '@/lib/items'
-import { getMatchScoreTone } from '@/lib/match-score'
 import { Button } from '@/components/ui/button'
+import { ScoreBadge } from './ScoreBadge'
 
 export type SavedLook = {
   id: string
@@ -30,7 +30,7 @@ export function OutfitsView({ looks, onDelete, onBuild }: Props) {
             {looks.length} look{looks.length === 1 ? '' : 's'}
           </p>
         </div>
-        <Button onClick={onBuild}>Build a look</Button>
+        <Button onClick={onBuild}>Build an outfit</Button>
       </div>
 
       {looks.length === 0 ? (
@@ -56,12 +56,10 @@ export function OutfitsView({ looks, onDelete, onBuild }: Props) {
               className='rounded-[18px] border border-border bg-card p-[18px] shadow-sm'
             >
               <div className='mb-3.5 flex items-center justify-between'>
-                <span
-                  className='font-heading rounded-lg px-2.5 py-0.5 text-[12.5px] font-bold text-white'
-                  style={{ background: getMatchScoreTone(look.harmony).solidColor }}
-                >
-                  {look.harmony} / 36
-                </span>
+                <ScoreBadge
+                  score={look.harmony}
+                  className='rounded-lg text-[12.5px]'
+                />
                 <button
                   type='button'
                   onClick={() => onDelete(look.id)}
