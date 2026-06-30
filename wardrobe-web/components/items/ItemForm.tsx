@@ -1,5 +1,6 @@
 'use client'
 
+import { ChevronDownIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import {
   CATEGORIES,
@@ -21,13 +22,6 @@ import {
 import type { ItemFormApi } from '@/hooks/useItemForm'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectItem,
-  SelectPopup,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 
 const ANY_SUBTYPE = '__any'
 
@@ -79,24 +73,20 @@ function FieldSelect({
   return (
     <div>
       <div className={labelCls}>{label}</div>
-      <Select
-        items={items}
-        value={value}
-        onValueChange={next => {
-          if (next != null) onChange(next)
-        }}
-      >
-        <SelectTrigger>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectPopup alignItemWithTrigger={false}>
+      <div className='relative'>
+        <select
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          className='w-full cursor-pointer appearance-none rounded-xl border border-input bg-background py-[11px] pr-9 pl-[13px] text-[14.5px] text-foreground shadow-xs/5 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/24'
+        >
           {items.map(item => (
-            <SelectItem key={item.value} value={item.value}>
+            <option key={item.value} value={item.value}>
               {item.label}
-            </SelectItem>
+            </option>
           ))}
-        </SelectPopup>
-      </Select>
+        </select>
+        <ChevronDownIcon className='pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground' />
+      </div>
     </div>
   )
 }
@@ -168,6 +158,7 @@ export function ItemForm({
           value={values.name}
           onChange={e => patch({ name: e.target.value })}
           placeholder='Converse All Star red'
+          className='rounded-xl'
         />
       </div>
 
