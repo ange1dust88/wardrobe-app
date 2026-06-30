@@ -130,30 +130,40 @@ const COLOR_WHEEL = [
     name: 'Same shade',
     angle: '0–12°',
     verdict: 'Solid',
+    a: 210,
+    b: 222,
     text: 'Near-identical hues — a tonal, one-color look. Gets a nudge up when one piece is lighter and one darker.',
   },
   {
     name: 'Analogous',
     angle: '≤ 35°',
     verdict: 'Best',
+    a: 150,
+    b: 185,
     text: 'Neighbours on the wheel — blue with teal, rust with orange. The easiest strong pairing.',
   },
   {
     name: 'Complementary',
     angle: '≥ 165°',
     verdict: 'Best',
+    a: 30,
+    b: 210,
     text: 'Opposites — blue with orange, green with red. High contrast, reads deliberate.',
   },
   {
     name: 'Split / triadic',
     angle: '105–165°',
     verdict: 'Good',
+    a: 0,
+    b: 120,
     text: 'Evenly spaced around the wheel. Works, with a bolder, more playful edge.',
   },
   {
     name: 'Off-angle',
     angle: '70–105°',
     verdict: 'Weakest',
+    a: 60,
+    b: 150,
     text: 'Neither close enough nor opposite — the awkward middle that scores lowest.',
   },
 ]
@@ -221,6 +231,97 @@ function SectionHeading({ id, kicker, title, intro }: {
       <p className='mt-2 text-[14.5px] leading-relaxed text-muted-foreground'>
         {intro}
       </p>
+    </div>
+  )
+}
+
+function Swatch({ color, size = 22 }: { color: string; size?: number }) {
+  return (
+    <span
+      className='inline-block flex-none rounded-md border border-black/10'
+      style={{ width: size, height: size, background: color }}
+    />
+  )
+}
+
+const HUE_RING =
+  'conic-gradient(from 0deg, hsl(0 75% 55%), hsl(60 75% 55%), hsl(120 75% 55%), hsl(180 75% 55%), hsl(240 75% 55%), hsl(300 75% 55%), hsl(360 75% 55%))'
+
+function HueDial({ a, b, size = 78 }: { a: number; b: number; size?: number }) {
+  const c = size / 2
+  const r = c - 9
+  const point = (deg: number) => {
+    const rad = ((deg - 90) * Math.PI) / 180
+    return { x: c + r * Math.cos(rad), y: c + r * Math.sin(rad) }
+  }
+  const pa = point(a)
+  const pb = point(b)
+  return (
+    <div className='relative flex-none' style={{ width: size, height: size }}>
+      <div
+        className='absolute inset-0 rounded-full'
+        style={{ background: HUE_RING }}
+      />
+      <div className='absolute rounded-full bg-card' style={{ inset: 13 }} />
+      <svg
+        className='absolute inset-0'
+        width={size}
+        height={size}
+        aria-hidden='true'
+      >
+        <line
+          x1={pa.x}
+          y1={pa.y}
+          x2={pb.x}
+          y2={pb.y}
+          stroke='var(--color-foreground)'
+          strokeWidth='1.5'
+          strokeOpacity='0.45'
+        />
+      </svg>
+      {[
+        { deg: a, p: pa },
+        { deg: b, p: pb },
+      ].map(({ deg, p }) => (
+        <span
+          key={deg}
+          className='absolute size-3.5 rounded-full border-2 shadow-sm'
+          style={{
+            left: p.x,
+            top: p.y,
+            transform: 'translate(-50%, -50%)',
+            background: `hsl(${deg} 75% 50%)`,
+            borderColor: 'var(--color-card)',
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
+function AdjustGraphic({ name }: { name: string }) {
+  if (name === 'Temperature') {
+    return (
+      <div className='flex flex-none items-center gap-1.5'>
+        <Swatch color='hsl(28 78% 55%)' />
+        <Swatch color='hsl(210 70% 52%)' />
+      </div>
+    )
+  }
+  if (name === 'Brightness') {
+    return (
+      <span
+        className='block h-[22px] w-[72px] flex-none rounded-md border border-black/10'
+        style={{
+          background: 'linear-gradient(90deg, hsl(210 35% 86%), hsl(210 45% 24%))',
+        }}
+      />
+    )
+  }
+  return (
+    <div className='flex flex-none items-center gap-1.5'>
+      <Swatch color='hsl(330 80% 56%)' />
+      <Swatch color='hsl(330 22% 62%)' />
     </div>
   )
 }
@@ -540,6 +641,23 @@ export default function HowItWorks() {
                 saturated color scores even higher when there is a clear
                 light-vs-dark contrast.
               </p>
+              <div className='mt-4 flex flex-wrap items-center gap-x-5 gap-y-3'>
+                <div className='flex items-center gap-1.5'>
+                  {['#1a1815', '#4a4640', '#858481', '#b9b2a5', '#e7e2d6', '#fbfaf6'].map(
+                    c => (
+                      <Swatch key={c} color={c} />
+                    )
+                  )}
+                </div>
+                <div className='flex items-center gap-2'>
+                  <Swatch color='#26303f' />
+                  <span className='text-muted-foreground'>+</span>
+                  <Swatch color='hsl(175 70% 45%)' />
+                  <span className='text-[12px] text-muted-foreground'>
+                    neutral + one pop
+                  </span>
+                </div>
+              </div>
             </div>
 
             <h3 className='font-heading mt-7 text-[16px] font-bold'>
@@ -553,22 +671,25 @@ export default function HowItWorks() {
               {COLOR_WHEEL.map(rel => (
                 <div
                   key={rel.name}
-                  className='rounded-2xl border border-border bg-card p-4 shadow-sm'
+                  className='flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm'
                 >
-                  <div className='flex flex-wrap items-baseline gap-x-3 gap-y-1'>
-                    <span className='font-heading text-[15px] font-bold'>
-                      {rel.name}
-                    </span>
-                    <span className='rounded-md bg-muted px-2 py-0.5 text-[12px] text-muted-foreground'>
-                      {rel.angle}
-                    </span>
-                    <span className='ml-auto text-[11px] font-bold tracking-[0.1em] text-muted-foreground uppercase'>
-                      {rel.verdict}
-                    </span>
+                  <HueDial a={rel.a} b={rel.b} />
+                  <div className='min-w-0 flex-1'>
+                    <div className='flex flex-wrap items-baseline gap-x-3 gap-y-1'>
+                      <span className='font-heading text-[15px] font-bold'>
+                        {rel.name}
+                      </span>
+                      <span className='rounded-md bg-muted px-2 py-0.5 text-[12px] text-muted-foreground'>
+                        {rel.angle}
+                      </span>
+                      <span className='ml-auto text-[11px] font-bold tracking-[0.1em] text-muted-foreground uppercase'>
+                        {rel.verdict}
+                      </span>
+                    </div>
+                    <p className='mt-1.5 text-[13px] leading-snug text-muted-foreground'>
+                      {rel.text}
+                    </p>
                   </div>
-                  <p className='mt-1.5 text-[13px] leading-snug text-muted-foreground'>
-                    {rel.text}
-                  </p>
                 </div>
               ))}
             </div>
@@ -584,14 +705,17 @@ export default function HowItWorks() {
               {COLOR_ADJUST.map(adjust => (
                 <div
                   key={adjust.name}
-                  className='rounded-xl border border-border bg-card p-4 shadow-sm'
+                  className='flex items-center gap-4 rounded-xl border border-border bg-card p-4 shadow-sm'
                 >
-                  <div className='text-[13.5px] font-semibold'>
-                    {adjust.name}
+                  <div className='min-w-0 flex-1'>
+                    <div className='text-[13.5px] font-semibold'>
+                      {adjust.name}
+                    </div>
+                    <p className='mt-1 text-[13px] leading-snug text-muted-foreground'>
+                      {adjust.text}
+                    </p>
                   </div>
-                  <p className='mt-1 text-[13px] leading-snug text-muted-foreground'>
-                    {adjust.text}
-                  </p>
+                  <AdjustGraphic name={adjust.name} />
                 </div>
               ))}
             </div>
