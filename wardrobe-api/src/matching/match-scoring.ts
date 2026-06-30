@@ -43,9 +43,9 @@ const FORMALITY_ORDER: Formality[] = [
   Formality.Formal,
 ];
 
-const COLORTYPE_MATCH_BONUS = 8;
-const COLORTYPE_UNIVERSAL_BONUS = 3;
-const COLORTYPE_MISMATCH_PENALTY = -12;
+const COLORTYPE_MATCH_BONUS = 5;
+const COLORTYPE_UNIVERSAL_BONUS = 2;
+const COLORTYPE_MISMATCH_PENALTY = -2;
 
 const BRIGHTNESS_ORDER: Brightness[] = [
   Brightness.Light,
