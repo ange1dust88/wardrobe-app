@@ -1,4 +1,5 @@
 import { PencilIcon } from 'lucide-react'
+import { useState } from 'react'
 import { CATEGORIES, getItemImageSrc, type Item } from '../../lib/items'
 import { getMatchScoreTone, matchScoreToPercentage } from '../../lib/match-score'
 import { BRAND_ACCENT } from '../../lib/theme'
@@ -43,6 +44,7 @@ export function MatchWheel({
   onSelect,
   onEdit,
 }: Props) {
+  const [openDetailId, setOpenDetailId] = useState<string | null>(null)
   const ordered = [...items].sort((a, b) => {
     const ca = CATEGORIES.indexOf(a.category)
     const cb = CATEGORIES.indexOf(b.category)
@@ -174,7 +176,7 @@ export function MatchWheel({
         return (
           <div
             key={item.id}
-            className='group absolute'
+            className='absolute'
             style={{
               left: `${((p.x - sz / 2) / BOX) * 100}%`,
               top: `${((p.y - sz / 2) / BOX) * 100}%`,
@@ -189,7 +191,10 @@ export function MatchWheel({
             <button
               type='button'
               onMouseEnter={() => onHover(item.id)}
-              onClick={() => onSelect(item)}
+              onClick={() => {
+                onSelect(item)
+                setOpenDetailId(null)
+              }}
               aria-label={item.name}
               className='relative block h-full w-full overflow-hidden p-0'
               style={{
@@ -244,7 +249,20 @@ export function MatchWheel({
             )}
 
             {isMatch && breakdownById[item.id] && (
-              <div className='pointer-events-none absolute top-full left-1/2 z-50 hidden -translate-x-1/2 pt-2 group-hover:block'>
+              <button
+                type='button'
+                onClick={() =>
+                  setOpenDetailId(openDetailId === item.id ? null : item.id)
+                }
+                aria-label='Why this score'
+                className='absolute -right-1 -bottom-1 z-10 flex size-5 items-center justify-center rounded-full border border-border bg-background text-[11px] font-bold text-muted-foreground shadow-sm'
+              >
+                ?
+              </button>
+            )}
+
+            {openDetailId === item.id && breakdownById[item.id] && (
+              <div className='absolute top-full left-1/2 z-50 -translate-x-1/2 pt-2'>
                 <ScoreDetail breakdown={breakdownById[item.id]} />
               </div>
             )}
