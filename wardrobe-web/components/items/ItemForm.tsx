@@ -87,12 +87,19 @@ const chipCls = (on: boolean) =>
       : 'border-border bg-background text-foreground hover:bg-muted'
   )
 
-export function ItemForm({ form }: { form: ItemFormApi }) {
+export function ItemForm({
+  form,
+  initialImageUrl,
+}: {
+  form: ItemFormApi
+  initialImageUrl?: string | null
+}) {
   const { values, patch, toggle } = form
   const [extractingColor, setExtractingColor] = useState(false)
   const [dragging, setDragging] = useState(false)
   const [preview, setPreview] = useState<string | null>(null)
   const previewRef = useRef<string | null>(null)
+  const shownImage = preview ?? initialImageUrl ?? null
 
   const vibeConflicts = findVibeConflicts(values.vibe)
   const subtypes = SUBTYPES[values.category]
@@ -288,16 +295,18 @@ export function ItemForm({ form }: { form: ItemFormApi }) {
               className='hidden'
               onChange={e => handleImage(e.target.files?.[0] ?? null)}
             />
-            {preview ? (
+            {shownImage ? (
               <>
                 <span
                   className='size-12 rounded-xl border border-border bg-cover bg-center'
-                  style={{ backgroundImage: `url(${preview})` }}
+                  style={{ backgroundImage: `url(${shownImage})` }}
                 />
                 <span className='text-[12.5px] font-semibold text-foreground'>
                   {extractingColor
                     ? 'Reading color…'
-                    : 'Photo added · tap to replace'}
+                    : preview
+                      ? 'Photo added · tap to replace'
+                      : 'Current photo · tap to replace'}
                 </span>
               </>
             ) : (

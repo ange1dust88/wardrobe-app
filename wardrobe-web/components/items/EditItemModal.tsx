@@ -1,13 +1,14 @@
 'use client'
 
 import { useItemForm } from '@/hooks/useItemForm'
-import type {
-  Fit,
-  Formality,
-  Item,
-  Pattern,
-  UpdateItem,
-  Vibe,
+import {
+  getItemImageSrc,
+  type Fit,
+  type Formality,
+  type Item,
+  type Pattern,
+  type UpdateItem,
+  type Vibe,
 } from '@/lib/items'
 import { ItemFormDialog } from './ItemFormDialog'
 
@@ -99,6 +100,7 @@ export function EditItemModal({
       errorMessage={errorMessage}
       onDelete={handleDelete}
       deleting={deleting}
+      initialImageUrl={getItemImageSrc(item)}
     />
   )
 }

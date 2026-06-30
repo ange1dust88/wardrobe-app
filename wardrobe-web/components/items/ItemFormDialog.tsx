@@ -25,6 +25,7 @@ type Props = {
   errorMessage?: string
   onDelete?: () => void
   deleting?: boolean
+  initialImageUrl?: string | null
 }
 
 export function ItemFormDialog({
@@ -39,6 +40,7 @@ export function ItemFormDialog({
   errorMessage,
   onDelete,
   deleting,
+  initialImageUrl,
 }: Props) {
   const valid = form.isValid
 
@@ -78,7 +80,7 @@ export function ItemFormDialog({
           className='flex min-h-0 flex-1 flex-col'
         >
           <div className='min-h-0 flex-1 overflow-y-auto px-6 py-5 sm:px-7'>
-            <ItemForm form={form} />
+            <ItemForm form={form} initialImageUrl={initialImageUrl} />
             {errorMessage && (
               <Alert variant='error' className='mt-5'>
                 <AlertDescription>{errorMessage}</AlertDescription>
