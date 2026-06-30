@@ -25,6 +25,13 @@ import { Input } from '@/components/ui/input'
 
 const ANY_SUBTYPE = '__any'
 
+const FIT_CATEGORIES = new Set<Category>([
+  'top',
+  'outerwear',
+  'bottom',
+  'dress',
+])
+
 const SEASON_ICONS: Record<Season, string> = {
   spring: '✿',
   summer: '☀',
@@ -119,6 +126,8 @@ export function ItemForm({
   const previewRef = useRef<string | null>(null)
   const shownImage = preview ?? initialImageUrl ?? null
 
+  const showFit = FIT_CATEGORIES.has(values.category)
+  const optionCount = 1 + (showFit ? 1 : 0)
   const subtypes = SUBTYPES[values.category]
   const subtypeItems = subtypes
     ? [
@@ -167,9 +176,16 @@ export function ItemForm({
           label='Type'
           items={categoryItems}
           value={values.category}
-          onChange={value =>
-            patch({ category: value as Category, subType: null })
-          }
+          onChange={value => {
+            const category = value as Category
+            patch({
+              category,
+              subType: null,
+              fit: FIT_CATEGORIES.has(category)
+                ? (values.fit ?? 'regular')
+                : null,
+            })
+          }}
         />
         <FieldSelect
           label='Pattern'
@@ -182,7 +198,9 @@ export function ItemForm({
       <div
         className={cn(
           'mb-3.5 grid gap-3',
-          subtypes ? 'grid-cols-3' : 'grid-cols-2'
+          optionCount + (subtypes ? 1 : 0) >= 3
+            ? 'grid-cols-3'
+            : 'grid-cols-2'
         )}
       >
         <FieldSelect
@@ -191,12 +209,14 @@ export function ItemForm({
           value={values.formality ?? 'casual'}
           onChange={value => patch({ formality: value as Formality })}
         />
-        <FieldSelect
-          label='Fit'
-          items={fitItems}
-          value={values.fit ?? 'regular'}
-          onChange={value => patch({ fit: value as Fit })}
-        />
+        {showFit && (
+          <FieldSelect
+            label='Fit'
+            items={fitItems}
+            value={values.fit ?? 'regular'}
+            onChange={value => patch({ fit: value as Fit })}
+          />
+        )}
         {subtypes && (
           <FieldSelect
             label='Subtype'
