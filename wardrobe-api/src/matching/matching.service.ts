@@ -4,7 +4,7 @@ import { ItemsService } from '../items/items.service';
 import { MatchQueryDto } from './dto/match-query.dto';
 import { SuggestMatchesDto } from './dto/suggest-matches.dto';
 import { MatchMap, MatchMapCacheService } from './match-map-cache.service';
-import { categoriesConflict, isLayeredCategory } from './category-compat';
+import { categoriesConflict } from './category-compat';
 import { seasonsConflict } from './season-compat';
 import {
   computeTotalScore,
@@ -63,7 +63,7 @@ export class MatchingService {
           continue;
         }
         if (candidate.category === anchor.category) {
-          if (!allowConflicts && !isLayeredCategory(anchor.category)) {
+          if (!allowConflicts) {
             continue;
           }
         } else if (

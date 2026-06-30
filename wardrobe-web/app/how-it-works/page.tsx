@@ -144,9 +144,9 @@ const STACKING = [
     text: 'A single piece per slot — picking another swaps it.',
   },
   {
-    label: 'Layer by type',
+    label: 'Layer it yourself',
     items: 'top · outerwear · bottom',
-    text: 'Stack different types — a tee under a sweater, leggings under a skirt — but only one of each type.',
+    text: 'Add layers by hand — a tee under a sweater, leggings under a skirt. Suggestions fill the other slots, not more of the same.',
   },
   {
     label: 'As many as you like',

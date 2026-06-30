@@ -6,11 +6,18 @@ import {
 } from '@tanstack/react-query'
 import { useState } from 'react'
 import {
+  BASE_SUBTYPES,
   createOutfit,
   STACK_POLICY,
   suggestMatches,
   type Item,
 } from '@/lib/items'
+
+function layerKey(item: Item): string {
+  const base = BASE_SUBTYPES[item.category]
+  if (base) return base.includes(item.subType ?? '') ? 'base' : 'main'
+  return item.subType ?? '__none'
+}
 
 export function useOutfitBuilder(colorType: string | null) {
   const queryClient = useQueryClient()
@@ -45,10 +52,10 @@ export function useOutfitBuilder(colorType: string | null) {
       const policy = STACK_POLICY[item.category] ?? 'single'
       if (policy === 'unlimited') return [...prev, item]
       if (policy === 'layered') {
-        const st = item.subType ?? null
+        const key = layerKey(item)
         return [
           ...prev.filter(
-            s => !(s.category === item.category && (s.subType ?? null) === st)
+            s => !(s.category === item.category && layerKey(s) === key)
           ),
           item,
         ]

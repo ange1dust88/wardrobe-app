@@ -70,6 +70,10 @@ export const SUBTYPES: Partial<Record<Category, string[]>> = {
   ],
 }
 
+export const BASE_SUBTYPES: Partial<Record<Category, string[]>> = {
+  bottom: ['leggings'],
+}
+
 export const SEASONS = ['spring', 'summer', 'autumn', 'winter'] as const
 
 export type Season = (typeof SEASONS)[number]
