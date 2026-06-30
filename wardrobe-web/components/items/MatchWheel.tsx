@@ -177,6 +177,11 @@ export function MatchWheel({
           <div
             key={item.id}
             className='absolute'
+            onMouseEnter={() => {
+              onHover(item.id)
+              setOpenDetailId(prev => (prev && prev !== item.id ? null : prev))
+            }}
+            onMouseLeave={() => onHover(null)}
             style={{
               left: `${((p.x - sz / 2) / BOX) * 100}%`,
               top: `${((p.y - sz / 2) / BOX) * 100}%`,
@@ -190,10 +195,6 @@ export function MatchWheel({
           >
             <button
               type='button'
-              onMouseEnter={() => {
-                onHover(item.id)
-                setOpenDetailId(prev => (prev && prev !== item.id ? null : prev))
-              }}
               onClick={() => {
                 onSelect(item)
                 setOpenDetailId(null)
