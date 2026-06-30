@@ -1,5 +1,6 @@
 'use client'
 
+import { Infinity as InfinityIcon, Layers, Square } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 
@@ -522,6 +523,41 @@ export default function HowItWorks() {
                 </div>
               ))}
             </div>
+
+            <div className='mt-7 rounded-[18px] border border-border bg-card p-5 shadow-sm'>
+              <div className='mb-3 flex items-center justify-between'>
+                <span className='text-[11px] font-bold tracking-[0.12em] text-muted-foreground uppercase'>
+                  Your look
+                </span>
+                <span
+                  className='flex items-baseline gap-1 rounded-lg px-2.5 py-1 text-white'
+                  style={{ background: '#2f7d4f' }}
+                >
+                  <span className='font-heading text-[15px] leading-none font-extrabold'>
+                    28
+                  </span>
+                  <span className='text-[11px] opacity-80'>/ 36</span>
+                </span>
+              </div>
+              <div className='flex flex-col gap-2'>
+                {[
+                  ['Navy striped shirt', 'top', '#2c3550'],
+                  ['Grey trousers', 'bottom', '#8c857a'],
+                  ['White sneakers', 'shoes', '#ece7dd'],
+                ].map(([name, cat, col]) => (
+                  <div key={name} className='flex items-center gap-3'>
+                    <span
+                      className='size-8 flex-none rounded-lg border border-black/10'
+                      style={{ background: col }}
+                    />
+                    <span className='text-[14px] font-semibold'>{name}</span>
+                    <span className='ml-auto text-[11px] tracking-wide text-muted-foreground uppercase'>
+                      {cat}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </section>
 
           <section
@@ -909,26 +945,21 @@ export default function HowItWorks() {
             </p>
             <div className='grid gap-3.5 sm:grid-cols-3'>
               {[
-                ['1', 'One at a time', 'shoes · dress · headwear', 'A single piece per slot — picking another swaps it.'],
-                ['⌷', 'Layer it yourself', 'top · outerwear · bottom', 'A tee under a sweater, leggings under a skirt — add layers by hand.'],
-                ['∞', 'As many as you like', 'bag · jewelry · belt · scarf', 'Finishing pieces stack freely — no limit.'],
-              ].map(([icon, title, items, text]) => (
+                { Icon: Square, title: 'One at a time', items: 'shoes · dress · headwear', text: 'A single piece per slot — picking another swaps it.' },
+                { Icon: Layers, title: 'Layer it yourself', items: 'top · outerwear · bottom', text: 'A tee under a sweater, leggings under a skirt — add layers by hand.' },
+                { Icon: InfinityIcon, title: 'As many as you like', items: 'bag · jewelry · belt · scarf', text: 'Finishing pieces stack freely — no limit.' },
+              ].map(slot => (
                 <div
-                  key={title}
+                  key={slot.title}
                   className='rounded-[18px] border border-border bg-card p-5 shadow-sm'
                 >
-                  <div
-                    className='font-heading mb-2 text-[22px] font-extrabold'
-                    style={{ color: ACCENT }}
-                  >
-                    {icon}
-                  </div>
-                  <div className='text-[15px] font-bold'>{title}</div>
+                  <slot.Icon className='mb-2.5 size-6' style={{ color: ACCENT }} />
+                  <div className='text-[15px] font-bold'>{slot.title}</div>
                   <div className='mb-2 text-[12.5px] tracking-wide text-muted-foreground'>
-                    {items}
+                    {slot.items}
                   </div>
                   <div className='text-[13.5px] leading-snug text-muted-foreground'>
-                    {text}
+                    {slot.text}
                   </div>
                 </div>
               ))}
