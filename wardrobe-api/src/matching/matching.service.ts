@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { SeasonPalette } from '../items/dto/item.dto';
 import { ItemsService } from '../items/items.service';
-import { MatchCell, MatchMap, MatchMapCacheService } from './match-map-cache.service';
+import {
+  MatchCell,
+  MatchMap,
+  MatchMapCacheService,
+} from './match-map-cache.service';
 import { categoriesConflict } from './category-compat';
 import { seasonsConflict } from './season-compat';
 import { computeTotalScore, isRecommendableScore } from './match-scoring';

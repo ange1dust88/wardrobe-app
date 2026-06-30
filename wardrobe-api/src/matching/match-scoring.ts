@@ -70,10 +70,6 @@ function isLoudPattern(pattern: Pattern): boolean {
   return pattern === Pattern.BoldPattern || pattern === Pattern.Graphic;
 }
 
-function isSubtlePattern(pattern: Pattern): boolean {
-  return pattern === Pattern.SubtlePattern || pattern === Pattern.TextureOnly;
-}
-
 function hasPaletteOverlap(anchor: Item, candidate: Item): boolean {
   return candidate.seasonPaletteCompatibility.some((palette) =>
     anchor.seasonPaletteCompatibility.includes(palette),
@@ -103,7 +99,7 @@ export function computeColorScore(
     const dist = brightnessDistance(anchor.brightness, candidate.brightness);
 
     if (anchor.isNeutral && candidate.isNeutral) {
-      return dist === 0 ? 10 : dist === 1 ? 9 : 8;
+      return dist === 0 ? 10 : 11;
     }
 
     const colored = anchor.isNeutral ? candidate : anchor;
@@ -257,14 +253,10 @@ export function computeStyleScore(anchor: Item, candidate: Item): number {
 }
 
 export function computePatternScore(anchor: Item, candidate: Item): number {
-  const a = isLoudPattern(anchor.pattern);
-  const c = isLoudPattern(candidate.pattern);
-  if (a && c) return -4;
-  if (a || c) return SCORE_CAPS.pattern;
-  if (isSubtlePattern(anchor.pattern) || isSubtlePattern(candidate.pattern)) {
-    return 3;
+  if (isLoudPattern(anchor.pattern) && isLoudPattern(candidate.pattern)) {
+    return -4;
   }
-  return 2;
+  return SCORE_CAPS.pattern;
 }
 
 function accentTieIn(accent: Color | null, otherPrimary: Color): number {
@@ -290,11 +282,8 @@ export function computeTotalScore(
 } {
   const breakdown: ScoreBreakdown = {
     color: clamp(
-      computeColorScore(
-        anchor.color,
-        candidate.color,
-        ctx.strictTemperature,
-      ) + accentAdjust(anchor, candidate),
+      computeColorScore(anchor.color, candidate.color, ctx.strictTemperature) +
+        accentAdjust(anchor, candidate),
       -6,
       SCORE_CAPS.color,
     ),
