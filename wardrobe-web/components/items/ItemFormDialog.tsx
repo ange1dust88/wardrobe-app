@@ -53,7 +53,7 @@ export function ItemFormDialog({
     >
       <DialogPopup
         showCloseButton={false}
-        className='max-w-[560px] gap-0 overflow-hidden rounded-[24px] p-0'
+        className='max-h-[calc(100svh-3rem)] max-w-[560px] gap-0 overflow-hidden rounded-[24px] p-0'
       >
         <div className='flex flex-none items-center justify-between gap-4 border-b border-border px-6 py-[18px]'>
           <div className='flex items-baseline gap-3'>
