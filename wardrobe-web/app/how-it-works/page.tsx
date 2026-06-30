@@ -4,6 +4,7 @@ import { Infinity as InfinityIcon, Layers, Square } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { BrandMark } from '@/components/BrandMark'
+import { SCORE_TIER_COLORS } from '@/lib/match-score'
 import { BRAND_ACCENT } from '@/lib/theme'
 
 const ACCENT = BRAND_ACCENT
@@ -55,7 +56,7 @@ const EXAMPLE = {
   a: { name: 'Grey trousers', color: '#8c857a' },
   b: { name: 'Navy striped shirt', color: '#2c3550' },
   total: 28,
-  tier: { label: 'Great match', color: '#2f7d4f' },
+  tier: { label: 'Great match', color: SCORE_TIER_COLORS.great },
   breakdown: [
     { name: 'Color', pts: 9, cap: 12 },
     { name: 'Role', pts: 6, cap: 6 },
@@ -235,10 +236,10 @@ export default function HowItWorks() {
     pct < 0.6
       ? { label: 'Below the bar', color: '#a39c8e', note: 'Under ~60% — not surfaced as a suggestion, but you can still pick it by hand.' }
       : pct < 0.75
-        ? { label: 'Works', color: '#c08a2d', note: '60–74% — a solid, wearable pairing.' }
+        ? { label: 'Works', color: SCORE_TIER_COLORS.works, note: '60–74% — a solid, wearable pairing.' }
         : pct < 0.9
-          ? { label: 'Great match', color: '#2f7d4f', note: '75–89% — these clearly belong together.' }
-          : { label: 'Perfect match', color: '#2f5d8a', note: '90%+ — about as good as it gets.' }
+          ? { label: 'Great match', color: SCORE_TIER_COLORS.great, note: '75–89% — these clearly belong together.' }
+          : { label: 'Perfect match', color: SCORE_TIER_COLORS.perfect, note: '90%+ — about as good as it gets.' }
 
   const c = hslOf(readColor)
   const neutral = c.s < 0.18 || c.l < 0.14 || c.l > 0.9
@@ -620,8 +621,7 @@ export default function HowItWorks() {
                 <div
                   className='absolute right-0 left-0 h-1.5 rounded-full'
                   style={{
-                    background:
-                      'linear-gradient(90deg,#5c564c 0 60%,#c08a2d 60% 75%,#2f7d4f 75% 90%,#2f5d8a 90% 100%)',
+                    background: `linear-gradient(90deg,#a39c8e 0 60%,${SCORE_TIER_COLORS.works} 60% 75%,${SCORE_TIER_COLORS.great} 75% 90%,${SCORE_TIER_COLORS.perfect} 90% 100%)`,
                   }}
                 />
                 <input
