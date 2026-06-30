@@ -58,6 +58,17 @@ function FrameChrome({
   const { user } = useAuth()
   const [addOpen, setAddOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [showBreakdown, setShowBreakdownState] = useState(() => {
+    if (typeof window === 'undefined') return true
+    return localStorage.getItem('dress:showBreakdown') !== '0'
+  })
+
+  function setShowBreakdown(value: boolean) {
+    setShowBreakdownState(value)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('dress:showBreakdown', value ? '1' : '0')
+    }
+  }
   const { itemsQuery, createMutation } = useItems()
   const { outfitsQuery } = useOutfits()
 
@@ -66,7 +77,14 @@ function FrameChrome({
   const userInitial = user?.email?.[0]?.toUpperCase() ?? 'U'
 
   return (
-    <AppProvider value={{ colorType, openAddItem: () => setAddOpen(true) }}>
+    <AppProvider
+      value={{
+        colorType,
+        openAddItem: () => setAddOpen(true),
+        showBreakdown,
+        setShowBreakdown,
+      }}
+    >
       <div className='min-h-svh'>
         <AppHeader
           savedCount={savedCount}

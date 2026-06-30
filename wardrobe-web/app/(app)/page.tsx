@@ -33,7 +33,7 @@ function viewTab(active: boolean): string {
 }
 
 export default function WardrobePage() {
-  const { colorType, openAddItem } = useAppContext()
+  const { colorType, openAddItem, showBreakdown } = useAppContext()
   const [view, setView] = useState<'circular' | 'list'>('circular')
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [editingItem, setEditingItem] = useState<Item | null>(null)
@@ -180,7 +180,7 @@ export default function WardrobePage() {
                 selectedIds={builder.selectedIds}
                 matchedIds={matchedIds}
                 scoreById={scoreById}
-                breakdownById={breakdownById}
+                breakdownById={showBreakdown ? breakdownById : {}}
                 onHover={setHoveredId}
                 onSelect={builder.toggle}
                 onEdit={setEditingItem}

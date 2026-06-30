@@ -182,7 +182,7 @@ export function MatchWheel({
               top: `${((p.y - sz / 2) / BOX) * 100}%`,
               width: `${szPct}%`,
               aspectRatio: '1',
-              zIndex: isSrc ? 5 : isSel ? 4 : 2,
+              zIndex: openDetailId === item.id ? 60 : isSrc ? 5 : isSel ? 4 : 2,
               opacity: lit ? 1 : 0.45,
               filter: lit ? 'none' : 'grayscale(.25)',
               transition: 'opacity .3s ease, filter .3s ease',

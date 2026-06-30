@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useAppContext } from '@/components/AppContext'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { useProfile } from '@/hooks/useProfile'
 import {
@@ -20,6 +21,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 
 type Props = {
@@ -55,6 +57,7 @@ function Toggle({
 
 export function ProfileModal({ onClose, itemCount, outfitCount }: Props) {
   const { user, signOut } = useAuth()
+  const { showBreakdown, setShowBreakdown } = useAppContext()
   const { profileQuery, saveMutation } = useProfile()
   const profile = profileQuery.data
 
@@ -168,6 +171,18 @@ export function ProfileModal({ onClose, itemCount, outfitCount }: Props) {
                   )
                 })}
               </div>
+            </div>
+
+            <div className='flex items-center justify-between gap-3'>
+              <div className='flex flex-col'>
+                <span className='text-sm font-medium text-foreground'>
+                  Score breakdown
+                </span>
+                <span className='text-xs text-muted-foreground'>
+                  Show the “?” match explainer on the wheel
+                </span>
+              </div>
+              <Switch checked={showBreakdown} onCheckedChange={setShowBreakdown} />
             </div>
 
             <div className='flex items-center justify-between gap-2 pt-2'>
