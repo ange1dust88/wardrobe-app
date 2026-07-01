@@ -6,7 +6,7 @@ import {
   MatchMap,
   MatchMapCacheService,
 } from './match-map-cache.service';
-import { categoriesConflict } from './category-compat';
+import { categoriesConflict, categoryStacks } from './category-compat';
 import { seasonsConflict } from './season-compat';
 import { computeTotalScore, isRecommendableScore } from './match-scoring';
 
@@ -39,16 +39,20 @@ export class MatchingService {
         if (candidate.id === anchor.id) {
           continue;
         }
-        if (candidate.category === anchor.category) {
-          if (!allowConflicts) {
+        if (!allowConflicts) {
+          if (candidate.category === anchor.category) {
+            if (
+              !categoryStacks(anchor.category) ||
+              seasonsConflict(anchor.seasonWear, candidate.seasonWear)
+            ) {
+              continue;
+            }
+          } else if (
+            categoriesConflict(anchor.category, candidate.category) ||
+            seasonsConflict(anchor.seasonWear, candidate.seasonWear)
+          ) {
             continue;
           }
-        } else if (
-          !allowConflicts &&
-          (categoriesConflict(anchor.category, candidate.category) ||
-            seasonsConflict(anchor.seasonWear, candidate.seasonWear))
-        ) {
-          continue;
         }
         const { total, breakdown } = computeTotalScore(anchor, candidate, ctx);
         if (isRecommendableScore(total)) {
