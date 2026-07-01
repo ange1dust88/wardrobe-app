@@ -48,6 +48,8 @@ export default function WardrobePage() {
 
   const building = builder.selectedIds.length > 0
   const hoverCells = !building && hoveredId ? (map[hoveredId] ?? {}) : {}
+  const itemById = new Map(items.map(i => [i.id, i]))
+  const hoveredItem = hoveredId ? itemById.get(hoveredId) : undefined
 
   const scoreById: Record<string, number> = {}
   const breakdownById: Record<string, ScoreBreakdown> = {}
@@ -107,6 +109,15 @@ export default function WardrobePage() {
     }
   } else {
     for (const [id, cell] of Object.entries(hoverCells)) {
+      const cand = itemById.get(id)
+      if (
+        hoveredItem &&
+        cand &&
+        cand.category === hoveredItem.category &&
+        STACK_POLICY[cand.category] !== 'unlimited'
+      ) {
+        continue
+      }
       scoreById[id] = cell.score
       breakdownById[id] = cell.breakdown
     }
