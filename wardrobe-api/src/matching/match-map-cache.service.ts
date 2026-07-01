@@ -8,15 +8,35 @@ export type MatchMap = Record<string, Record<string, MatchCell>>;
 export class MatchMapCacheService {
   private cache = new Map<string, MatchMap>();
 
-  get(userId: string): MatchMap | undefined {
-    return this.cache.get(userId);
+  private key(
+    userId: string,
+    colorType?: string,
+    allowConflicts = false,
+  ): string {
+    return `${userId}::${colorType ?? ''}::${allowConflicts ? '1' : '0'}`;
   }
 
-  set(userId: string, map: MatchMap): void {
-    this.cache.set(userId, map);
+  get(
+    userId: string,
+    colorType?: string,
+    allowConflicts = false,
+  ): MatchMap | undefined {
+    return this.cache.get(this.key(userId, colorType, allowConflicts));
+  }
+
+  set(
+    userId: string,
+    map: MatchMap,
+    colorType?: string,
+    allowConflicts = false,
+  ): void {
+    this.cache.set(this.key(userId, colorType, allowConflicts), map);
   }
 
   invalidate(userId: string): void {
-    this.cache.delete(userId);
+    const prefix = `${userId}::`;
+    for (const k of this.cache.keys()) {
+      if (k.startsWith(prefix)) this.cache.delete(k);
+    }
   }
 }

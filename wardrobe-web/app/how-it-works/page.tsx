@@ -48,12 +48,12 @@ const SIGNALS = [
   {
     name: 'Pattern',
     pts: 3,
-    desc: 'One patterned piece is fine; two bold patterns together clash.',
+    desc: 'One patterned piece keeps it clean; two together get busy, two bold ones clash.',
   },
   {
     name: 'Fit',
     pts: 2,
-    desc: 'Silhouette balance — two very baggy or two very tight pieces read a touch off.',
+    desc: 'Silhouette balance — two extremes (both baggy, both tight, or one of each) throw the proportions off.',
   },
 ]
 

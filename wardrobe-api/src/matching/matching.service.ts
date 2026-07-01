@@ -22,12 +22,13 @@ export class MatchingService {
     userColorType?: SeasonPalette,
     allowConflicts = false,
   ): Promise<MatchMap> {
-    const useCache = !userColorType && !allowConflicts;
-    if (useCache) {
-      const cached = this.matchMapCache.get(userId);
-      if (cached) {
-        return cached;
-      }
+    const cached = this.matchMapCache.get(
+      userId,
+      userColorType,
+      allowConflicts,
+    );
+    if (cached) {
+      return cached;
     }
 
     const items = await this.itemsService.findAll(userId);
@@ -61,9 +62,7 @@ export class MatchingService {
       }
       map[anchor.id] = scores;
     }
-    if (useCache) {
-      this.matchMapCache.set(userId, map);
-    }
+    this.matchMapCache.set(userId, map, userColorType, allowConflicts);
     return map;
   }
 }

@@ -72,6 +72,14 @@ function isLoudPattern(pattern: Pattern): boolean {
   return pattern === Pattern.BoldPattern || pattern === Pattern.Graphic;
 }
 
+function isPatterned(pattern: Pattern): boolean {
+  return (
+    pattern === Pattern.SubtlePattern ||
+    pattern === Pattern.BoldPattern ||
+    pattern === Pattern.Graphic
+  );
+}
+
 function hasPaletteOverlap(anchor: Item, candidate: Item): boolean {
   return candidate.seasonPaletteCompatibility.some((palette) =>
     anchor.seasonPaletteCompatibility.includes(palette),
@@ -97,7 +105,7 @@ export function computeColorScore(anchor: Color, candidate: Color): number {
     const dist = brightnessDistance(anchor.brightness, candidate.brightness);
 
     if (anchor.isNeutral && candidate.isNeutral) {
-      return dist === 0 ? 10 : 11;
+      return dist === 0 ? 8 : dist === 1 ? 10 : 11;
     }
 
     const colored = anchor.isNeutral ? candidate : anchor;
@@ -117,29 +125,21 @@ export function computeColorScore(anchor: Color, candidate: Color): number {
   }
 
   const distance = hueDistance(anchor.hue, candidate.hue);
-  const isAnalogous = distance <= 35;
   const isComplementary = distance >= 165;
-  const isTriadic = distance >= 105 && distance <= 135;
-  const isSplitComplementary = distance >= 145 && distance < 165;
-  const isWheelHarmony =
-    isAnalogous || isComplementary || isTriadic || isSplitComplementary;
+  const isWheelHarmony = distance <= 35 || distance > 105;
 
   let score =
     distance <= 12
       ? 9
-      : isAnalogous
+      : distance <= 35
         ? 10
-        : isComplementary
-          ? 10
-          : isTriadic
-            ? 8
-            : isSplitComplementary
-              ? 7
-              : distance <= 70
-                ? 6
-                : distance <= 100
-                  ? 4
-                  : 5;
+        : distance <= 70
+          ? 6
+          : distance <= 105
+            ? 4
+            : distance < 165
+              ? 8
+              : 10;
 
   if (anchor.temperature === candidate.temperature) {
     score += 1;
@@ -185,7 +185,7 @@ export function computeRoleScore(anchor: Item, candidate: Item): number {
   if (a === WardrobeRole.Core && c === WardrobeRole.Tonal) return 5;
   if (a === WardrobeRole.Tonal && c === WardrobeRole.Core) return 5;
   if (a === WardrobeRole.Core && c === WardrobeRole.Core) return 5;
-  if (a === WardrobeRole.Tonal && c === WardrobeRole.Tonal) return 4;
+  if (a === WardrobeRole.Tonal && c === WardrobeRole.Tonal) return 5;
   if (a === WardrobeRole.Pop || c === WardrobeRole.Pop) return 3;
   return 2;
 }
@@ -254,6 +254,9 @@ export function computePatternScore(anchor: Item, candidate: Item): number {
   if (isLoudPattern(anchor.pattern) && isLoudPattern(candidate.pattern)) {
     return -4;
   }
+  if (isPatterned(anchor.pattern) && isPatterned(candidate.pattern)) {
+    return 1;
+  }
   return SCORE_CAPS.pattern;
 }
 
@@ -262,7 +265,12 @@ export function computeFitScore(anchor: Item, candidate: Item): number {
   const bothExtremeSame =
     anchor.fit === candidate.fit &&
     (anchor.fit === Fit.Slim || anchor.fit === Fit.Oversized);
-  return bothExtremeSame ? 1 : SCORE_CAPS.fit;
+  if (bothExtremeSame) return 0;
+  const oppositeExtremes =
+    (anchor.fit === Fit.Slim && candidate.fit === Fit.Oversized) ||
+    (anchor.fit === Fit.Oversized && candidate.fit === Fit.Slim);
+  if (oppositeExtremes) return 1;
+  return SCORE_CAPS.fit;
 }
 
 function accentTieIn(accent: Color | null, otherPrimary: Color): number {
