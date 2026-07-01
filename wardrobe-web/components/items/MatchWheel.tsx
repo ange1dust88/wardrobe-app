@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { CATEGORIES, getItemImageSrc, type Item } from '../../lib/items'
 import { getMatchScoreTone, matchScoreToPercentage } from '../../lib/match-score'
 import { BRAND_ACCENT } from '../../lib/theme'
+import { cn } from '../../lib/utils'
 import type { ScoreBreakdown } from '../../lib/items'
 import { ScoreBadge } from './ScoreBadge'
 import { ScoreDetail } from './ScoreDetail'
@@ -116,7 +117,7 @@ export function MatchWheel({
   return (
     <div
       onMouseLeave={() => onHover(null)}
-      className='relative mx-auto aspect-square w-full max-w-[712px]'
+      className='relative mx-auto aspect-square w-full max-w-[min(712px,calc(100svh-300px))]'
     >
       <style>{`@keyframes wheel-draw { from { stroke-dashoffset: 900 } to { stroke-dashoffset: 0 } }`}</style>
 
@@ -160,6 +161,8 @@ export function MatchWheel({
 
       {ordered.map((item, i) => {
         const p = pos(i)
+        const flipUp = p.y > CY
+        const alignRight = p.x > CX
         const isSel = selectedIds.includes(item.id)
         const isMatch = matchedIds.has(item.id)
         const isHover = item.id === activeId
@@ -255,24 +258,33 @@ export function MatchWheel({
             {isMatch &&
               breakdownById[item.id] &&
               (isHover || openDetailId === item.id) && (
-                <button
-                  type='button'
+                <div
+                  className='absolute -right-1 -bottom-1 z-20'
                   onMouseEnter={() => setOpenDetailId(item.id)}
                   onMouseLeave={() => setOpenDetailId(null)}
-                  onFocus={() => setOpenDetailId(item.id)}
-                  onBlur={() => setOpenDetailId(null)}
-                  aria-label='Why this score'
-                  className='absolute -right-1 -bottom-1 z-10 flex size-5 items-center justify-center rounded-full border border-border bg-background text-[11px] font-bold text-muted-foreground shadow-sm'
                 >
-                  ?
-                </button>
+                  <button
+                    type='button'
+                    onFocus={() => setOpenDetailId(item.id)}
+                    onBlur={() => setOpenDetailId(null)}
+                    aria-label='Why this score'
+                    className='flex size-5 items-center justify-center rounded-full border border-border bg-background text-[11px] font-bold text-muted-foreground shadow-sm'
+                  >
+                    ?
+                  </button>
+                  {openDetailId === item.id && (
+                    <div
+                      className={cn(
+                        'absolute z-50',
+                        flipUp ? 'bottom-full pb-2' : 'top-full pt-2',
+                        alignRight ? 'right-0' : 'left-0'
+                      )}
+                    >
+                      <ScoreDetail breakdown={breakdownById[item.id]} />
+                    </div>
+                  )}
+                </div>
               )}
-
-            {openDetailId === item.id && breakdownById[item.id] && (
-              <div className='pointer-events-none absolute top-full left-1/2 z-50 -translate-x-1/2 pt-2'>
-                <ScoreDetail breakdown={breakdownById[item.id]} />
-              </div>
-            )}
           </div>
         )
       })}
