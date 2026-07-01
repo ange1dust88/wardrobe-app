@@ -18,7 +18,7 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty'
 import { Spinner } from '@/components/ui/spinner'
-import { type Item, type ScoreBreakdown } from '@/lib/items'
+import { STACK_POLICY, type Item, type ScoreBreakdown } from '@/lib/items'
 import { harmonyOf } from '@/lib/harmony'
 import { cn } from '@/lib/utils'
 import { useItems } from '@/hooks/useItems'
@@ -54,8 +54,17 @@ export default function WardrobePage() {
 
   if (building) {
     const sel = builder.selectedIds
+    const filledCategories = new Set(
+      items.filter(i => sel.includes(i.id)).map(i => i.category)
+    )
     for (const item of items) {
       if (sel.includes(item.id)) continue
+      if (
+        STACK_POLICY[item.category] !== 'unlimited' &&
+        filledCategories.has(item.category)
+      ) {
+        continue
+      }
       let sum = 0
       let ok = true
       const acc: ScoreBreakdown = {
