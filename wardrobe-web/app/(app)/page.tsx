@@ -65,6 +65,7 @@ export default function WardrobePage() {
         palette: 0,
         style: 0,
         pattern: 0,
+        fit: 0,
       }
       for (const s of sel) {
         const cell = map[s]?.[item.id]
@@ -79,6 +80,7 @@ export default function WardrobePage() {
         acc.palette += cell.breakdown.palette
         acc.style += cell.breakdown.style
         acc.pattern += cell.breakdown.pattern
+        acc.fit += cell.breakdown.fit
       }
       if (ok) {
         const n = sel.length
@@ -90,6 +92,7 @@ export default function WardrobePage() {
           palette: acc.palette / n,
           style: acc.style / n,
           pattern: acc.pattern / n,
+          fit: acc.fit / n,
         }
       }
     }

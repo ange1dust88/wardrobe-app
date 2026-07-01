@@ -1,12 +1,13 @@
 import type { ScoreBreakdown } from '@/lib/items'
 
 const AXES: { key: keyof ScoreBreakdown; label: string; cap: number }[] = [
-  { key: 'color', label: 'Color', cap: 12 },
-  { key: 'role', label: 'Role', cap: 6 },
+  { key: 'color', label: 'Color', cap: 11 },
+  { key: 'role', label: 'Role', cap: 5 },
   { key: 'season', label: 'Season', cap: 5 },
   { key: 'palette', label: 'Palette', cap: 5 },
   { key: 'style', label: 'Style', cap: 5 },
   { key: 'pattern', label: 'Pattern', cap: 3 },
+  { key: 'fit', label: 'Fit', cap: 2 },
 ]
 
 export function ScoreDetail({ breakdown }: { breakdown: ScoreBreakdown }) {

@@ -70,19 +70,6 @@ export enum SeasonPalette {
   Universal = 'universal',
 }
 
-export enum Vibe {
-  Casual = 'casual',
-  Sporty = 'sporty',
-  Minimalist = 'minimalist',
-  Urban = 'urban',
-  Workwear = 'workwear',
-  Romantic = 'romantic',
-  Edgy = 'edgy',
-  Vintage = 'vintage',
-  Classic = 'classic',
-  Relaxed = 'relaxed',
-}
-
 export enum SeasonWear {
   Spring = 'spring',
   Summer = 'summer',

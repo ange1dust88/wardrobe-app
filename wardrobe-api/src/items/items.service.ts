@@ -101,7 +101,6 @@ export class ItemsService {
         formality:
           dto.formality ?? deriveFormality(dto.category, dto.subType ?? null),
         fit: dto.fit ?? null,
-        vibe: [],
         seasonWear: dto.seasonWear,
         imageUrl,
         hex: derived.color.hex,

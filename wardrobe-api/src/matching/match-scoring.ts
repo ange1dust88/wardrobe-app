@@ -1,6 +1,7 @@
 import {
   Brightness,
   Color,
+  Fit,
   Formality,
   Item,
   Pattern,
@@ -12,7 +13,6 @@ import { warmthGap } from './season-compat';
 
 export type MatchContext = {
   userColorType?: SeasonPalette;
-  strictTemperature?: boolean;
 };
 
 export type ScoreBreakdown = {
@@ -22,18 +22,20 @@ export type ScoreBreakdown = {
   palette: number;
   style: number;
   pattern: number;
+  fit: number;
 };
 
 const MAX_SCORE = 36;
 const MIN_RECOMMENDABLE_SCORE = 22;
 
 const SCORE_CAPS: ScoreBreakdown = {
-  color: 12,
-  role: 6,
+  color: 11,
+  role: 5,
   season: 5,
   palette: 5,
   style: 5,
   pattern: 3,
+  fit: 2,
 };
 
 const FORMALITY_ORDER: Formality[] = [
@@ -44,7 +46,7 @@ const FORMALITY_ORDER: Formality[] = [
 ];
 
 const COLORTYPE_MATCH_BONUS = 5;
-const COLORTYPE_UNIVERSAL_BONUS = 2;
+const COLORTYPE_UNIVERSAL_BONUS = 4;
 const COLORTYPE_MISMATCH_PENALTY = -2;
 
 const BRIGHTNESS_ORDER: Brightness[] = [
@@ -90,11 +92,7 @@ function hasSamePaletteTemperature(anchor: Item, candidate: Item): boolean {
   return inSameGroup(warmPalettes) || inSameGroup(coolPalettes);
 }
 
-export function computeColorScore(
-  anchor: Color,
-  candidate: Color,
-  strictTemperature = false,
-): number {
+export function computeColorScore(anchor: Color, candidate: Color): number {
   if (anchor.isNeutral || candidate.isNeutral) {
     const dist = brightnessDistance(anchor.brightness, candidate.brightness);
 
@@ -146,7 +144,7 @@ export function computeColorScore(
   if (anchor.temperature === candidate.temperature) {
     score += 1;
   } else {
-    score -= strictTemperature ? 4 : isWheelHarmony ? 1 : 3;
+    score -= isWheelHarmony ? 1 : 3;
   }
 
   const brightnessDist = brightnessDistance(
@@ -184,8 +182,8 @@ export function computeRoleScore(anchor: Item, candidate: Item): number {
   const a = anchor.wardrobeRole;
   const c = candidate.wardrobeRole;
   if (a === WardrobeRole.Pop && c === WardrobeRole.Pop) return -5;
-  if (a === WardrobeRole.Core && c === WardrobeRole.Tonal) return 6;
-  if (a === WardrobeRole.Tonal && c === WardrobeRole.Core) return 6;
+  if (a === WardrobeRole.Core && c === WardrobeRole.Tonal) return 5;
+  if (a === WardrobeRole.Tonal && c === WardrobeRole.Core) return 5;
   if (a === WardrobeRole.Core && c === WardrobeRole.Core) return 5;
   if (a === WardrobeRole.Tonal && c === WardrobeRole.Tonal) return 4;
   if (a === WardrobeRole.Pop || c === WardrobeRole.Pop) return 3;
@@ -201,8 +199,8 @@ export function computeSeasonScore(anchor: Item, candidate: Item): number {
   if (overlap === 1) return 2;
 
   const gap = warmthGap(anchor.seasonWear, candidate.seasonWear);
-  if (gap >= 2) return -12;
-  if (gap === 1) return -4;
+  if (gap >= 2) return -5;
+  if (gap === 1) return -3;
   return 0;
 }
 
@@ -259,6 +257,14 @@ export function computePatternScore(anchor: Item, candidate: Item): number {
   return SCORE_CAPS.pattern;
 }
 
+export function computeFitScore(anchor: Item, candidate: Item): number {
+  if (!anchor.fit || !candidate.fit) return SCORE_CAPS.fit;
+  const bothExtremeSame =
+    anchor.fit === candidate.fit &&
+    (anchor.fit === Fit.Slim || anchor.fit === Fit.Oversized);
+  return bothExtremeSame ? 1 : SCORE_CAPS.fit;
+}
+
 function accentTieIn(accent: Color | null, otherPrimary: Color): number {
   if (!accent) return 0;
   const s = computeColorScore(accent, otherPrimary);
@@ -282,7 +288,7 @@ export function computeTotalScore(
 } {
   const breakdown: ScoreBreakdown = {
     color: clamp(
-      computeColorScore(anchor.color, candidate.color, ctx.strictTemperature) +
+      computeColorScore(anchor.color, candidate.color) +
         accentAdjust(anchor, candidate),
       -6,
       SCORE_CAPS.color,
@@ -292,6 +298,7 @@ export function computeTotalScore(
     palette: computePaletteScore(anchor, candidate, ctx.userColorType),
     style: computeStyleScore(anchor, candidate),
     pattern: computePatternScore(anchor, candidate),
+    fit: computeFitScore(anchor, candidate),
   };
 
   const rawTotal =
@@ -300,7 +307,8 @@ export function computeTotalScore(
     breakdown.season +
     breakdown.palette +
     breakdown.style +
-    breakdown.pattern;
+    breakdown.pattern +
+    breakdown.fit;
   const total = clamp(Math.round(rawTotal), 0, MAX_SCORE);
 
   return { total, breakdown };

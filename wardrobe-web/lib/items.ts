@@ -324,6 +324,7 @@ export type ScoreBreakdown = {
   palette: number
   style: number
   pattern: number
+  fit: number
 }
 
 export type MatchCell = { score: number; breakdown: ScoreBreakdown }
