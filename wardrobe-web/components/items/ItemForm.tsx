@@ -268,7 +268,7 @@ export function ItemForm({
             <input
               key={form.fileInputKey}
               type='file'
-              accept='image/jpeg,image/png,image/webp,image/gif'
+              accept='image/jpeg,image/png,image/webp,image/gif,image/avif'
               className='hidden'
               onChange={e => handleImage(e.target.files?.[0] ?? null)}
             />

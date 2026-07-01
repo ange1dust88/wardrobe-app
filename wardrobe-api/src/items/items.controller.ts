@@ -23,6 +23,7 @@ const ALLOWED_IMAGE_MIME_TYPES = new Set([
   'image/png',
   'image/webp',
   'image/gif',
+  'image/avif',
 ]);
 
 @Controller('items')
@@ -52,7 +53,9 @@ export class ItemsController {
     @UploadedFile() image?: UploadedItemImage,
   ) {
     if (image && !ALLOWED_IMAGE_MIME_TYPES.has(image.mimetype)) {
-      throw new BadRequestException('Image must be a JPG, PNG, WebP, or GIF');
+      throw new BadRequestException(
+        'Image must be a JPG, PNG, WebP, GIF, or AVIF',
+      );
     }
     return this.itemsService.create(user.id, dto, image);
   }
@@ -68,7 +71,9 @@ export class ItemsController {
       throw new BadRequestException('Image is required');
     }
     if (!ALLOWED_IMAGE_MIME_TYPES.has(image.mimetype)) {
-      throw new BadRequestException('Image must be a JPG, PNG, WebP, or GIF');
+      throw new BadRequestException(
+        'Image must be a JPG, PNG, WebP, GIF, or AVIF',
+      );
     }
     return this.itemsService.extractColor(image);
   }
@@ -86,7 +91,9 @@ export class ItemsController {
     @UploadedFile() image?: UploadedItemImage,
   ) {
     if (image && !ALLOWED_IMAGE_MIME_TYPES.has(image.mimetype)) {
-      throw new BadRequestException('Image must be a JPG, PNG, WebP, or GIF');
+      throw new BadRequestException(
+        'Image must be a JPG, PNG, WebP, GIF, or AVIF',
+      );
     }
     return this.itemsService.update(user.id, id, dto, image);
   }
