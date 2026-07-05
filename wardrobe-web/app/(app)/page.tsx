@@ -250,6 +250,7 @@ export default function WardrobePage() {
             items={builder.selected}
             harmony={harmony}
             editing={builder.editingId != null}
+            dirty={builder.isDirty}
             name={builder.name}
             onNameChange={builder.setName}
             onCancel={() => {

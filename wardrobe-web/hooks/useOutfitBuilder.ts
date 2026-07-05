@@ -3,13 +3,22 @@ import { useCallback, useState } from 'react'
 import { createOutfit, updateOutfit, type Item } from '@/lib/items'
 import { toggleOutfitItem } from '@/lib/outfit-slots'
 
+type Baseline = { name: string; itemIds: string }
+
 export function useOutfitBuilder() {
   const queryClient = useQueryClient()
   const [selected, setSelected] = useState<Item[]>([])
   const [name, setName] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [baseline, setBaseline] = useState<Baseline | null>(null)
 
   const selectedIds = selected.map(item => item.id)
+
+  const isDirty =
+    editingId == null || baseline == null
+      ? true
+      : name.trim() !== baseline.name ||
+        [...selectedIds].sort().join(',') !== baseline.itemIds
 
   function toggle(item: Item) {
     setSelected(prev => toggleOutfitItem(prev, item))
@@ -27,6 +36,7 @@ export function useOutfitBuilder() {
     setSelected([])
     setName('')
     setEditingId(null)
+    setBaseline(null)
   }, [])
 
   const load = useCallback(
@@ -34,6 +44,13 @@ export function useOutfitBuilder() {
       setSelected(items)
       setName(outfit.name)
       setEditingId(outfit.id)
+      setBaseline({
+        name: outfit.name.trim(),
+        itemIds: items
+          .map(i => i.id)
+          .sort()
+          .join(','),
+      })
     },
     []
   )
@@ -55,6 +72,7 @@ export function useOutfitBuilder() {
     name,
     setName,
     editingId,
+    isDirty,
     toggle,
     remove,
     clearItems,

@@ -10,6 +10,7 @@ type Props = {
   items: Item[]
   harmony: number | null
   editing?: boolean
+  dirty?: boolean
   name: string
   onNameChange: (value: string) => void
   onCancel?: () => void
@@ -26,6 +27,7 @@ export function OutfitBuilder({
   items,
   harmony,
   editing,
+  dirty = true,
   name,
   onNameChange,
   onCancel,
@@ -38,7 +40,7 @@ export function OutfitBuilder({
   errorMessage,
 }: Props) {
   const hasOutfit = items.length > 0
-  const canSave = hasOutfit && name.trim().length > 0
+  const canSave = hasOutfit && name.trim().length > 0 && dirty
 
   const conflicts = findOutfitConflicts(items)
 
@@ -196,7 +198,9 @@ export function OutfitBuilder({
           {saving
             ? 'Saving…'
             : editing
-              ? 'Save changes'
+              ? !dirty
+                ? 'No changes'
+                : 'Save changes'
               : 'Save outfit'}
         </button>
 
