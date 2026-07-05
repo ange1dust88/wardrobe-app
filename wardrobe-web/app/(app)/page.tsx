@@ -1,11 +1,6 @@
 'use client'
 
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  PlusIcon,
-  ShirtIcon,
-} from 'lucide-react'
+import { PlusIcon, ShirtIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAppContext } from '@/components/AppContext'
@@ -157,14 +152,6 @@ export default function WardrobePage() {
     : undefined
   const hasItems = !itemsQuery.isLoading && !errorMessage && items.length > 0
 
-  function stepHover(dir: 1 | -1) {
-    if (items.length === 0) return
-    const order = items.map(i => i.id)
-    const idx = hoveredId ? order.indexOf(hoveredId) : -1
-    const next = (idx + dir + order.length) % order.length
-    setHoveredId(order[next])
-  }
-
   return (
     <div className='px-6 pt-6 pb-[168px] sm:px-8'>
       <div className='mx-auto flex min-h-[calc(100svh-232px)] max-w-[1100px] items-center justify-center'>
@@ -196,36 +183,18 @@ export default function WardrobePage() {
             </EmptyContent>
           </Empty>
         ) : view === 'circular' ? (
-          <div className='relative flex w-full max-w-[900px] items-center justify-center'>
-            <button
-              type='button'
-              onClick={() => stepHover(-1)}
-              aria-label='Previous item'
-              className='absolute left-0 z-10 flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-md transition-colors hover:bg-muted'
-            >
-              <ChevronLeftIcon className='size-5' />
-            </button>
-            <div className='w-full px-14'>
-              <MatchWheel
-                items={items}
-                activeId={hoveredId}
-                selectedIds={builder.selectedIds}
-                matchedIds={matchedIds}
-                scoreById={scoreById}
-                breakdownById={showBreakdown ? breakdownById : {}}
-                onHover={setHoveredId}
-                onSelect={builder.toggle}
-                onEdit={setEditingItem}
-              />
-            </div>
-            <button
-              type='button'
-              onClick={() => stepHover(1)}
-              aria-label='Next item'
-              className='absolute right-0 z-10 flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-md transition-colors hover:bg-muted'
-            >
-              <ChevronRightIcon className='size-5' />
-            </button>
+          <div className='flex w-full max-w-[760px] items-center justify-center'>
+            <MatchWheel
+              items={items}
+              activeId={hoveredId}
+              selectedIds={builder.selectedIds}
+              matchedIds={matchedIds}
+              scoreById={scoreById}
+              breakdownById={showBreakdown ? breakdownById : {}}
+              onHover={setHoveredId}
+              onSelect={builder.toggle}
+              onEdit={setEditingItem}
+            />
           </div>
         ) : (
           <div className='w-full'>
