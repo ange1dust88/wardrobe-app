@@ -376,6 +376,25 @@ export async function fetchOutfits(): Promise<Outfit[]> {
   return res.json()
 }
 
+export async function updateOutfit(
+  id: string,
+  body: { name: string; itemIds: string[] }
+): Promise<Outfit> {
+  const res = await apiFetch(`/outfits/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    const data = await res.json().catch(() => null)
+    const msg = Array.isArray(data?.message)
+      ? data.message.join(', ')
+      : (data?.message ?? `PATCH /outfits/${id} → ${res.status}`)
+    throw new Error(msg)
+  }
+  return res.json()
+}
+
 export async function deleteOutfit(id: string): Promise<void> {
   const res = await apiFetch(`/outfits/${id}`, { method: 'DELETE' })
   if (!res.ok) throw new Error(`DELETE /outfits/${id} → ${res.status}`)
