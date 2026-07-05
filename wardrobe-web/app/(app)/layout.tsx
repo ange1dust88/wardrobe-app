@@ -9,6 +9,7 @@ import { AppProvider } from '@/components/AppContext'
 import { AddItemModal } from '@/components/items/AddItemModal'
 import { ProfileModal } from '@/components/profile/ProfileModal'
 import { Spinner } from '@/components/ui/spinner'
+import type { Outfit } from '@/lib/items'
 import { useItems } from '@/hooks/useItems'
 import { useOutfits } from '@/hooks/useOutfits'
 import { useProfile } from '@/hooks/useProfile'
@@ -58,6 +59,7 @@ function FrameChrome({
   const { user } = useAuth()
   const [addOpen, setAddOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [editingOutfit, setEditingOutfit] = useState<Outfit | null>(null)
   const [showBreakdown, setShowBreakdownState] = useState(() => {
     if (typeof window === 'undefined') return true
     return localStorage.getItem('dress:showBreakdown') !== '0'
@@ -83,6 +85,8 @@ function FrameChrome({
         openAddItem: () => setAddOpen(true),
         showBreakdown,
         setShowBreakdown,
+        editingOutfit,
+        setEditingOutfit,
       }}
     >
       <div className='min-h-svh'>

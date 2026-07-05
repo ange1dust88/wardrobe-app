@@ -31,6 +31,7 @@ type Props = {
   loading?: boolean
   errorMessage?: string
   onOpen: (look: SavedLook) => void
+  onDelete: (id: string) => void
   onBuild: () => void
 }
 
@@ -46,9 +47,11 @@ export function OutfitsView({
   loading,
   errorMessage,
   onOpen,
+  onDelete,
   onBuild,
 }: Props) {
   const [sort, setSort] = useState<SortKey>('harmony')
+  const [confirmId, setConfirmId] = useState<string | null>(null)
   const ordered = sortLooks(looks, sort)
 
   return (
@@ -115,12 +118,20 @@ export function OutfitsView({
           <div className='grid grid-cols-[repeat(auto-fill,minmax(248px,1fr))] gap-5'>
             {ordered.map(look => {
               const tier = getMatchScoreTone(look.harmony)
+              const confirming = confirmId === look.id
               return (
-                <button
+                <div
                   key={look.id}
-                  type='button'
+                  role='button'
+                  tabIndex={0}
                   onClick={() => onOpen(look)}
-                  className='rounded-[18px] border border-border bg-card p-[18px] text-left shadow-sm transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring'
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      onOpen(look)
+                    }
+                  }}
+                  className='cursor-pointer rounded-[18px] border border-border bg-card p-[18px] text-left shadow-sm transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
                 >
                   <div className='mb-3.5 flex items-center justify-between'>
                     <div className='flex items-center gap-2'>
@@ -135,6 +146,28 @@ export function OutfitsView({
                         {tier.shortLabel}
                       </span>
                     </div>
+                    <button
+                      type='button'
+                      onClick={e => {
+                        e.stopPropagation()
+                        if (confirming) {
+                          onDelete(look.id)
+                          setConfirmId(null)
+                        } else {
+                          setConfirmId(look.id)
+                        }
+                      }}
+                      onBlur={() => confirming && setConfirmId(null)}
+                      aria-label={confirming ? 'Confirm delete' : 'Delete outfit'}
+                      className={cn(
+                        'rounded-full px-2 text-[12px] font-semibold transition-colors',
+                        confirming
+                          ? 'bg-destructive/10 py-1 text-destructive'
+                          : 'flex size-6.5 items-center justify-center bg-muted text-muted-foreground hover:bg-accent/40'
+                      )}
+                    >
+                      {confirming ? 'Delete?' : '×'}
+                    </button>
                   </div>
                   <div className='mb-3.5 flex gap-2'>
                     {look.items.slice(0, 5).map(item => {
@@ -170,7 +203,7 @@ export function OutfitsView({
                       </span>
                     )}
                   </div>
-                </button>
+                </div>
               )
             })}
           </div>

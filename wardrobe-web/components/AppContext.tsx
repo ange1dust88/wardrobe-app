@@ -1,12 +1,15 @@
 'use client'
 
 import { createContext, useContext } from 'react'
+import type { Outfit } from '@/lib/items'
 
 type AppContextValue = {
   colorType: string | null
   openAddItem: () => void
   showBreakdown: boolean
   setShowBreakdown: (value: boolean) => void
+  editingOutfit: Outfit | null
+  setEditingOutfit: (outfit: Outfit | null) => void
 }
 
 const AppContext = createContext<AppContextValue>({
@@ -14,6 +17,8 @@ const AppContext = createContext<AppContextValue>({
   openAddItem: () => {},
   showBreakdown: true,
   setShowBreakdown: () => {},
+  editingOutfit: null,
+  setEditingOutfit: () => {},
 })
 
 export function AppProvider({

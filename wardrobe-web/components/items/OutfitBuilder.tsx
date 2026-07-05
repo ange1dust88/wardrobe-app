@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
 import { CATEGORIES, getItemImageSrc, type Item } from '@/lib/items'
 import { findOutfitConflicts } from '@/lib/outfit-compat'
 import { cn } from '@/lib/utils'
@@ -10,11 +9,15 @@ import { ScoreBadge } from './ScoreBadge'
 type Props = {
   items: Item[]
   harmony: number | null
+  editing?: boolean
+  name: string
+  onNameChange: (value: string) => void
+  onCancel?: () => void
   allowConflicts?: boolean
   onAllowConflicts?: () => void
   onRemove: (id: string) => void
   onClear: () => void
-  onSave: (name: string) => void
+  onSave: () => void
   saving?: boolean
   errorMessage?: string
 }
@@ -22,6 +25,10 @@ type Props = {
 export function OutfitBuilder({
   items,
   harmony,
+  editing,
+  name,
+  onNameChange,
+  onCancel,
   allowConflicts,
   onAllowConflicts,
   onRemove,
@@ -30,15 +37,14 @@ export function OutfitBuilder({
   saving,
   errorMessage,
 }: Props) {
-  const [name, setName] = useState('')
   const hasOutfit = items.length > 0
   const canSave = hasOutfit && name.trim().length > 0
+
   const conflicts = findOutfitConflicts(items)
 
   function handleSave() {
     if (!canSave) return
-    onSave(name.trim())
-    setName('')
+    onSave()
   }
 
   return (
@@ -46,12 +52,18 @@ export function OutfitBuilder({
       <div className='rounded-[20px] border border-border bg-card p-6 shadow-sm'>
         <div className='flex items-baseline justify-between'>
           <h2 className='font-heading text-xl font-bold tracking-tight'>
-            Build an outfit
+            {editing ? 'Edit outfit' : 'Build an outfit'}
           </h2>
           {harmony != null && items.length >= 2 && (
             <ScoreBadge score={harmony} />
           )}
         </div>
+
+        {editing && (
+          <p className='mt-1.5 text-[12.5px] text-muted-foreground'>
+            Tweak this saved look — tap items on the wheel to add or swap.
+          </p>
+        )}
 
         {conflicts.length > 0 && !allowConflicts && (
           <div className='mt-3 rounded-xl border border-warning/40 bg-warning/8 p-3'>
@@ -163,7 +175,7 @@ export function OutfitBuilder({
         </div>
         <input
           value={name}
-          onChange={e => setName(e.target.value)}
+          onChange={e => onNameChange(e.target.value)}
           placeholder='Autumn casual'
           className='mb-3.5 w-full rounded-[11px] border border-border bg-background px-3.5 py-3 text-[15px] outline-none'
         />
@@ -181,15 +193,29 @@ export function OutfitBuilder({
             canSave ? 'bg-foreground' : 'cursor-default bg-muted-foreground'
           )}
         >
-          {saving ? 'Saving…' : 'Save outfit'}
+          {saving
+            ? 'Saving…'
+            : editing
+              ? 'Save changes'
+              : 'Save outfit'}
         </button>
 
-        <Link
-          href='/how-it-works'
-          className='mt-3 block text-center text-[12px] text-muted-foreground hover:text-foreground'
-        >
-          How matching works
-        </Link>
+        {editing && onCancel ? (
+          <button
+            type='button'
+            onClick={onCancel}
+            className='mt-3 block w-full text-center text-[12.5px] font-semibold text-muted-foreground hover:text-foreground'
+          >
+            Cancel edit
+          </button>
+        ) : (
+          <Link
+            href='/how-it-works'
+            className='mt-3 block text-center text-[12px] text-muted-foreground hover:text-foreground'
+          >
+            How matching works
+          </Link>
+        )}
       </div>
     </aside>
   )

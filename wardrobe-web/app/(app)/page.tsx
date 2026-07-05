@@ -1,7 +1,8 @@
 'use client'
 
 import { PlusIcon, ShirtIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAppContext } from '@/components/AppContext'
 import { EditItemModal } from '@/components/items/EditItemModal'
 import { MatchWheel } from '@/components/items/MatchWheel'
@@ -33,7 +34,14 @@ function viewTab(active: boolean): string {
 }
 
 export default function WardrobePage() {
-  const { colorType, openAddItem, showBreakdown } = useAppContext()
+  const router = useRouter()
+  const {
+    colorType,
+    openAddItem,
+    showBreakdown,
+    editingOutfit,
+    setEditingOutfit,
+  } = useAppContext()
   const [view, setView] = useState<'circular' | 'list'>('circular')
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [editingItem, setEditingItem] = useState<Item | null>(null)
@@ -43,8 +51,25 @@ export default function WardrobePage() {
   const builder = useOutfitBuilder()
   const matchMap = useMatchMap(colorType, allowConflicts)
 
-  const items = itemsQuery.data ?? []
+  const items = useMemo(() => itemsQuery.data ?? [], [itemsQuery.data])
   const map = matchMap.data ?? {}
+
+  const loadOutfit = builder.load
+  const loadedEditRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!editingOutfit) {
+      loadedEditRef.current = null
+      return
+    }
+    if (items.length === 0) return
+    if (loadedEditRef.current === editingOutfit.id) return
+    loadedEditRef.current = editingOutfit.id
+    const byId = new Map(items.map(i => [i.id, i]))
+    const picked = editingOutfit.itemIds
+      .map(id => byId.get(id))
+      .filter((i): i is Item => i != null)
+    loadOutfit(editingOutfit, picked)
+  }, [editingOutfit, items, loadOutfit])
 
   const building = builder.selectedIds.length > 0
   const hoverCells = !building && hoveredId ? (map[hoveredId] ?? {}) : {}
@@ -223,14 +248,31 @@ export default function WardrobePage() {
           <OutfitBuilder
             items={builder.selected}
             harmony={harmony}
+            editing={builder.editingId != null}
+            name={builder.name}
+            onNameChange={builder.setName}
+            onCancel={() => {
+              setAllowConflicts(false)
+              builder.clear()
+              setEditingOutfit(null)
+              router.push('/outfits')
+            }}
             allowConflicts={allowConflicts}
             onAllowConflicts={() => setAllowConflicts(true)}
             onRemove={builder.remove}
             onClear={() => {
               setAllowConflicts(false)
-              builder.clear()
+              builder.clearItems()
             }}
-            onSave={name => builder.saveMutation.mutate(name)}
+            onSave={() => {
+              const wasEditing = builder.editingId != null
+              builder.saveMutation.mutate(undefined, {
+                onSuccess: () => {
+                  setEditingOutfit(null)
+                  if (wasEditing) router.push('/outfits')
+                },
+              })
+            }}
             saving={builder.saveMutation.isPending}
             errorMessage={
               builder.saveMutation.error
