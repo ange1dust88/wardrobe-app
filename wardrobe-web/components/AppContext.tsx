@@ -3,6 +3,8 @@
 import { createContext, useContext } from 'react'
 import type { Outfit } from '@/lib/items'
 
+export type WardrobeView = 'circular' | 'list'
+
 type AppContextValue = {
   colorType: string | null
   openAddItem: () => void
@@ -10,6 +12,8 @@ type AppContextValue = {
   setShowBreakdown: (value: boolean) => void
   editingOutfit: Outfit | null
   setEditingOutfit: (outfit: Outfit | null) => void
+  wardrobeView: WardrobeView
+  setWardrobeView: (view: WardrobeView) => void
 }
 
 const AppContext = createContext<AppContextValue>({
@@ -19,6 +23,8 @@ const AppContext = createContext<AppContextValue>({
   setShowBreakdown: () => {},
   editingOutfit: null,
   setEditingOutfit: () => {},
+  wardrobeView: 'circular',
+  setWardrobeView: () => {},
 })
 
 export function AppProvider({

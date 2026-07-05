@@ -1,13 +1,18 @@
 'use client'
 
-import { PlusIcon, ShirtIcon } from 'lucide-react'
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  PlusIcon,
+  ShirtIcon,
+} from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAppContext } from '@/components/AppContext'
 import { EditItemModal } from '@/components/items/EditItemModal'
 import { MatchWheel } from '@/components/items/MatchWheel'
 import { OutfitCarousel } from '@/components/items/OutfitCarousel'
-import { OutfitBuilder } from '@/components/items/OutfitBuilder'
+import { OutfitBar } from '@/components/items/OutfitBar'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,18 +26,10 @@ import {
 import { Spinner } from '@/components/ui/spinner'
 import { STACK_POLICY, type Item, type ScoreBreakdown } from '@/lib/items'
 import { harmonyOf } from '@/lib/harmony'
-import { cn } from '@/lib/utils'
 import { notifySuccess } from '@/lib/toast'
 import { useItems } from '@/hooks/useItems'
 import { useMatchMap } from '@/hooks/useMatchMap'
 import { useOutfitBuilder } from '@/hooks/useOutfitBuilder'
-
-function viewTab(active: boolean): string {
-  return cn(
-    'rounded-[9px] px-3.5 py-[7px] text-[13px] font-semibold transition-colors',
-    active ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'
-  )
-}
 
 export default function WardrobePage() {
   const router = useRouter()
@@ -42,8 +39,9 @@ export default function WardrobePage() {
     showBreakdown,
     editingOutfit,
     setEditingOutfit,
+    wardrobeView,
   } = useAppContext()
-  const [view, setView] = useState<'circular' | 'list'>('circular')
+  const view = wardrobeView
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [editingItem, setEditingItem] = useState<Item | null>(null)
   const [allowConflicts, setAllowConflicts] = useState(false)
@@ -158,71 +156,56 @@ export default function WardrobePage() {
     ? (itemsQuery.error as Error).message
     : undefined
   const hasItems = !itemsQuery.isLoading && !errorMessage && items.length > 0
-  const catCount = new Set(items.map(i => i.category)).size
+
+  function stepHover(dir: 1 | -1) {
+    if (items.length === 0) return
+    const order = items.map(i => i.id)
+    const idx = hoveredId ? order.indexOf(hoveredId) : -1
+    const next = (idx + dir + order.length) % order.length
+    setHoveredId(order[next])
+  }
 
   return (
-    <div className='px-6 pt-7 pb-[70px] sm:px-8'>
-      <div className='mx-auto flex max-w-[1500px] flex-col gap-[26px] lg:flex-row lg:items-start'>
-        <div className='flex min-w-0 flex-1 flex-col gap-[18px]'>
-          <div className='flex flex-wrap items-end justify-between gap-5'>
-            <div>
-              <h1 className='font-heading text-[28px] leading-none font-bold tracking-tight'>
-                Your wardrobe
-              </h1>
-              <p className='mt-1.5 text-[13.5px] text-muted-foreground'>
-                {items.length} item{items.length === 1 ? '' : 's'} · {catCount}{' '}
-                categor{catCount === 1 ? 'y' : 'ies'}
-              </p>
-            </div>
-            <div className='flex items-center gap-3'>
-              <div className='flex gap-0.5 rounded-xl bg-muted/60 p-1'>
-                <button
-                  type='button'
-                  onClick={() => setView('circular')}
-                  className={viewTab(view === 'circular')}
-                >
-                  ◎ Circular
-                </button>
-                <button
-                  type='button'
-                  onClick={() => setView('list')}
-                  className={viewTab(view === 'list')}
-                >
-                  ☰ List
-                </button>
-              </div>
-            </div>
+    <div className='px-6 pt-6 pb-[168px] sm:px-8'>
+      <div className='mx-auto flex min-h-[calc(100svh-232px)] max-w-[1100px] items-center justify-center'>
+        {itemsQuery.isLoading ? (
+          <div className='flex items-center justify-center py-24'>
+            <Spinner className='size-6 text-muted-foreground' />
           </div>
-
-          {itemsQuery.isLoading ? (
-            <div className='flex items-center justify-center py-24'>
-              <Spinner className='size-6 text-muted-foreground' />
-            </div>
-          ) : errorMessage ? (
-            <Alert variant='error'>
-              <AlertTitle>Failed to load items</AlertTitle>
-              <AlertDescription>{errorMessage}</AlertDescription>
-            </Alert>
-          ) : items.length === 0 ? (
-            <Empty>
-              <EmptyHeader>
-                <EmptyMedia variant='icon'>
-                  <ShirtIcon />
-                </EmptyMedia>
-                <EmptyTitle>Your wardrobe is empty</EmptyTitle>
-                <EmptyDescription>
-                  Add your first piece to start building your closet.
-                </EmptyDescription>
-              </EmptyHeader>
-              <EmptyContent>
-                <Button onClick={openAddItem}>
-                  <PlusIcon />
-                  Add item
-                </Button>
-              </EmptyContent>
-            </Empty>
-          ) : view === 'circular' ? (
-            <div className='flex items-center justify-center rounded-[20px] border border-border bg-card p-6 shadow-sm'>
+        ) : errorMessage ? (
+          <Alert variant='error' className='max-w-lg'>
+            <AlertTitle>Failed to load items</AlertTitle>
+            <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
+        ) : items.length === 0 ? (
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant='icon'>
+                <ShirtIcon />
+              </EmptyMedia>
+              <EmptyTitle>Your wardrobe is empty</EmptyTitle>
+              <EmptyDescription>
+                Add your first piece to start building your closet.
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
+              <Button onClick={openAddItem}>
+                <PlusIcon />
+                Add item
+              </Button>
+            </EmptyContent>
+          </Empty>
+        ) : view === 'circular' ? (
+          <div className='relative flex w-full max-w-[900px] items-center justify-center'>
+            <button
+              type='button'
+              onClick={() => stepHover(-1)}
+              aria-label='Previous item'
+              className='absolute left-0 z-10 flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-md transition-colors hover:bg-muted'
+            >
+              <ChevronLeftIcon className='size-5' />
+            </button>
+            <div className='w-full px-14'>
               <MatchWheel
                 items={items}
                 activeId={hoveredId}
@@ -235,56 +218,66 @@ export default function WardrobePage() {
                 onEdit={setEditingItem}
               />
             </div>
-          ) : (
+            <button
+              type='button'
+              onClick={() => stepHover(1)}
+              aria-label='Next item'
+              className='absolute right-0 z-10 flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-md transition-colors hover:bg-muted'
+            >
+              <ChevronRightIcon className='size-5' />
+            </button>
+          </div>
+        ) : (
+          <div className='w-full'>
             <OutfitCarousel
               items={items}
               selectedIds={builder.selectedIds}
               map={map}
               onSelect={builder.toggle}
             />
-          )}
-        </div>
-
-        {hasItems && (
-          <OutfitBuilder
-            items={builder.selected}
-            harmony={harmony}
-            editing={builder.editingId != null}
-            dirty={builder.isDirty}
-            name={builder.name}
-            onNameChange={builder.setName}
-            onCancel={() => {
-              setAllowConflicts(false)
-              builder.clear()
-              setEditingOutfit(null)
-              router.push('/outfits')
-            }}
-            allowConflicts={allowConflicts}
-            onAllowConflicts={() => setAllowConflicts(true)}
-            onRemove={builder.remove}
-            onClear={() => {
-              setAllowConflicts(false)
-              builder.clearItems()
-            }}
-            onSave={() => {
-              const wasEditing = builder.editingId != null
-              builder.saveMutation.mutate(undefined, {
-                onSuccess: () => {
-                  setEditingOutfit(null)
-                  notifySuccess(wasEditing ? 'Outfit updated' : 'Outfit saved')
-                  if (wasEditing) router.push('/outfits')
-                },
-              })
-            }}
-            saving={builder.saveMutation.isPending}
-            errorMessage={
-              builder.saveMutation.error
-                ? (builder.saveMutation.error as Error).message
-                : undefined
-            }
-          />
+          </div>
         )}
       </div>
+
+      {hasItems && (
+        <OutfitBar
+          items={builder.selected}
+          harmony={harmony}
+          editing={builder.editingId != null}
+          dirty={builder.isDirty}
+          name={builder.name}
+          onNameChange={builder.setName}
+          onCancel={() => {
+            setAllowConflicts(false)
+            builder.clear()
+            setEditingOutfit(null)
+            router.push('/outfits')
+          }}
+          allowConflicts={allowConflicts}
+          onAllowConflicts={() => setAllowConflicts(true)}
+          onRemove={builder.remove}
+          onClear={() => {
+            setAllowConflicts(false)
+            builder.clearItems()
+          }}
+          onSave={() => {
+            const wasEditing = builder.editingId != null
+            builder.saveMutation.mutate(undefined, {
+              onSuccess: () => {
+                setEditingOutfit(null)
+                notifySuccess(wasEditing ? 'Outfit updated' : 'Outfit saved')
+                if (wasEditing) router.push('/outfits')
+              },
+            })
+          }}
+          saving={builder.saveMutation.isPending}
+          errorMessage={
+            builder.saveMutation.error
+              ? (builder.saveMutation.error as Error).message
+              : undefined
+          }
+        />
+      )}
 
       {editingItem && (
         <EditItemModal

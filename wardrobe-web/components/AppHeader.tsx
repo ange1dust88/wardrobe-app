@@ -1,15 +1,20 @@
 'use client'
 
-import { PlusIcon } from 'lucide-react'
+import { LayoutList, PlusIcon, Target } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import type { WardrobeView } from '@/components/AppContext'
 import { BrandMark } from '@/components/BrandMark'
 import { BRAND_ACCENT } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 
 type Props = {
+  itemCount: number
+  catCount: number
   savedCount: number
   userInitial: string
+  view: WardrobeView
+  onView: (view: WardrobeView) => void
   onAddItem: () => void
   onProfile: () => void
 }
@@ -21,9 +26,22 @@ function navTab(active: boolean): string {
   )
 }
 
+function viewBtn(active: boolean): string {
+  return cn(
+    'flex size-8 items-center justify-center rounded-[9px] transition-colors',
+    active
+      ? 'bg-background text-foreground shadow-sm'
+      : 'text-muted-foreground hover:text-foreground'
+  )
+}
+
 export function AppHeader({
+  itemCount,
+  catCount,
   savedCount,
   userInitial,
+  view,
+  onView,
   onAddItem,
   onProfile,
 }: Props) {
@@ -32,7 +50,14 @@ export function AppHeader({
 
   return (
     <header className='sticky top-0 z-30 flex items-center gap-5 border-b border-border bg-background/80 px-6 py-[15px] backdrop-blur-md sm:px-8'>
-      <BrandMark />
+      <div className='flex flex-none items-center gap-3.5'>
+        <BrandMark />
+        <span className='hidden h-4 w-px bg-border sm:block' />
+        <span className='hidden text-[13px] text-muted-foreground sm:block'>
+          {itemCount} item{itemCount === 1 ? '' : 's'} · {catCount} cat
+          {catCount === 1 ? '' : 's'}
+        </span>
+      </div>
 
       <nav className='flex flex-1 justify-center'>
         <div className='flex gap-0.5 rounded-xl bg-muted/60 p-1'>
@@ -57,6 +82,26 @@ export function AppHeader({
       </nav>
 
       <div className='flex flex-none items-center gap-3'>
+        {!onOutfits && (
+          <div className='hidden gap-0.5 rounded-xl bg-muted/60 p-1 sm:flex'>
+            <button
+              type='button'
+              onClick={() => onView('circular')}
+              aria-label='Circular view'
+              className={viewBtn(view === 'circular')}
+            >
+              <Target className='size-4' />
+            </button>
+            <button
+              type='button'
+              onClick={() => onView('list')}
+              aria-label='List view'
+              className={viewBtn(view === 'list')}
+            >
+              <LayoutList className='size-4' />
+            </button>
+          </div>
+        )}
         <button
           type='button'
           onClick={onAddItem}

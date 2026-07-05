@@ -9,6 +9,7 @@ import { AppProvider } from '@/components/AppContext'
 import { AddItemModal } from '@/components/items/AddItemModal'
 import { ProfileModal } from '@/components/profile/ProfileModal'
 import { Spinner } from '@/components/ui/spinner'
+import type { WardrobeView } from '@/components/AppContext'
 import type { Outfit } from '@/lib/items'
 import { useItems } from '@/hooks/useItems'
 import { useOutfits } from '@/hooks/useOutfits'
@@ -60,6 +61,7 @@ function FrameChrome({
   const [addOpen, setAddOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [editingOutfit, setEditingOutfit] = useState<Outfit | null>(null)
+  const [wardrobeView, setWardrobeView] = useState<WardrobeView>('circular')
   const [showBreakdown, setShowBreakdownState] = useState(() => {
     if (typeof window === 'undefined') return true
     return localStorage.getItem('dress:showBreakdown') !== '0'
@@ -74,7 +76,9 @@ function FrameChrome({
   const { itemsQuery, createMutation } = useItems()
   const { outfitsQuery } = useOutfits()
 
-  const itemCount = itemsQuery.data?.length ?? 0
+  const items = itemsQuery.data ?? []
+  const itemCount = items.length
+  const catCount = new Set(items.map(i => i.category)).size
   const savedCount = outfitsQuery.data?.length ?? 0
   const userInitial = user?.email?.[0]?.toUpperCase() ?? 'U'
 
@@ -87,12 +91,18 @@ function FrameChrome({
         setShowBreakdown,
         editingOutfit,
         setEditingOutfit,
+        wardrobeView,
+        setWardrobeView,
       }}
     >
       <div className='min-h-svh'>
         <AppHeader
+          itemCount={itemCount}
+          catCount={catCount}
           savedCount={savedCount}
           userInitial={userInitial}
+          view={wardrobeView}
+          onView={setWardrobeView}
           onAddItem={() => setAddOpen(true)}
           onProfile={() => setProfileOpen(true)}
         />
