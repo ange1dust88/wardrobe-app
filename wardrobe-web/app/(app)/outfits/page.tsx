@@ -5,6 +5,7 @@ import { useAppContext } from '@/components/AppContext'
 import { OutfitsView, type SavedLook } from '@/components/items/OutfitsView'
 import { type Item } from '@/lib/items'
 import { harmonyOf } from '@/lib/harmony'
+import { notifySuccess } from '@/lib/toast'
 import { useItems } from '@/hooks/useItems'
 import { useMatchMap } from '@/hooks/useMatchMap'
 import { useOutfits } from '@/hooks/useOutfits'
@@ -51,7 +52,11 @@ export default function OutfitsPage() {
           router.push('/')
         }
       }}
-      onDelete={id => deleteMutation.mutate(id)}
+      onDelete={id =>
+        deleteMutation.mutate(id, {
+          onSuccess: () => notifySuccess('Outfit deleted'),
+        })
+      }
       onBuild={() => {
         setEditingOutfit(null)
         router.push('/')

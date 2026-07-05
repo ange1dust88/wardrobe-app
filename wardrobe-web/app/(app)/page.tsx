@@ -22,6 +22,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { STACK_POLICY, type Item, type ScoreBreakdown } from '@/lib/items'
 import { harmonyOf } from '@/lib/harmony'
 import { cn } from '@/lib/utils'
+import { notifySuccess } from '@/lib/toast'
 import { useItems } from '@/hooks/useItems'
 import { useMatchMap } from '@/hooks/useMatchMap'
 import { useOutfitBuilder } from '@/hooks/useOutfitBuilder'
@@ -269,6 +270,7 @@ export default function WardrobePage() {
               builder.saveMutation.mutate(undefined, {
                 onSuccess: () => {
                   setEditingOutfit(null)
+                  notifySuccess(wasEditing ? 'Outfit updated' : 'Outfit saved')
                   if (wasEditing) router.push('/outfits')
                 },
               })
