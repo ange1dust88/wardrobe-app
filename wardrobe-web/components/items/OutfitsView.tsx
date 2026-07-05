@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
+import { OutfitDetailModal } from './OutfitDetailModal'
 import { ScoreBadge } from './ScoreBadge'
 
 export type SavedLook = {
@@ -30,7 +31,7 @@ type Props = {
   looks: SavedLook[]
   loading?: boolean
   errorMessage?: string
-  onOpen: (look: SavedLook) => void
+  onEdit: (look: SavedLook) => void
   onDelete: (id: string) => void
   onBuild: () => void
 }
@@ -46,13 +47,14 @@ export function OutfitsView({
   looks,
   loading,
   errorMessage,
-  onOpen,
+  onEdit,
   onDelete,
   onBuild,
 }: Props) {
   const [sort, setSort] = useState<SortKey>('harmony')
-  const [confirmId, setConfirmId] = useState<string | null>(null)
+  const [detailId, setDetailId] = useState<string | null>(null)
   const ordered = sortLooks(looks, sort)
+  const detailLook = looks.find(l => l.id === detailId) ?? null
 
   return (
     <div className='px-6 pt-7 pb-[70px] sm:px-8'>
@@ -118,56 +120,24 @@ export function OutfitsView({
           <div className='grid grid-cols-[repeat(auto-fill,minmax(248px,1fr))] gap-5'>
             {ordered.map(look => {
               const tier = getMatchScoreTone(look.harmony)
-              const confirming = confirmId === look.id
               return (
-                <div
+                <button
                   key={look.id}
-                  role='button'
-                  tabIndex={0}
-                  onClick={() => onOpen(look)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      onOpen(look)
-                    }
-                  }}
-                  className='cursor-pointer rounded-[18px] border border-border bg-card p-[18px] text-left shadow-sm transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
+                  type='button'
+                  onClick={() => setDetailId(look.id)}
+                  className='rounded-[18px] border border-border bg-card p-[18px] text-left shadow-sm transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
                 >
-                  <div className='mb-3.5 flex items-center justify-between'>
-                    <div className='flex items-center gap-2'>
-                      <ScoreBadge
-                        score={look.harmony}
-                        className='rounded-lg text-[12.5px]'
-                      />
-                      <span
-                        className='text-[12px] font-semibold'
-                        style={{ color: tier.solidColor }}
-                      >
-                        {tier.shortLabel}
-                      </span>
-                    </div>
-                    <button
-                      type='button'
-                      onClick={e => {
-                        e.stopPropagation()
-                        if (confirming) {
-                          onDelete(look.id)
-                          setConfirmId(null)
-                        } else {
-                          setConfirmId(look.id)
-                        }
-                      }}
-                      onBlur={() => confirming && setConfirmId(null)}
-                      aria-label={confirming ? 'Confirm delete' : 'Delete outfit'}
-                      className={cn(
-                        'rounded-full px-2 text-[12px] font-semibold transition-colors',
-                        confirming
-                          ? 'bg-destructive/10 py-1 text-destructive'
-                          : 'flex size-6.5 items-center justify-center bg-muted text-muted-foreground hover:bg-accent/40'
-                      )}
+                  <div className='mb-3.5 flex items-center gap-2'>
+                    <ScoreBadge
+                      score={look.harmony}
+                      className='rounded-lg text-[12.5px]'
+                    />
+                    <span
+                      className='text-[12px] font-semibold'
+                      style={{ color: tier.solidColor }}
                     >
-                      {confirming ? 'Delete?' : '×'}
-                    </button>
+                      {tier.shortLabel}
+                    </span>
                   </div>
                   <div className='mb-3.5 flex gap-2'>
                     {look.items.slice(0, 5).map(item => {
@@ -203,12 +173,27 @@ export function OutfitsView({
                       </span>
                     )}
                   </div>
-                </div>
+                </button>
               )
             })}
           </div>
         )}
       </div>
+
+      {detailLook && (
+        <OutfitDetailModal
+          look={detailLook}
+          onClose={() => setDetailId(null)}
+          onEdit={() => {
+            onEdit(detailLook)
+            setDetailId(null)
+          }}
+          onDelete={() => {
+            onDelete(detailLook.id)
+            setDetailId(null)
+          }}
+        />
+      )}
     </div>
   )
 }

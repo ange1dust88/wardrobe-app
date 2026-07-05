@@ -44,7 +44,7 @@ export default function OutfitsPage() {
       looks={looks}
       loading={outfitsQuery.isLoading}
       errorMessage={errorMessage}
-      onOpen={look => {
+      onEdit={look => {
         const outfit = outfits.find(o => o.id === look.id)
         if (outfit) {
           setEditingOutfit(outfit)
