@@ -145,7 +145,7 @@ export default function WardrobePage() {
   const matchedIds = new Set(Object.keys(scoreById))
 
   const harmony =
-    builder.selectedIds.length >= 2 ? harmonyOf(builder.selectedIds, map) : null
+    builder.selectedIds.length >= 1 ? harmonyOf(builder.selectedIds, map) : null
 
   const errorMessage = itemsQuery.error
     ? (itemsQuery.error as Error).message

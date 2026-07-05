@@ -1,8 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { Target, XIcon } from 'lucide-react'
-import { CATEGORIES, getItemImageSrc, type Item } from '@/lib/items'
+import { PlusIcon, Target, XIcon } from 'lucide-react'
+import {
+  CATEGORIES,
+  getItemImageSrc,
+  type Category,
+  type Item,
+} from '@/lib/items'
 import { getMatchScoreTone } from '@/lib/match-score'
 import { findOutfitConflicts } from '@/lib/outfit-compat'
 import { cn } from '@/lib/utils'
@@ -27,6 +32,18 @@ type Props = {
 const byCategory = (a: Item, b: Item) =>
   CATEGORIES.indexOf(a.category) - CATEGORIES.indexOf(b.category)
 
+const CORE_SLOTS: Category[] = ['top', 'bottom', 'shoes']
+
+function missingCoreSlots(items: Item[]): Category[] {
+  const filled = new Set(items.map(i => i.category))
+  const hasDress = filled.has('dress')
+  return CORE_SLOTS.filter(slot => {
+    if (filled.has(slot)) return false
+    if (hasDress && (slot === 'top' || slot === 'bottom')) return false
+    return true
+  })
+}
+
 export function OutfitBar({
   items,
   harmony,
@@ -46,6 +63,7 @@ export function OutfitBar({
   const canSave = items.length > 0 && name.trim().length > 0 && dirty
   const conflicts = findOutfitConflicts(items)
   const tier = harmony != null ? getMatchScoreTone(harmony) : null
+  const missingSlots = missingCoreSlots(items)
 
   return (
     <div className='pointer-events-none fixed right-4 bottom-4 z-30 flex max-w-[calc(100%-2rem)] flex-col items-end gap-2'>
@@ -118,14 +136,12 @@ export function OutfitBar({
                   </span>
                 </>
               ) : (
-                <>
-                  <span className='font-heading text-[15px] font-bold'>
-                    Add one more
+                <div className='flex items-baseline gap-1'>
+                  <span className='font-heading text-[26px] font-bold text-muted-foreground'>
+                    —
                   </span>
-                  <span className='mt-1 text-[12px] text-muted-foreground'>
-                    pick a second piece
-                  </span>
-                </>
+                  <span className='text-[12px] text-muted-foreground'>/36</span>
+                </div>
               )}
               <button
                 type='button'
@@ -174,6 +190,19 @@ export function OutfitBar({
                   </div>
                 )
               })}
+              {missingSlots.map(slot => (
+                <div
+                  key={slot}
+                  className='flex flex-none flex-col items-center gap-1'
+                >
+                  <div className='flex size-14 items-center justify-center rounded-[13px] border border-dashed border-border text-muted-foreground/70'>
+                    <PlusIcon className='size-5' />
+                  </div>
+                  <span className='text-[10px] font-semibold tracking-wide text-muted-foreground/70 uppercase'>
+                    {slot}
+                  </span>
+                </div>
+              ))}
             </div>
 
             <div className='flex flex-none items-center gap-2.5'>
