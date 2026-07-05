@@ -68,7 +68,7 @@ export function OutfitBar({
   return (
     <div className='pointer-events-none fixed right-4 bottom-4 z-30 flex max-w-[calc(100%-2rem)] flex-col items-end gap-2'>
       {items.length === 0 ? (
-        <div className='pointer-events-auto flex items-center gap-3.5 rounded-[22px] border border-border bg-card/95 px-5 py-4 shadow-xl backdrop-blur'>
+        <div className='pointer-events-auto flex items-center gap-3.5 rounded-[22px] border border-border bg-card px-5 py-4 shadow-[0_16px_44px_-10px_rgba(37,37,35,0.3)]'>
           <div className='flex size-11 flex-none items-center justify-center rounded-[13px] bg-muted'>
             <Target className='size-5 text-muted-foreground' />
           </div>
@@ -113,7 +113,7 @@ export function OutfitBar({
             </div>
           )}
 
-          <div className='pointer-events-auto flex w-[min(1080px,100%)] items-center gap-4 rounded-[22px] border border-border bg-card/95 px-5 py-3.5 shadow-xl backdrop-blur'>
+          <div className='pointer-events-auto flex w-[min(1080px,100%)] items-center gap-4 rounded-[22px] border border-border bg-card px-5 py-3.5 shadow-[0_16px_44px_-10px_rgba(37,37,35,0.3)]'>
             <div className='flex flex-none flex-col leading-none'>
               {harmony != null && tier ? (
                 <>
@@ -154,7 +154,7 @@ export function OutfitBar({
 
             <div className='h-12 w-px flex-none bg-border' />
 
-            <div className='flex min-w-0 flex-1 items-start gap-3 overflow-x-auto py-0.5'>
+            <div className='flex min-w-0 flex-1 items-start gap-3 overflow-x-auto px-2 pt-3 pb-1'>
               {[...items].sort(byCategory).map(item => {
                 const img = getItemImageSrc(item)
                 return (
