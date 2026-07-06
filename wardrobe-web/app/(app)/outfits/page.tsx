@@ -83,15 +83,7 @@ export default function OutfitsPage() {
           onSuccess: () => notifySuccess('Folder deleted'),
         })
       }
-      onMove={(id, folderId) =>
-        moveMutation.mutate(
-          { id, folderId },
-          {
-            onSuccess: () =>
-              notifySuccess(folderId ? 'Moved to folder' : 'Removed from folder'),
-          }
-        )
-      }
+      onMove={(id, folderId) => moveMutation.mutate({ id, folderId })}
       onBuild={() => {
         setEditingOutfit(null)
         router.push('/')

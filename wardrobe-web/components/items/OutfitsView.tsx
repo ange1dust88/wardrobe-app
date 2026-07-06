@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { PlusIcon, XIcon } from 'lucide-react'
+import { ChevronDownIcon, FolderIcon, PlusIcon, XIcon } from 'lucide-react'
 import { getItemImageSrc, type Folder, type Item } from '@/lib/items'
 import { getMatchScoreTone } from '@/lib/match-score'
 import { cn } from '@/lib/utils'
@@ -83,6 +83,7 @@ export function OutfitsView({
   const [filter, setFilter] = useState<string>('all')
   const [creating, setCreating] = useState(false)
   const [confirmFolderId, setConfirmFolderId] = useState<string | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   const unfiledCount = looks.filter(l => !l.folderId).length
   const filtered =
@@ -239,11 +240,18 @@ export function OutfitsView({
               const shown = look.items.slice(0, 6)
               const overflow = look.items.length - shown.length
               return (
-                <button
+                <div
                   key={look.id}
-                  type='button'
+                  role='button'
+                  tabIndex={0}
                   onClick={() => setDetailId(look.id)}
-                  className='group flex flex-col rounded-[18px] border border-border bg-card p-5 text-left shadow-sm transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setDetailId(look.id)
+                    }
+                  }}
+                  className='group flex cursor-pointer flex-col rounded-[18px] border border-border bg-card p-5 text-left shadow-sm transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
                 >
                   <div className='mb-4 flex items-start justify-between gap-3'>
                     <div className='min-w-0'>
@@ -302,7 +310,61 @@ export function OutfitsView({
                       </span>
                     )}
                   </div>
-                </button>
+
+                  <div
+                    className='mt-4 flex items-center justify-between gap-2 border-t border-border pt-3.5'
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <div className='relative'>
+                      <FolderIcon className='pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-muted-foreground' />
+                      <ChevronDownIcon className='pointer-events-none absolute top-1/2 right-2.5 size-3.5 -translate-y-1/2 text-muted-foreground' />
+                      <select
+                        value={look.folderId ?? ''}
+                        onChange={e => onMove(look.id, e.target.value || null)}
+                        aria-label='Folder'
+                        className='cursor-pointer appearance-none rounded-full border border-border bg-card py-2 pr-8 pl-8 text-[13px] font-semibold text-foreground outline-none'
+                      >
+                        <option value=''>Unfiled</option>
+                        {folders.map(f => (
+                          <option key={f.id} value={f.id}>
+                            {f.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <button
+                      type='button'
+                      onClick={() => {
+                        if (confirmDeleteId === look.id) {
+                          onDelete(look.id)
+                          setConfirmDeleteId(null)
+                        } else {
+                          setConfirmDeleteId(look.id)
+                        }
+                      }}
+                      onBlur={() =>
+                        confirmDeleteId === look.id && setConfirmDeleteId(null)
+                      }
+                      aria-label={
+                        confirmDeleteId === look.id
+                          ? 'Confirm delete'
+                          : 'Delete outfit'
+                      }
+                      className={cn(
+                        'flex flex-none items-center justify-center rounded-full font-bold transition-colors',
+                        confirmDeleteId === look.id
+                          ? 'h-9 bg-destructive/10 px-3.5 text-[12px] text-destructive'
+                          : 'size-9 bg-muted text-muted-foreground hover:bg-accent/40'
+                      )}
+                    >
+                      {confirmDeleteId === look.id ? (
+                        'Delete?'
+                      ) : (
+                        <XIcon className='size-4' />
+                      )}
+                    </button>
+                  </div>
+                </div>
               )
             })}
           </div>
