@@ -40,8 +40,10 @@ export class OutfitsService {
   async create(userId: string, dto: CreateOutfitDto): Promise<Outfit> {
     const itemIds = this.dedupe(dto.itemIds);
     await this.assertItemsExist(userId, itemIds);
+    const folderId = dto.folderId ?? null;
+    await this.assertFolderExists(userId, folderId);
     const row = await this.prisma.outfit.create({
-      data: { userId, name: dto.name, itemIds },
+      data: { userId, name: dto.name, itemIds, folderId },
     });
     return this.toOutfit(row);
   }
@@ -57,12 +59,20 @@ export class OutfitsService {
     if (!existing) {
       throw new NotFoundException(`Outfit ${id} not found`);
     }
-    const data: { name?: string; itemIds?: string[] } = {};
+    const data: {
+      name?: string;
+      itemIds?: string[];
+      folderId?: string | null;
+    } = {};
     if (dto.name !== undefined) data.name = dto.name;
     if (dto.itemIds !== undefined) {
       const itemIds = this.dedupe(dto.itemIds);
       await this.assertItemsExist(userId, itemIds);
       data.itemIds = itemIds;
+    }
+    if (dto.folderId !== undefined) {
+      await this.assertFolderExists(userId, dto.folderId);
+      data.folderId = dto.folderId;
     }
     const row = await this.prisma.outfit.update({ where: { id }, data });
     return this.toOutfit(row);
@@ -89,6 +99,19 @@ export class OutfitsService {
     }
   }
 
+  private async assertFolderExists(
+    userId: string,
+    folderId: string | null,
+  ): Promise<void> {
+    if (!folderId) return;
+    const found = await this.prisma.folder.findFirst({
+      where: { id: folderId, userId },
+    });
+    if (!found) {
+      throw new BadRequestException(`Unknown folder id: ${folderId}`);
+    }
+  }
+
   private dedupe(ids: string[]): string[] {
     return [...new Set(ids)];
   }
@@ -97,12 +120,14 @@ export class OutfitsService {
     id: string;
     name: string;
     itemIds: string[];
+    folderId: string | null;
     createdAt: Date;
   }): Outfit {
     return {
       id: row.id,
       name: row.name,
       itemIds: row.itemIds,
+      folderId: row.folderId,
       createdAt: row.createdAt.toISOString(),
     };
   }

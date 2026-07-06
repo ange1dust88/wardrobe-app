@@ -349,6 +349,13 @@ export type Outfit = {
   createdAt: string
   name: string
   itemIds: string[]
+  folderId?: string | null
+}
+
+export type Folder = {
+  id: string
+  createdAt: string
+  name: string
 }
 
 export async function createOutfit(body: {
@@ -398,4 +405,44 @@ export async function updateOutfit(
 export async function deleteOutfit(id: string): Promise<void> {
   const res = await apiFetch(`/outfits/${id}`, { method: 'DELETE' })
   if (!res.ok) throw new Error(`DELETE /outfits/${id} → ${res.status}`)
+}
+
+export async function moveOutfitToFolder(
+  id: string,
+  folderId: string | null
+): Promise<Outfit> {
+  const res = await apiFetch(`/outfits/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ folderId }),
+  })
+  if (!res.ok) throw new Error(`PATCH /outfits/${id} → ${res.status}`)
+  return res.json()
+}
+
+export async function fetchFolders(): Promise<Folder[]> {
+  const res = await apiFetch('/folders')
+  if (!res.ok) throw new Error(`GET /folders → ${res.status}`)
+  return res.json()
+}
+
+export async function createFolder(name: string): Promise<Folder> {
+  const res = await apiFetch('/folders', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  })
+  if (!res.ok) {
+    const data = await res.json().catch(() => null)
+    const msg = Array.isArray(data?.message)
+      ? data.message.join(', ')
+      : (data?.message ?? `POST /folders → ${res.status}`)
+    throw new Error(msg)
+  }
+  return res.json()
+}
+
+export async function deleteFolder(id: string): Promise<void> {
+  const res = await apiFetch(`/folders/${id}`, { method: 'DELETE' })
+  if (!res.ok) throw new Error(`DELETE /folders/${id} → ${res.status}`)
 }

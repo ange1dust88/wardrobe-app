@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { getItemImageSrc, type Item } from '@/lib/items'
+import { PlusIcon, XIcon } from 'lucide-react'
+import { getItemImageSrc, type Folder, type Item } from '@/lib/items'
 import { getMatchScoreTone } from '@/lib/match-score'
 import { cn } from '@/lib/utils'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -16,6 +17,7 @@ export type SavedLook = {
   harmony: number
   items: Item[]
   missingCount: number
+  folderId: string | null
 }
 
 type SortKey = 'harmony' | 'newest' | 'name'
@@ -28,11 +30,15 @@ const SORTS: { key: SortKey; label: string }[] = [
 
 type Props = {
   looks: SavedLook[]
+  folders: Folder[]
   loading?: boolean
   errorMessage?: string
   onEdit: (look: SavedLook) => void
   onDuplicate: (look: SavedLook) => void
   onDelete: (id: string) => void
+  onCreateFolder: (name: string) => void
+  onDeleteFolder: (id: string) => void
+  onMove: (id: string, folderId: string | null) => void
   onBuild: () => void
 }
 
@@ -60,17 +66,49 @@ function timeAgo(iso: string): string {
 
 export function OutfitsView({
   looks,
+  folders,
   loading,
   errorMessage,
   onEdit,
   onDuplicate,
   onDelete,
+  onCreateFolder,
+  onDeleteFolder,
+  onMove,
   onBuild,
 }: Props) {
   const [sort, setSort] = useState<SortKey>('harmony')
   const [detailId, setDetailId] = useState<string | null>(null)
-  const ordered = sortLooks(looks, sort)
+  const [filter, setFilter] = useState<string>('all')
+  const [creating, setCreating] = useState(false)
+  const [newName, setNewName] = useState('')
+  const [confirmFolderId, setConfirmFolderId] = useState<string | null>(null)
+
+  const unfiledCount = looks.filter(l => !l.folderId).length
+  const filtered =
+    filter === 'all'
+      ? looks
+      : filter === 'unfiled'
+        ? looks.filter(l => !l.folderId)
+        : looks.filter(l => l.folderId === filter)
+  const ordered = sortLooks(filtered, sort)
   const detailLook = looks.find(l => l.id === detailId) ?? null
+
+  function submitFolder() {
+    const name = newName.trim()
+    if (name) onCreateFolder(name)
+    setNewName('')
+    setCreating(false)
+  }
+
+  function chipCls(active: boolean): string {
+    return cn(
+      'flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors',
+      active
+        ? 'border-foreground bg-foreground text-background'
+        : 'border-border bg-card text-muted-foreground hover:text-foreground'
+    )
+  }
 
   return (
     <div className='px-6 pt-7 pb-[70px] sm:px-8'>
@@ -108,6 +146,90 @@ export function OutfitsView({
           </div>
         </div>
 
+        {!loading && !errorMessage && (looks.length > 0 || folders.length > 0) && (
+          <div className='mb-6 flex flex-wrap items-center gap-2'>
+            <button
+              type='button'
+              onClick={() => setFilter('all')}
+              className={chipCls(filter === 'all')}
+            >
+              All
+              <span className='opacity-60'>{looks.length}</span>
+            </button>
+            <button
+              type='button'
+              onClick={() => setFilter('unfiled')}
+              className={chipCls(filter === 'unfiled')}
+            >
+              Unfiled
+              <span className='opacity-60'>{unfiledCount}</span>
+            </button>
+            {folders.map(folder => {
+              const count = looks.filter(l => l.folderId === folder.id).length
+              const confirming = confirmFolderId === folder.id
+              return (
+                <span key={folder.id} className={chipCls(filter === folder.id)}>
+                  <button
+                    type='button'
+                    onClick={() => setFilter(folder.id)}
+                    className='flex items-center gap-1.5'
+                  >
+                    {folder.name}
+                    <span className='opacity-60'>{count}</span>
+                  </button>
+                  <button
+                    type='button'
+                    onClick={() => {
+                      if (confirming) {
+                        onDeleteFolder(folder.id)
+                        setConfirmFolderId(null)
+                        if (filter === folder.id) setFilter('all')
+                      } else {
+                        setConfirmFolderId(folder.id)
+                      }
+                    }}
+                    onBlur={() => confirming && setConfirmFolderId(null)}
+                    aria-label={confirming ? 'Confirm delete folder' : 'Delete folder'}
+                    className='-mr-1 ml-0.5 flex items-center'
+                  >
+                    {confirming ? (
+                      <span className='text-[11px] font-bold'>del?</span>
+                    ) : (
+                      <XIcon className='size-3.5 opacity-70' />
+                    )}
+                  </button>
+                </span>
+              )
+            })}
+            {creating ? (
+              <input
+                autoFocus
+                value={newName}
+                onChange={e => setNewName(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') submitFolder()
+                  if (e.key === 'Escape') {
+                    setNewName('')
+                    setCreating(false)
+                  }
+                }}
+                onBlur={submitFolder}
+                placeholder='Folder name'
+                className='rounded-full border border-border bg-background px-3.5 py-1.5 text-[13px] outline-none'
+              />
+            ) : (
+              <button
+                type='button'
+                onClick={() => setCreating(true)}
+                className='flex items-center gap-1 rounded-full border border-dashed border-border px-3 py-1.5 text-[13px] font-semibold text-muted-foreground hover:text-foreground'
+              >
+                <PlusIcon className='size-3.5' />
+                New folder
+              </button>
+            )}
+          </div>
+        )}
+
         {loading ? (
           <div className='flex items-center justify-center py-24'>
             <Spinner className='size-6 text-muted-foreground' />
@@ -132,6 +254,10 @@ export function OutfitsView({
             </p>
             <Button onClick={onBuild}>Build an outfit</Button>
           </div>
+        ) : ordered.length === 0 ? (
+          <p className='py-16 text-center text-sm text-muted-foreground'>
+            Nothing in this folder yet.
+          </p>
         ) : (
           <div className='grid grid-cols-[repeat(auto-fill,minmax(264px,1fr))] gap-5'>
             {ordered.map(look => {
@@ -212,7 +338,9 @@ export function OutfitsView({
       {detailLook && (
         <OutfitDetailModal
           look={detailLook}
+          folders={folders}
           onClose={() => setDetailId(null)}
+          onMove={folderId => onMove(detailLook.id, folderId)}
           onEdit={() => {
             onEdit(detailLook)
             setDetailId(null)

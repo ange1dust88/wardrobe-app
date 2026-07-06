@@ -127,6 +127,19 @@ model Outfit {
   userId    String?
   name      String
   itemIds   String[]
+  folderId  String?
+  folder    Folder?  @relation(fields: [folderId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([folderId])
+}
+
+model Folder {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  userId    String?
+  name      String
+  outfits   Outfit[]
 
   @@index([userId])
 }

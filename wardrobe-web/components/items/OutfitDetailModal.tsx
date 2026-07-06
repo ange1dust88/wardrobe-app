@@ -2,7 +2,7 @@
 
 import { CopyIcon, PencilIcon, XIcon } from 'lucide-react'
 import { useState } from 'react'
-import { getItemImageSrc } from '@/lib/items'
+import { getItemImageSrc, type Folder } from '@/lib/items'
 import { getMatchScoreTone } from '@/lib/match-score'
 import { findOutfitConflicts } from '@/lib/outfit-compat'
 import { cn } from '@/lib/utils'
@@ -18,7 +18,9 @@ import type { SavedLook } from './OutfitsView'
 
 type Props = {
   look: SavedLook
+  folders: Folder[]
   onClose: () => void
+  onMove: (folderId: string | null) => void
   onEdit: () => void
   onDuplicate: () => void
   onDelete: () => void
@@ -26,7 +28,9 @@ type Props = {
 
 export function OutfitDetailModal({
   look,
+  folders,
   onClose,
+  onMove,
   onEdit,
   onDuplicate,
   onDelete,
@@ -135,6 +139,46 @@ export function OutfitDetailModal({
               </ul>
             </div>
           )}
+
+          <div className='mt-5 border-t border-border pt-4'>
+            <div className='mb-2.5 text-[11px] font-semibold tracking-widest text-muted-foreground uppercase'>
+              Folder
+            </div>
+            <div className='flex flex-wrap gap-2'>
+              <button
+                type='button'
+                onClick={() => onMove(null)}
+                className={cn(
+                  'rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors',
+                  look.folderId == null
+                    ? 'border-foreground bg-foreground text-background'
+                    : 'border-border text-muted-foreground hover:text-foreground'
+                )}
+              >
+                None
+              </button>
+              {folders.map(folder => (
+                <button
+                  key={folder.id}
+                  type='button'
+                  onClick={() => onMove(folder.id)}
+                  className={cn(
+                    'rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors',
+                    look.folderId === folder.id
+                      ? 'border-foreground bg-foreground text-background'
+                      : 'border-border text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {folder.name}
+                </button>
+              ))}
+              {folders.length === 0 && (
+                <span className='text-[13px] text-muted-foreground'>
+                  Create folders on the outfits page to organize looks.
+                </span>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className='flex flex-none items-center gap-2.5 border-t border-border px-6 py-3.5'>

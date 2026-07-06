@@ -3,12 +3,14 @@ import {
   createOutfit,
   deleteOutfit,
   fetchOutfits,
+  moveOutfitToFolder,
   type Outfit,
 } from '@/lib/items'
 
 const OUTFITS_KEY = ['outfits'] as const
 
 type CreateVars = { name: string; itemIds: string[] }
+type MoveVars = { id: string; folderId: string | null }
 
 export function useOutfits() {
   const queryClient = useQueryClient()
@@ -23,10 +25,15 @@ export function useOutfits() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: OUTFITS_KEY }),
   })
 
+  const moveMutation = useMutation<Outfit, Error, MoveVars>({
+    mutationFn: ({ id, folderId }) => moveOutfitToFolder(id, folderId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: OUTFITS_KEY }),
+  })
+
   const deleteMutation = useMutation<void, Error, string>({
     mutationFn: deleteOutfit,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: OUTFITS_KEY }),
   })
 
-  return { outfitsQuery, duplicateMutation, deleteMutation }
+  return { outfitsQuery, duplicateMutation, moveMutation, deleteMutation }
 }
