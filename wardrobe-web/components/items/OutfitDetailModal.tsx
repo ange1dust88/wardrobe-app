@@ -68,9 +68,10 @@ function seasonLabel(items: Item[]): string | null {
     common = SEASON_ORDER.filter(s => union.has(s))
   }
   if (common.length === 0) return null
-  if (common.length === 4) return 'all seasons'
+  if (common.length === 4) return 'year-round'
+  if (common.length === 3) return 'versatile'
   const labels = common.map(s => SEASON_LABEL[s])
-  return labels.join(labels.length === 2 ? '–' : ' · ')
+  return labels.join('–')
 }
 
 function ScoreRing({ value, color }: { value: number; color: string }) {
@@ -148,14 +149,17 @@ export function OutfitDetailModal({
                 return (
                   <div
                     key={item.id}
-                    className='relative min-h-[64px] flex-1 overflow-hidden rounded-[18px] border border-border'
-                    style={{ background: item.color.hex }}
+                    className={cn(
+                      'relative min-h-[72px] flex-1 overflow-hidden rounded-[18px] border border-border shadow-sm',
+                      img && 'bg-background'
+                    )}
+                    style={img ? undefined : { background: item.color.hex }}
                   >
                     {img && (
                       <img
                         src={img}
                         alt=''
-                        className='absolute inset-0 h-full w-full object-cover'
+                        className='absolute inset-0 h-full w-full object-contain p-2'
                       />
                     )}
                   </div>
@@ -167,20 +171,24 @@ export function OutfitDetailModal({
                 </div>
               )}
             </div>
-            <div className='flex items-center gap-3.5'>
-              <ScoreRing value={look.harmony} color={tier.solidColor} />
-              <div className='leading-none'>
-                <div className='flex items-baseline gap-1'>
-                  <span className='font-heading text-[26px] font-bold'>
+            <div className='flex items-center gap-4'>
+              <div className='relative flex-none'>
+                <ScoreRing value={look.harmony} color={tier.solidColor} />
+                <div className='absolute inset-0 flex items-center justify-center'>
+                  <span className='font-heading text-[18px] font-bold'>
                     {look.harmony}
                   </span>
-                  <span className='text-[13px] text-muted-foreground'>/ 36</span>
                 </div>
+              </div>
+              <div className='leading-tight'>
                 <div
-                  className='mt-1.5 text-[12.5px] font-semibold'
+                  className='text-[15px] font-bold'
                   style={{ color: tier.solidColor }}
                 >
                   {tier.label}
+                </div>
+                <div className='mt-0.5 text-[12.5px] text-muted-foreground'>
+                  out of 36
                 </div>
               </div>
             </div>
