@@ -82,26 +82,32 @@ export function AppHeader({
       </nav>
 
       <div className='flex flex-none items-center gap-3'>
-        {!onOutfits && (
-          <div className='hidden gap-0.5 rounded-xl bg-muted/60 p-1 sm:flex'>
-            <button
-              type='button'
-              onClick={() => onView('circular')}
-              aria-label='Circular view'
-              className={viewBtn(view === 'circular')}
-            >
-              <Target className='size-4' />
-            </button>
-            <button
-              type='button'
-              onClick={() => onView('list')}
-              aria-label='List view'
-              className={viewBtn(view === 'list')}
-            >
-              <LayoutList className='size-4' />
-            </button>
-          </div>
-        )}
+        <div
+          className={cn(
+            'hidden gap-0.5 rounded-xl bg-muted/60 p-1 sm:flex',
+            onOutfits && 'invisible'
+          )}
+          aria-hidden={onOutfits}
+        >
+          <button
+            type='button'
+            onClick={() => onView('circular')}
+            aria-label='Circular view'
+            tabIndex={onOutfits ? -1 : 0}
+            className={viewBtn(view === 'circular')}
+          >
+            <Target className='size-4' />
+          </button>
+          <button
+            type='button'
+            onClick={() => onView('list')}
+            aria-label='List view'
+            tabIndex={onOutfits ? -1 : 0}
+            className={viewBtn(view === 'list')}
+          >
+            <LayoutList className='size-4' />
+          </button>
+        </div>
         <button
           type='button'
           onClick={onAddItem}

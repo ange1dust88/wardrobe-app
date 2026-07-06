@@ -135,7 +135,6 @@ export function OutfitsView({
                 ))}
               </div>
             )}
-            <Button onClick={onBuild}>Build an outfit</Button>
           </div>
         </div>
 
@@ -244,7 +243,7 @@ export function OutfitsView({
                   key={look.id}
                   type='button'
                   onClick={() => setDetailId(look.id)}
-                  className='group flex flex-col rounded-[20px] border border-border bg-card p-5 text-left shadow-[0_4px_16px_-8px_rgba(37,37,35,0.14)] transition-all hover:-translate-y-0.5 hover:shadow-[0_16px_36px_-12px_rgba(37,37,35,0.24)] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
+                  className='group flex flex-col rounded-[18px] border border-border bg-card p-5 text-left shadow-sm transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
                 >
                   <div className='mb-4 flex items-start justify-between gap-3'>
                     <div className='min-w-0'>

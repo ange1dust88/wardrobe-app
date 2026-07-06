@@ -147,7 +147,7 @@ export function OutfitDetailModal({
             <div className='flex flex-wrap gap-2'>
               <button
                 type='button'
-                onClick={() => onMove(null)}
+                onClick={() => look.folderId != null && onMove(null)}
                 className={cn(
                   'rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors',
                   look.folderId == null
@@ -161,7 +161,9 @@ export function OutfitDetailModal({
                 <button
                   key={folder.id}
                   type='button'
-                  onClick={() => onMove(folder.id)}
+                  onClick={() =>
+                    look.folderId !== folder.id && onMove(folder.id)
+                  }
                   className={cn(
                     'rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors',
                     look.folderId === folder.id
