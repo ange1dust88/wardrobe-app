@@ -2,6 +2,7 @@
 
 import { createContext, useContext } from 'react'
 import type { Outfit } from '@/lib/items'
+import type { OutfitBuilderApi } from '@/hooks/useOutfitBuilder'
 
 export type WardrobeView = 'circular' | 'list'
 
@@ -14,6 +15,7 @@ type AppContextValue = {
   setEditingOutfit: (outfit: Outfit | null) => void
   wardrobeView: WardrobeView
   setWardrobeView: (view: WardrobeView) => void
+  builder: OutfitBuilderApi
 }
 
 const AppContext = createContext<AppContextValue>({
@@ -25,6 +27,7 @@ const AppContext = createContext<AppContextValue>({
   setEditingOutfit: () => {},
   wardrobeView: 'circular',
   setWardrobeView: () => {},
+  builder: null as unknown as OutfitBuilderApi,
 })
 
 export function AppProvider({

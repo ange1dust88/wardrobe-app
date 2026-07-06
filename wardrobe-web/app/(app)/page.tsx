@@ -2,7 +2,7 @@
 
 import { PlusIcon, ShirtIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useAppContext } from '@/components/AppContext'
 import { EditItemModal } from '@/components/items/EditItemModal'
 import { MatchWheel } from '@/components/items/MatchWheel'
@@ -24,7 +24,6 @@ import { harmonyOf } from '@/lib/harmony'
 import { notifySuccess } from '@/lib/toast'
 import { useItems } from '@/hooks/useItems'
 import { useMatchMap } from '@/hooks/useMatchMap'
-import { useOutfitBuilder } from '@/hooks/useOutfitBuilder'
 
 export default function WardrobePage() {
   const router = useRouter()
@@ -32,9 +31,9 @@ export default function WardrobePage() {
     colorType,
     openAddItem,
     showBreakdown,
-    editingOutfit,
     setEditingOutfit,
     wardrobeView,
+    builder,
   } = useAppContext()
   const view = wardrobeView
   const [hoveredId, setHoveredId] = useState<string | null>(null)
@@ -42,28 +41,10 @@ export default function WardrobePage() {
   const [allowConflicts, setAllowConflicts] = useState(false)
 
   const { itemsQuery, updateMutation, deleteMutation } = useItems()
-  const builder = useOutfitBuilder()
   const matchMap = useMatchMap(colorType, allowConflicts)
 
   const items = useMemo(() => itemsQuery.data ?? [], [itemsQuery.data])
   const map = matchMap.data ?? {}
-
-  const loadOutfit = builder.load
-  const loadedEditRef = useRef<string | null>(null)
-  useEffect(() => {
-    if (!editingOutfit) {
-      loadedEditRef.current = null
-      return
-    }
-    if (items.length === 0) return
-    if (loadedEditRef.current === editingOutfit.id) return
-    loadedEditRef.current = editingOutfit.id
-    const byId = new Map(items.map(i => [i.id, i]))
-    const picked = editingOutfit.itemIds
-      .map(id => byId.get(id))
-      .filter((i): i is Item => i != null)
-    loadOutfit(editingOutfit, picked)
-  }, [editingOutfit, items, loadOutfit])
 
   const building = builder.selectedIds.length > 0
   const hoverCells = !building && hoveredId ? (map[hoveredId] ?? {}) : {}

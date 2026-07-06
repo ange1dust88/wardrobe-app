@@ -81,3 +81,5 @@ export function useOutfitBuilder() {
     saveMutation,
   }
 }
+
+export type OutfitBuilderApi = ReturnType<typeof useOutfitBuilder>
