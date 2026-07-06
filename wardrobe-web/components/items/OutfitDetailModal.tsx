@@ -1,6 +1,6 @@
 'use client'
 
-import { PencilIcon, XIcon } from 'lucide-react'
+import { CopyIcon, PencilIcon, XIcon } from 'lucide-react'
 import { useState } from 'react'
 import { getItemImageSrc } from '@/lib/items'
 import { getMatchScoreTone } from '@/lib/match-score'
@@ -20,10 +20,17 @@ type Props = {
   look: SavedLook
   onClose: () => void
   onEdit: () => void
+  onDuplicate: () => void
   onDelete: () => void
 }
 
-export function OutfitDetailModal({ look, onClose, onEdit, onDelete }: Props) {
+export function OutfitDetailModal({
+  look,
+  onClose,
+  onEdit,
+  onDuplicate,
+  onDelete,
+}: Props) {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const tier = getMatchScoreTone(look.harmony)
   const conflicts = findOutfitConflicts(look.items)
@@ -130,7 +137,7 @@ export function OutfitDetailModal({ look, onClose, onEdit, onDelete }: Props) {
           )}
         </div>
 
-        <div className='flex flex-none items-center gap-3 border-t border-border px-6 py-3.5'>
+        <div className='flex flex-none items-center gap-2.5 border-t border-border px-6 py-3.5'>
           <Button
             type='button'
             variant='outline'
@@ -143,14 +150,25 @@ export function OutfitDetailModal({ look, onClose, onEdit, onDelete }: Props) {
           >
             {confirmDelete ? 'Delete for good?' : 'Delete'}
           </Button>
-          <Button
-            type='button'
-            onClick={onEdit}
-            className='h-12 flex-1 rounded-[13px] text-[15px] font-bold'
-          >
-            <PencilIcon className='size-4' />
-            Edit outfit
-          </Button>
+          <div className='ml-auto flex items-center gap-2.5'>
+            <Button
+              type='button'
+              variant='outline'
+              onClick={onDuplicate}
+              className='h-12 rounded-[13px]'
+            >
+              <CopyIcon className='size-4' />
+              Duplicate
+            </Button>
+            <Button
+              type='button'
+              onClick={onEdit}
+              className='h-12 rounded-[13px] px-6 text-[15px] font-bold'
+            >
+              <PencilIcon className='size-4' />
+              Edit
+            </Button>
+          </div>
         </div>
       </DialogPopup>
     </Dialog>

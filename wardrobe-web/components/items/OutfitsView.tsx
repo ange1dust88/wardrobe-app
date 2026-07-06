@@ -8,7 +8,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { OutfitDetailModal } from './OutfitDetailModal'
-import { ScoreBadge } from './ScoreBadge'
 
 export type SavedLook = {
   id: string
@@ -32,6 +31,7 @@ type Props = {
   loading?: boolean
   errorMessage?: string
   onEdit: (look: SavedLook) => void
+  onDuplicate: (look: SavedLook) => void
   onDelete: (id: string) => void
   onBuild: () => void
 }
@@ -43,11 +43,27 @@ function sortLooks(looks: SavedLook[], key: SortKey): SavedLook[] {
   return copy.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 }
 
+function timeAgo(iso: string): string {
+  const then = new Date(iso).getTime()
+  if (Number.isNaN(then)) return ''
+  const min = Math.floor((Date.now() - then) / 60000)
+  if (min < 1) return 'just now'
+  if (min < 60) return `${min}m ago`
+  const hr = Math.floor(min / 60)
+  if (hr < 24) return `${hr}h ago`
+  const day = Math.floor(hr / 24)
+  if (day < 7) return `${day}d ago`
+  const wk = Math.floor(day / 7)
+  if (wk < 5) return `${wk}w ago`
+  return new Date(iso).toLocaleDateString()
+}
+
 export function OutfitsView({
   looks,
   loading,
   errorMessage,
   onEdit,
+  onDuplicate,
   onDelete,
   onBuild,
 }: Props) {
@@ -117,36 +133,57 @@ export function OutfitsView({
             <Button onClick={onBuild}>Build an outfit</Button>
           </div>
         ) : (
-          <div className='grid grid-cols-[repeat(auto-fill,minmax(248px,1fr))] gap-5'>
+          <div className='grid grid-cols-[repeat(auto-fill,minmax(264px,1fr))] gap-5'>
             {ordered.map(look => {
               const tier = getMatchScoreTone(look.harmony)
+              const shown = look.items.slice(0, 6)
+              const overflow = look.items.length - shown.length
               return (
                 <button
                   key={look.id}
                   type='button'
                   onClick={() => setDetailId(look.id)}
-                  className='rounded-[18px] border border-border bg-card p-[18px] text-left shadow-sm transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
+                  className='group flex flex-col rounded-[20px] border border-border bg-card p-5 text-left shadow-[0_4px_16px_-8px_rgba(37,37,35,0.14)] transition-all hover:-translate-y-0.5 hover:shadow-[0_16px_36px_-12px_rgba(37,37,35,0.24)] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
                 >
-                  <div className='mb-3.5 flex items-center gap-2'>
-                    <ScoreBadge
-                      score={look.harmony}
-                      className='rounded-lg text-[12.5px]'
-                    />
-                    <span
-                      className='text-[12px] font-semibold'
-                      style={{ color: tier.solidColor }}
-                    >
-                      {tier.shortLabel}
-                    </span>
+                  <div className='mb-4 flex items-start justify-between gap-3'>
+                    <div className='min-w-0'>
+                      <div className='font-heading truncate text-[16px] font-bold'>
+                        {look.name}
+                      </div>
+                      <div className='mt-1 text-[12px] text-muted-foreground'>
+                        {timeAgo(look.createdAt)} · {look.items.length} piece
+                        {look.items.length === 1 ? '' : 's'}
+                        {look.missingCount > 0 && (
+                          <span className='text-warning'>
+                            {' '}
+                            · {look.missingCount} unavailable
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className='flex flex-none flex-col items-end leading-none'>
+                      <span
+                        className='font-heading text-[22px] font-bold'
+                        style={{ color: tier.solidColor }}
+                      >
+                        {look.harmony}
+                      </span>
+                      <span
+                        className='mt-0.5 text-[11px] font-semibold'
+                        style={{ color: tier.solidColor }}
+                      >
+                        {tier.shortLabel}
+                      </span>
+                    </div>
                   </div>
-                  <div className='mb-3.5 flex gap-2'>
-                    {look.items.slice(0, 5).map(item => {
+                  <div className='flex gap-2'>
+                    {shown.map(item => {
                       const img = getItemImageSrc(item)
                       return (
                         <span
                           key={item.id}
                           title={item.name}
-                          className='relative size-11 overflow-hidden rounded-[10px] border border-border'
+                          className='relative size-12 overflow-hidden rounded-[12px] border border-border'
                           style={{ background: item.color.hex }}
                         >
                           {img && (
@@ -159,17 +196,9 @@ export function OutfitsView({
                         </span>
                       )
                     })}
-                  </div>
-                  <div className='truncate text-[15px] font-semibold'>
-                    {look.name}
-                  </div>
-                  <div className='mt-0.5 text-[12px] text-muted-foreground'>
-                    {look.items.length} piece
-                    {look.items.length === 1 ? '' : 's'}
-                    {look.missingCount > 0 && (
-                      <span className='text-warning'>
-                        {' '}
-                        · {look.missingCount} unavailable
+                    {overflow > 0 && (
+                      <span className='flex size-12 flex-none items-center justify-center rounded-[12px] border border-dashed border-border text-[12px] font-semibold text-muted-foreground'>
+                        +{overflow}
                       </span>
                     )}
                   </div>
@@ -186,6 +215,10 @@ export function OutfitsView({
           onClose={() => setDetailId(null)}
           onEdit={() => {
             onEdit(detailLook)
+            setDetailId(null)
+          }}
+          onDuplicate={() => {
+            onDuplicate(detailLook)
             setDetailId(null)
           }}
           onDelete={() => {

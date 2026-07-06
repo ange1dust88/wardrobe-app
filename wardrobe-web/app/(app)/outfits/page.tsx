@@ -14,7 +14,7 @@ export default function OutfitsPage() {
   const router = useRouter()
   const { colorType, setEditingOutfit } = useAppContext()
   const { itemsQuery } = useItems()
-  const { outfitsQuery, deleteMutation } = useOutfits()
+  const { outfitsQuery, duplicateMutation, deleteMutation } = useOutfits()
   const matchMap = useMatchMap(colorType, false)
 
   const items = itemsQuery.data ?? []
@@ -52,6 +52,15 @@ export default function OutfitsPage() {
           router.push('/')
         }
       }}
+      onDuplicate={look =>
+        duplicateMutation.mutate(
+          {
+            name: `${look.name} copy`,
+            itemIds: look.items.map(i => i.id),
+          },
+          { onSuccess: () => notifySuccess('Outfit duplicated') }
+        )
+      }
       onDelete={id =>
         deleteMutation.mutate(id, {
           onSuccess: () => notifySuccess('Outfit deleted'),
