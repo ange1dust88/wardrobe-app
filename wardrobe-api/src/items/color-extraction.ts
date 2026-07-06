@@ -19,12 +19,25 @@ function distance(a: Rgb, b: Rgb): number {
   return Math.sqrt((a.r - b.r) ** 2 + (a.g - b.g) ** 2 + (a.b - b.b) ** 2);
 }
 
-async function fallbackDominant(buffer: Buffer): Promise<string> {
+const ACCENT_MIN_DISTANCE = 60;
+const ACCENT_MIN_RATIO = 0.18;
+
+export type ColorPalette = { hex: string; accentHex: string | null };
+
+async function fallbackDominant(buffer: Buffer): Promise<ColorPalette> {
   const { dominant } = await sharp(buffer).stats();
-  return hex(dominant);
+  return { hex: hex(dominant), accentHex: null };
 }
 
-export async function extractDominantHex(buffer: Buffer): Promise<string> {
+function bucketMean(bucket: { count: number; sum: Rgb }): Rgb {
+  return {
+    r: bucket.sum.r / bucket.count,
+    g: bucket.sum.g / bucket.count,
+    b: bucket.sum.b / bucket.count,
+  };
+}
+
+export async function extractPalette(buffer: Buffer): Promise<ColorPalette> {
   const { data, info } = await sharp(buffer)
     .resize(SAMPLE_SIZE, SAMPLE_SIZE, { fit: 'inside' })
     .flatten({ background: '#ffffff' })
@@ -74,17 +87,25 @@ export async function extractDominantHex(buffer: Buffer): Promise<string> {
     return fallbackDominant(buffer);
   }
 
-  let best: { count: number; sum: Rgb } | null = null;
-  for (const bucket of buckets.values()) {
-    if (!best || bucket.count > best.count) best = bucket;
-  }
-  if (!best) {
+  const sorted = [...buckets.values()].sort((a, b) => b.count - a.count);
+  if (sorted.length === 0) {
     return fallbackDominant(buffer);
   }
 
-  return hex({
-    r: best.sum.r / best.count,
-    g: best.sum.g / best.count,
-    b: best.sum.b / best.count,
-  });
+  const dominant = bucketMean(sorted[0]);
+  let accentHex: string | null = null;
+  for (const bucket of sorted.slice(1)) {
+    if (bucket.count < sorted[0].count * ACCENT_MIN_RATIO) break;
+    const mean = bucketMean(bucket);
+    if (distance(mean, dominant) >= ACCENT_MIN_DISTANCE) {
+      accentHex = hex(mean);
+      break;
+    }
+  }
+
+  return { hex: hex(dominant), accentHex };
+}
+
+export async function extractDominantHex(buffer: Buffer): Promise<string> {
+  return (await extractPalette(buffer)).hex;
 }

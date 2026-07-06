@@ -70,24 +70,25 @@ export enum SeasonPalette {
   Universal = 'universal',
 }
 
-export enum Vibe {
-  Casual = 'casual',
-  Sporty = 'sporty',
-  Minimalist = 'minimalist',
-  Urban = 'urban',
-  Workwear = 'workwear',
-  Romantic = 'romantic',
-  Edgy = 'edgy',
-  Vintage = 'vintage',
-  Classic = 'classic',
-  Relaxed = 'relaxed',
-}
-
 export enum SeasonWear {
   Spring = 'spring',
   Summer = 'summer',
   Autumn = 'autumn',
   Winter = 'winter',
+}
+
+export enum Formality {
+  Loungewear = 'loungewear',
+  Casual = 'casual',
+  SmartCasual = 'smart_casual',
+  Formal = 'formal',
+}
+
+export enum Fit {
+  Slim = 'slim',
+  Regular = 'regular',
+  Relaxed = 'relaxed',
+  Oversized = 'oversized',
 }
 
 export class CreateItemDto {
@@ -106,14 +107,20 @@ export class CreateItemDto {
   @IsHexColor()
   hex?: string;
 
+  @IsOptional()
+  @IsHexColor()
+  accentHex?: string;
+
   @IsEnum(Pattern)
   pattern: Pattern;
 
-  @Transform(toArray)
-  @IsArray()
-  @ArrayNotEmpty()
-  @IsEnum(Vibe, { each: true })
-  vibe: Vibe[];
+  @IsOptional()
+  @IsEnum(Formality)
+  formality?: Formality;
+
+  @IsOptional()
+  @IsEnum(Fit)
+  fit?: Fit;
 
   @Transform(toArray)
   @IsArray()
@@ -140,10 +147,12 @@ export interface Item {
   category: Category;
   subType: string | null;
   color: Color;
+  accent: Color | null;
   wardrobeRole: WardrobeRole;
   imageUrl: string | null;
   pattern: Pattern;
-  vibe: Vibe[];
+  formality: Formality | null;
+  fit: Fit | null;
   seasonPaletteCompatibility: SeasonPalette[];
   seasonWear: SeasonWear[];
 }

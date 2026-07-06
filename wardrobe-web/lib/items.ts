@@ -88,20 +88,87 @@ export const PATTERNS = [
 
 export type Pattern = (typeof PATTERNS)[number]
 
-export const VIBES = [
+export const FORMALITY_OPTIONS = [
+  'loungewear',
   'casual',
-  'sporty',
-  'minimalist',
-  'urban',
-  'workwear',
-  'romantic',
-  'edgy',
-  'vintage',
-  'classic',
-  'relaxed',
+  'smart_casual',
+  'formal',
 ] as const
 
-export type Vibe = (typeof VIBES)[number]
+export type Formality = (typeof FORMALITY_OPTIONS)[number]
+
+export const FORMALITY_LABELS: Record<Formality, string> = {
+  loungewear: 'Loungewear',
+  casual: 'Casual',
+  smart_casual: 'Smart casual',
+  formal: 'Formal',
+}
+
+const SUBTYPE_FORMALITY: Record<string, Formality> = {
+  't-shirt': 'casual',
+  tank: 'casual',
+  hoodie: 'loungewear',
+  longsleeve: 'casual',
+  sweater: 'casual',
+  shirt: 'smart_casual',
+  polo: 'smart_casual',
+  jacket: 'casual',
+  vest: 'casual',
+  cardigan: 'casual',
+  blazer: 'smart_casual',
+  coat: 'smart_casual',
+  shorts: 'casual',
+  leggings: 'loungewear',
+  sweatpants: 'loungewear',
+  jeans: 'casual',
+  trousers: 'smart_casual',
+  skirt: 'smart_casual',
+  sneakers: 'casual',
+  sandals: 'casual',
+  boots: 'smart_casual',
+  loafers: 'smart_casual',
+  flats: 'smart_casual',
+  heels: 'formal',
+  mini: 'casual',
+  midi: 'smart_casual',
+  maxi: 'smart_casual',
+  gown: 'formal',
+  slip: 'casual',
+  cap: 'casual',
+  beanie: 'casual',
+  beret: 'smart_casual',
+  hat: 'smart_casual',
+  headband: 'casual',
+}
+
+const CATEGORY_FORMALITY: Record<Category, Formality> = {
+  headwear: 'casual',
+  top: 'casual',
+  outerwear: 'casual',
+  dress: 'smart_casual',
+  bottom: 'casual',
+  shoes: 'casual',
+  accessory: 'casual',
+}
+
+export function deriveFormality(
+  category: Category,
+  subType: string | null
+): Formality {
+  if (subType && SUBTYPE_FORMALITY[subType]) return SUBTYPE_FORMALITY[subType]
+  return CATEGORY_FORMALITY[category] ?? 'casual'
+}
+
+export const FIT_OPTIONS = ['slim', 'regular', 'relaxed', 'oversized'] as const
+
+export type Fit = (typeof FIT_OPTIONS)[number]
+
+export const FIT_LABELS: Record<Fit, string> = {
+  slim: 'Slim',
+  regular: 'Regular',
+  relaxed: 'Relaxed',
+  oversized: 'Oversized',
+}
 
 export type Color = {
   hex: string
@@ -119,10 +186,12 @@ export type Item = {
   category: Category
   subType?: string | null
   color: Color
+  accent?: Color | null
   wardrobeRole: string
   imageUrl?: string
   pattern: string
-  vibe: string[]
+  formality?: string | null
+  fit?: string | null
   seasonPaletteCompatibility: string[]
   seasonWear: Season[]
 }
@@ -132,8 +201,10 @@ export type CreateItem = {
   category: Category
   subType?: string | null
   hex: string
+  accentHex?: string | null
   pattern: Pattern
-  vibe: Vibe[]
+  formality?: Formality | null
+  fit?: Fit | null
   seasonWear: Season[]
   image?: File | null
 }
@@ -150,8 +221,10 @@ export async function createItem(body: CreateItem): Promise<Item> {
   formData.append('category', body.category)
   if (body.subType) formData.append('subType', body.subType)
   formData.append('hex', body.hex)
+  if (body.accentHex) formData.append('accentHex', body.accentHex)
   formData.append('pattern', body.pattern)
-  body.vibe.forEach(vibe => formData.append('vibe', vibe))
+  if (body.formality) formData.append('formality', body.formality)
+  if (body.fit) formData.append('fit', body.fit)
   body.seasonWear.forEach(season => formData.append('seasonWear', season))
   if (body.image) {
     formData.append('image', body.image)
@@ -176,8 +249,10 @@ export type UpdateItem = {
   category: Category
   subType?: string | null
   hex: string
+  accentHex?: string | null
   pattern: Pattern
-  vibe: Vibe[]
+  formality?: Formality | null
+  fit?: Fit | null
   seasonWear: Season[]
   image?: File | null
 }
@@ -191,8 +266,10 @@ export async function updateItem(
   formData.append('category', body.category)
   if (body.subType) formData.append('subType', body.subType)
   formData.append('hex', body.hex)
+  if (body.accentHex) formData.append('accentHex', body.accentHex)
   formData.append('pattern', body.pattern)
-  body.vibe.forEach(vibe => formData.append('vibe', vibe))
+  if (body.formality) formData.append('formality', body.formality)
+  if (body.fit) formData.append('fit', body.fit)
   body.seasonWear.forEach(season => formData.append('seasonWear', season))
   if (body.image) {
     formData.append('image', body.image)
@@ -212,7 +289,9 @@ export async function updateItem(
   return res.json()
 }
 
-export async function extractItemColor(image: File): Promise<{ hex: string }> {
+export async function extractItemColor(
+  image: File
+): Promise<{ hex: string; accentHex?: string | null }> {
   const formData = new FormData()
   formData.append('image', image)
   const res = await apiFetch('/items/extract-color', {
@@ -238,7 +317,19 @@ export async function deleteItem(id: string): Promise<void> {
   if (!res.ok) throw new Error(`DELETE /items/${id} → ${res.status}`)
 }
 
-export type MatchMap = Record<string, Record<string, number>>
+export type ScoreBreakdown = {
+  color: number
+  role: number
+  season: number
+  palette: number
+  style: number
+  pattern: number
+  fit: number
+}
+
+export type MatchCell = { score: number; breakdown: ScoreBreakdown }
+
+export type MatchMap = Record<string, Record<string, MatchCell>>
 
 export async function fetchMatchMap(
   colorType?: string,
@@ -258,6 +349,13 @@ export type Outfit = {
   createdAt: string
   name: string
   itemIds: string[]
+  folderId?: string | null
+}
+
+export type Folder = {
+  id: string
+  createdAt: string
+  name: string
 }
 
 export async function createOutfit(body: {
@@ -285,7 +383,66 @@ export async function fetchOutfits(): Promise<Outfit[]> {
   return res.json()
 }
 
+export async function updateOutfit(
+  id: string,
+  body: { name: string; itemIds: string[] }
+): Promise<Outfit> {
+  const res = await apiFetch(`/outfits/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    const data = await res.json().catch(() => null)
+    const msg = Array.isArray(data?.message)
+      ? data.message.join(', ')
+      : (data?.message ?? `PATCH /outfits/${id} → ${res.status}`)
+    throw new Error(msg)
+  }
+  return res.json()
+}
+
 export async function deleteOutfit(id: string): Promise<void> {
   const res = await apiFetch(`/outfits/${id}`, { method: 'DELETE' })
   if (!res.ok) throw new Error(`DELETE /outfits/${id} → ${res.status}`)
+}
+
+export async function moveOutfitToFolder(
+  id: string,
+  folderId: string | null
+): Promise<Outfit> {
+  const res = await apiFetch(`/outfits/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ folderId }),
+  })
+  if (!res.ok) throw new Error(`PATCH /outfits/${id} → ${res.status}`)
+  return res.json()
+}
+
+export async function fetchFolders(): Promise<Folder[]> {
+  const res = await apiFetch('/folders')
+  if (!res.ok) throw new Error(`GET /folders → ${res.status}`)
+  return res.json()
+}
+
+export async function createFolder(name: string): Promise<Folder> {
+  const res = await apiFetch('/folders', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  })
+  if (!res.ok) {
+    const data = await res.json().catch(() => null)
+    const msg = Array.isArray(data?.message)
+      ? data.message.join(', ')
+      : (data?.message ?? `POST /folders → ${res.status}`)
+    throw new Error(msg)
+  }
+  return res.json()
+}
+
+export async function deleteFolder(id: string): Promise<void> {
+  const res = await apiFetch(`/folders/${id}`, { method: 'DELETE' })
+  if (!res.ok) throw new Error(`DELETE /folders/${id} → ${res.status}`)
 }

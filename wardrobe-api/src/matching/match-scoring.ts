@@ -1,19 +1,18 @@
 import {
   Brightness,
   Color,
+  Fit,
+  Formality,
   Item,
   Pattern,
   Saturation,
   SeasonPalette,
-  Vibe,
   WardrobeRole,
 } from '../items/dto/item.dto';
 import { warmthGap } from './season-compat';
 
 export type MatchContext = {
   userColorType?: SeasonPalette;
-  vibe: Vibe[];
-  strictTemperature?: boolean;
 };
 
 export type ScoreBreakdown = {
@@ -21,25 +20,34 @@ export type ScoreBreakdown = {
   role: number;
   season: number;
   palette: number;
-  vibe: number;
+  style: number;
   pattern: number;
+  fit: number;
 };
 
 const MAX_SCORE = 36;
 const MIN_RECOMMENDABLE_SCORE = 22;
 
 const SCORE_CAPS: ScoreBreakdown = {
-  color: 12,
-  role: 6,
+  color: 11,
+  role: 5,
   season: 5,
   palette: 5,
-  vibe: 5,
+  style: 5,
   pattern: 3,
+  fit: 2,
 };
 
-const COLORTYPE_MATCH_BONUS = 8;
-const COLORTYPE_UNIVERSAL_BONUS = 3;
-const COLORTYPE_MISMATCH_PENALTY = -12;
+const FORMALITY_ORDER: Formality[] = [
+  Formality.Loungewear,
+  Formality.Casual,
+  Formality.SmartCasual,
+  Formality.Formal,
+];
+
+const COLORTYPE_MATCH_BONUS = 5;
+const COLORTYPE_UNIVERSAL_BONUS = 4;
+const COLORTYPE_MISMATCH_PENALTY = -2;
 
 const BRIGHTNESS_ORDER: Brightness[] = [
   Brightness.Light,
@@ -64,8 +72,12 @@ function isLoudPattern(pattern: Pattern): boolean {
   return pattern === Pattern.BoldPattern || pattern === Pattern.Graphic;
 }
 
-function isSubtlePattern(pattern: Pattern): boolean {
-  return pattern === Pattern.SubtlePattern || pattern === Pattern.TextureOnly;
+function isPatterned(pattern: Pattern): boolean {
+  return (
+    pattern === Pattern.SubtlePattern ||
+    pattern === Pattern.BoldPattern ||
+    pattern === Pattern.Graphic
+  );
 }
 
 function hasPaletteOverlap(anchor: Item, candidate: Item): boolean {
@@ -88,16 +100,12 @@ function hasSamePaletteTemperature(anchor: Item, candidate: Item): boolean {
   return inSameGroup(warmPalettes) || inSameGroup(coolPalettes);
 }
 
-export function computeColorScore(
-  anchor: Color,
-  candidate: Color,
-  strictTemperature = false,
-): number {
+export function computeColorScore(anchor: Color, candidate: Color): number {
   if (anchor.isNeutral || candidate.isNeutral) {
     const dist = brightnessDistance(anchor.brightness, candidate.brightness);
 
     if (anchor.isNeutral && candidate.isNeutral) {
-      return dist === 0 ? 10 : dist === 1 ? 9 : 8;
+      return dist === 0 ? 8 : dist === 1 ? 10 : 11;
     }
 
     const colored = anchor.isNeutral ? candidate : anchor;
@@ -117,34 +125,26 @@ export function computeColorScore(
   }
 
   const distance = hueDistance(anchor.hue, candidate.hue);
-  const isAnalogous = distance <= 35;
   const isComplementary = distance >= 165;
-  const isTriadic = distance >= 105 && distance <= 135;
-  const isSplitComplementary = distance >= 145 && distance < 165;
-  const isWheelHarmony =
-    isAnalogous || isComplementary || isTriadic || isSplitComplementary;
+  const isWheelHarmony = distance <= 35 || distance > 105;
 
   let score =
     distance <= 12
       ? 9
-      : isAnalogous
+      : distance <= 35
         ? 10
-        : isComplementary
-          ? 10
-          : isTriadic
-            ? 8
-            : isSplitComplementary
-              ? 7
-              : distance <= 70
-                ? 6
-                : distance <= 100
-                  ? 4
-                  : 5;
+        : distance <= 70
+          ? 6
+          : distance <= 105
+            ? 4
+            : distance < 165
+              ? 8
+              : 10;
 
   if (anchor.temperature === candidate.temperature) {
     score += 1;
   } else {
-    score -= strictTemperature ? 4 : isWheelHarmony ? 1 : 3;
+    score -= isWheelHarmony ? 1 : 3;
   }
 
   const brightnessDist = brightnessDistance(
@@ -182,10 +182,10 @@ export function computeRoleScore(anchor: Item, candidate: Item): number {
   const a = anchor.wardrobeRole;
   const c = candidate.wardrobeRole;
   if (a === WardrobeRole.Pop && c === WardrobeRole.Pop) return -5;
-  if (a === WardrobeRole.Core && c === WardrobeRole.Tonal) return 6;
-  if (a === WardrobeRole.Tonal && c === WardrobeRole.Core) return 6;
+  if (a === WardrobeRole.Core && c === WardrobeRole.Tonal) return 5;
+  if (a === WardrobeRole.Tonal && c === WardrobeRole.Core) return 5;
   if (a === WardrobeRole.Core && c === WardrobeRole.Core) return 5;
-  if (a === WardrobeRole.Tonal && c === WardrobeRole.Tonal) return 4;
+  if (a === WardrobeRole.Tonal && c === WardrobeRole.Tonal) return 5;
   if (a === WardrobeRole.Pop || c === WardrobeRole.Pop) return 3;
   return 2;
 }
@@ -199,9 +199,18 @@ export function computeSeasonScore(anchor: Item, candidate: Item): number {
   if (overlap === 1) return 2;
 
   const gap = warmthGap(anchor.seasonWear, candidate.seasonWear);
-  if (gap >= 2) return -12;
-  if (gap === 1) return -4;
+  if (gap >= 2) return -5;
+  if (gap === 1) return -3;
   return 0;
+}
+
+function colorTypeFit(item: Item, userColorType: SeasonPalette): number {
+  const palette = item.seasonPaletteCompatibility;
+  if (palette.includes(userColorType)) return COLORTYPE_MATCH_BONUS;
+  if (palette.includes(SeasonPalette.Universal)) {
+    return COLORTYPE_UNIVERSAL_BONUS;
+  }
+  return COLORTYPE_MISMATCH_PENALTY;
 }
 
 export function computePaletteScore(
@@ -211,11 +220,11 @@ export function computePaletteScore(
 ): number {
   const palette = candidate.seasonPaletteCompatibility;
   if (userColorType) {
-    if (palette.includes(userColorType)) return COLORTYPE_MATCH_BONUS;
-    if (palette.includes(SeasonPalette.Universal)) {
-      return COLORTYPE_UNIVERSAL_BONUS;
-    }
-    return COLORTYPE_MISMATCH_PENALTY;
+    return (
+      (colorTypeFit(anchor, userColorType) +
+        colorTypeFit(candidate, userColorType)) /
+      2
+    );
   }
 
   if (hasPaletteOverlap(anchor, candidate)) return 4;
@@ -229,56 +238,52 @@ export function computePaletteScore(
   return -2;
 }
 
-const VIBE_INCOMPATIBLE: [Vibe, Vibe][] = [
-  [Vibe.Sporty, Vibe.Workwear],
-  [Vibe.Sporty, Vibe.Romantic],
-  [Vibe.Sporty, Vibe.Classic],
-  [Vibe.Minimalist, Vibe.Romantic],
-  [Vibe.Minimalist, Vibe.Vintage],
-  [Vibe.Urban, Vibe.Romantic],
-  [Vibe.Urban, Vibe.Classic],
-  [Vibe.Workwear, Vibe.Romantic],
-  [Vibe.Edgy, Vibe.Relaxed],
-];
+export function computeStyleScore(anchor: Item, candidate: Item): number {
+  if (!anchor.formality || !candidate.formality) return 0;
 
-const VIBE_INCOMPATIBLE_SET = new Set(
-  VIBE_INCOMPATIBLE.map(([a, b]) => [a, b].sort().join('|')),
-);
+  const gap = Math.abs(
+    FORMALITY_ORDER.indexOf(anchor.formality) -
+      FORMALITY_ORDER.indexOf(candidate.formality),
+  );
+  const score = gap === 0 ? 5 : gap === 1 ? 3 : gap === 2 ? 0 : -4;
 
-function vibePairCompatible(a: Vibe, b: Vibe): boolean {
-  if (a === b) return true;
-  return !VIBE_INCOMPATIBLE_SET.has([a, b].sort().join('|'));
-}
-
-export function computeVibeScore(candidate: Item, desired: Vibe[]): number {
-  if (desired.length === 0 || candidate.vibe.length === 0) return 0;
-
-  let compatible = 0;
-  let total = 0;
-  for (const a of desired) {
-    for (const c of candidate.vibe) {
-      total += 1;
-      if (vibePairCompatible(a, c)) compatible += 1;
-    }
-  }
-
-  const ratio = compatible / total;
-  if (ratio === 1) return SCORE_CAPS.vibe;
-  if (ratio >= 0.75) return 4;
-  if (ratio >= 0.5) return 2;
-  if (ratio > 0) return 0;
-  return -4;
+  return clamp(score, -5, SCORE_CAPS.style);
 }
 
 export function computePatternScore(anchor: Item, candidate: Item): number {
-  const a = isLoudPattern(anchor.pattern);
-  const c = isLoudPattern(candidate.pattern);
-  if (a && c) return -4;
-  if (a || c) return SCORE_CAPS.pattern;
-  if (isSubtlePattern(anchor.pattern) || isSubtlePattern(candidate.pattern)) {
-    return 3;
+  if (isLoudPattern(anchor.pattern) && isLoudPattern(candidate.pattern)) {
+    return -4;
   }
-  return 2;
+  if (isPatterned(anchor.pattern) && isPatterned(candidate.pattern)) {
+    return 1;
+  }
+  return SCORE_CAPS.pattern;
+}
+
+export function computeFitScore(anchor: Item, candidate: Item): number {
+  if (!anchor.fit || !candidate.fit) return SCORE_CAPS.fit;
+  const bothExtremeSame =
+    anchor.fit === candidate.fit &&
+    (anchor.fit === Fit.Slim || anchor.fit === Fit.Oversized);
+  if (bothExtremeSame) return 0;
+  const oppositeExtremes =
+    (anchor.fit === Fit.Slim && candidate.fit === Fit.Oversized) ||
+    (anchor.fit === Fit.Oversized && candidate.fit === Fit.Slim);
+  if (oppositeExtremes) return 1;
+  return SCORE_CAPS.fit;
+}
+
+function accentTieIn(accent: Color | null, otherPrimary: Color): number {
+  if (!accent) return 0;
+  const s = computeColorScore(accent, otherPrimary);
+  return s >= 9 ? 1 : s <= 4 ? -1 : 0;
+}
+
+function accentAdjust(anchor: Item, candidate: Item): number {
+  const bonus =
+    accentTieIn(anchor.accent, candidate.color) +
+    accentTieIn(candidate.accent, anchor.color);
+  return clamp(bonus, -2, 2);
 }
 
 export function computeTotalScore(
@@ -290,16 +295,18 @@ export function computeTotalScore(
   breakdown: ScoreBreakdown;
 } {
   const breakdown: ScoreBreakdown = {
-    color: computeColorScore(
-      anchor.color,
-      candidate.color,
-      ctx.strictTemperature,
+    color: clamp(
+      computeColorScore(anchor.color, candidate.color) +
+        accentAdjust(anchor, candidate),
+      -6,
+      SCORE_CAPS.color,
     ),
     role: computeRoleScore(anchor, candidate),
     season: computeSeasonScore(anchor, candidate),
     palette: computePaletteScore(anchor, candidate, ctx.userColorType),
-    vibe: computeVibeScore(candidate, ctx.vibe),
+    style: computeStyleScore(anchor, candidate),
     pattern: computePatternScore(anchor, candidate),
+    fit: computeFitScore(anchor, candidate),
   };
 
   const rawTotal =
@@ -307,8 +314,9 @@ export function computeTotalScore(
     breakdown.role +
     breakdown.season +
     breakdown.palette +
-    breakdown.vibe +
-    breakdown.pattern;
+    breakdown.style +
+    breakdown.pattern +
+    breakdown.fit;
   const total = clamp(Math.round(rawTotal), 0, MAX_SCORE);
 
   return { total, breakdown };

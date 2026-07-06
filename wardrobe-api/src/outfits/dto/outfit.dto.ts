@@ -1,5 +1,11 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { ArrayNotEmpty, IsArray, IsNotEmpty, IsString } from 'class-validator';
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { Item } from '../../items/dto/item.dto';
 
 export class CreateOutfitDto {
@@ -11,6 +17,10 @@ export class CreateOutfitDto {
   @ArrayNotEmpty()
   @IsString({ each: true })
   itemIds!: string[];
+
+  @IsOptional()
+  @IsString()
+  folderId?: string | null;
 }
 
 export class UpdateOutfitDto extends PartialType(CreateOutfitDto) {}
@@ -19,6 +29,7 @@ export interface Outfit {
   id: string;
   name: string;
   itemIds: string[];
+  folderId: string | null;
   createdAt: string;
 }
 

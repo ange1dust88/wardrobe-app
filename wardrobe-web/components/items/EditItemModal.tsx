@@ -1,7 +1,14 @@
 'use client'
 
 import { useItemForm } from '@/hooks/useItemForm'
-import type { Item, Pattern, UpdateItem, Vibe } from '@/lib/items'
+import {
+  getItemImageSrc,
+  type Fit,
+  type Formality,
+  type Item,
+  type Pattern,
+  type UpdateItem,
+} from '@/lib/items'
 import { ItemFormDialog } from './ItemFormDialog'
 
 type Props = {
@@ -32,19 +39,42 @@ export function EditItemModal({
     category: item.category,
     subType: item.subType ?? null,
     hex: item.color.hex,
+    accentHex: item.accent?.hex ?? null,
     pattern: item.pattern as Pattern,
-    vibe: item.vibe as Vibe[],
+    formality: (item.formality as Formality | null) ?? null,
+    fit: (item.fit as Fit | null) ?? null,
     seasonWear: item.seasonWear,
     image: null,
   })
 
   function submit() {
     if (!form.isValid) return
-    const { name, category, subType, hex, pattern, vibe, seasonWear, image } =
-      form.values
+    const {
+      name,
+      category,
+      subType,
+      hex,
+      accentHex,
+      pattern,
+      formality,
+      fit,
+      seasonWear,
+      image,
+    } = form.values
     onSubmit(
       item.id,
-      { name, category, subType, hex, pattern, vibe, seasonWear, image },
+      {
+        name,
+        category,
+        subType,
+        hex,
+        accentHex,
+        pattern,
+        formality,
+        fit,
+        seasonWear,
+        image,
+      },
       { onSuccess: onClose }
     )
   }
@@ -58,7 +88,7 @@ export function EditItemModal({
       open
       onClose={onClose}
       title='Edit item'
-      subtitle='Update the details — matches refresh instantly.'
+      subtitle='matches refresh instantly'
       submitLabel='Save changes'
       form={form}
       onSubmit={submit}
@@ -66,6 +96,7 @@ export function EditItemModal({
       errorMessage={errorMessage}
       onDelete={handleDelete}
       deleting={deleting}
+      initialImageUrl={getItemImageSrc(item)}
     />
   )
 }

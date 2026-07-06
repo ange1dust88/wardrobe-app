@@ -1,12 +1,69 @@
 import {
   Brightness,
+  Category,
   Color,
+  Formality,
   Saturation,
   SeasonPalette,
   Temperature,
   WardrobeRole,
 } from './dto/item.dto';
 import { classifySeasons } from './season-palette';
+
+const SUBTYPE_FORMALITY: Record<string, Formality> = {
+  't-shirt': Formality.Casual,
+  tank: Formality.Casual,
+  hoodie: Formality.Loungewear,
+  longsleeve: Formality.Casual,
+  sweater: Formality.Casual,
+  shirt: Formality.SmartCasual,
+  polo: Formality.SmartCasual,
+  jacket: Formality.Casual,
+  vest: Formality.Casual,
+  cardigan: Formality.Casual,
+  blazer: Formality.SmartCasual,
+  coat: Formality.SmartCasual,
+  shorts: Formality.Casual,
+  leggings: Formality.Loungewear,
+  sweatpants: Formality.Loungewear,
+  jeans: Formality.Casual,
+  trousers: Formality.SmartCasual,
+  skirt: Formality.SmartCasual,
+  sneakers: Formality.Casual,
+  sandals: Formality.Casual,
+  boots: Formality.SmartCasual,
+  loafers: Formality.SmartCasual,
+  flats: Formality.SmartCasual,
+  heels: Formality.Formal,
+  mini: Formality.Casual,
+  midi: Formality.SmartCasual,
+  maxi: Formality.SmartCasual,
+  gown: Formality.Formal,
+  slip: Formality.Casual,
+  cap: Formality.Casual,
+  beanie: Formality.Casual,
+  beret: Formality.SmartCasual,
+  hat: Formality.SmartCasual,
+  headband: Formality.Casual,
+};
+
+const CATEGORY_FORMALITY: Record<Category, Formality> = {
+  [Category.Headwear]: Formality.Casual,
+  [Category.Top]: Formality.Casual,
+  [Category.Outerwear]: Formality.Casual,
+  [Category.Dress]: Formality.SmartCasual,
+  [Category.Bottom]: Formality.Casual,
+  [Category.Shoes]: Formality.Casual,
+  [Category.Accessory]: Formality.Casual,
+};
+
+export function deriveFormality(
+  category: Category,
+  subType: string | null,
+): Formality {
+  if (subType && SUBTYPE_FORMALITY[subType]) return SUBTYPE_FORMALITY[subType];
+  return CATEGORY_FORMALITY[category] ?? Formality.Casual;
+}
 
 type Hsl = { h: number; s: number; l: number };
 
@@ -51,7 +108,7 @@ function hexToHsl(hex: string): Hsl {
   return { h, s, l };
 }
 
-function deriveColor(hex: string): Color {
+export function deriveColor(hex: string): Color {
   const { h, s, l } = hexToHsl(hex);
   const hue = Math.round(h);
   const isNeutral = s < 0.15;

@@ -71,6 +71,20 @@ enum Vibe {
   relaxed
 }
 
+enum Formality {
+  loungewear
+  casual
+  smart_casual
+  formal
+}
+
+enum Fit {
+  slim
+  regular
+  relaxed
+  oversized
+}
+
 enum SeasonWear {
   spring
   summer
@@ -89,6 +103,7 @@ model Item {
   imageUrl String?
 
   hex         String
+  accentHex   String?
   hue         Int
   temperature Temperature
   brightness  Brightness
@@ -97,6 +112,8 @@ model Item {
 
   wardrobeRole               WardrobeRole
   pattern                    Pattern
+  formality                  Formality?
+  fit                        Fit?
   vibe                       Vibe[]
   seasonPaletteCompatibility SeasonPalette[]
   seasonWear                 SeasonWear[]
@@ -110,6 +127,19 @@ model Outfit {
   userId    String?
   name      String
   itemIds   String[]
+  folderId  String?
+  folder    Folder?  @relation(fields: [folderId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([folderId])
+}
+
+model Folder {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  userId    String?
+  name      String
+  outfits   Outfit[]
 
   @@index([userId])
 }

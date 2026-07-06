@@ -34,7 +34,7 @@ export function OutfitCarousel({ items, selectedIds, map, onSelect }: Props) {
     for (const id of selectedIds) {
       const sel = byId.get(id)
       if (!sel || sel.category === item.category) continue
-      const s = map[item.id]?.[id] ?? map[id]?.[item.id] ?? 0
+      const s = (map[item.id]?.[id] ?? map[id]?.[item.id])?.score ?? 0
       sum += s
       n += 1
     }

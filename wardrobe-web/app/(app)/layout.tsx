@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { LoginScreen } from '@/components/auth/LoginScreen'
 import { Onboarding } from '@/components/onboarding/Onboarding'
@@ -9,7 +9,10 @@ import { AppProvider } from '@/components/AppContext'
 import { AddItemModal } from '@/components/items/AddItemModal'
 import { ProfileModal } from '@/components/profile/ProfileModal'
 import { Spinner } from '@/components/ui/spinner'
+import type { WardrobeView } from '@/components/AppContext'
+import type { Item, Outfit } from '@/lib/items'
 import { useItems } from '@/hooks/useItems'
+import { useOutfitBuilder } from '@/hooks/useOutfitBuilder'
 import { useOutfits } from '@/hooks/useOutfits'
 import { useProfile } from '@/hooks/useProfile'
 
@@ -58,19 +61,68 @@ function FrameChrome({
   const { user } = useAuth()
   const [addOpen, setAddOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [editingOutfit, setEditingOutfit] = useState<Outfit | null>(null)
+  const [wardrobeView, setWardrobeView] = useState<WardrobeView>('circular')
+  const [showBreakdown, setShowBreakdownState] = useState(() => {
+    if (typeof window === 'undefined') return true
+    return localStorage.getItem('dress:showBreakdown') !== '0'
+  })
+
+  function setShowBreakdown(value: boolean) {
+    setShowBreakdownState(value)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('dress:showBreakdown', value ? '1' : '0')
+    }
+  }
   const { itemsQuery, createMutation } = useItems()
   const { outfitsQuery } = useOutfits()
+  const builder = useOutfitBuilder()
 
-  const itemCount = itemsQuery.data?.length ?? 0
+  const items = useMemo(() => itemsQuery.data ?? [], [itemsQuery.data])
+  const itemCount = items.length
+  const catCount = new Set(items.map(i => i.category)).size
   const savedCount = outfitsQuery.data?.length ?? 0
   const userInitial = user?.email?.[0]?.toUpperCase() ?? 'U'
 
+  const loadOutfit = builder.load
+  const loadedEditRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!editingOutfit) {
+      loadedEditRef.current = null
+      return
+    }
+    if (items.length === 0) return
+    if (loadedEditRef.current === editingOutfit.id) return
+    loadedEditRef.current = editingOutfit.id
+    const byId = new Map(items.map(i => [i.id, i]))
+    const picked = editingOutfit.itemIds
+      .map(id => byId.get(id))
+      .filter((i): i is Item => i != null)
+    loadOutfit(editingOutfit, picked)
+  }, [editingOutfit, items, loadOutfit])
+
   return (
-    <AppProvider value={{ colorType, openAddItem: () => setAddOpen(true) }}>
+    <AppProvider
+      value={{
+        colorType,
+        openAddItem: () => setAddOpen(true),
+        showBreakdown,
+        setShowBreakdown,
+        editingOutfit,
+        setEditingOutfit,
+        wardrobeView,
+        setWardrobeView,
+        builder,
+      }}
+    >
       <div className='min-h-svh'>
         <AppHeader
+          itemCount={itemCount}
+          catCount={catCount}
           savedCount={savedCount}
           userInitial={userInitial}
+          view={wardrobeView}
+          onView={setWardrobeView}
           onAddItem={() => setAddOpen(true)}
           onProfile={() => setProfileOpen(true)}
         />

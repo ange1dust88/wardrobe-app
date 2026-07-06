@@ -5,11 +5,13 @@ import {
 } from '@nestjs/common';
 import { Item as DbItem } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { extractDominantHex } from './color-extraction';
+import { ColorPalette, extractPalette } from './color-extraction';
 import {
   Brightness,
   Category,
   CreateItemDto,
+  Fit,
+  Formality,
   Item,
   Pattern,
   Saturation,
@@ -17,10 +19,13 @@ import {
   SeasonWear,
   Temperature,
   UpdateItemDto,
-  Vibe,
   WardrobeRole,
 } from './dto/item.dto';
-import { deriveItemData } from './item-derivation';
+import {
+  deriveColor,
+  deriveFormality,
+  deriveItemData,
+} from './item-derivation';
 import { StorageService, UploadedImage } from '../storage/storage.service';
 import { MatchMapCacheService } from '../matching/match-map-cache.service';
 
@@ -72,11 +77,14 @@ export class ItemsService {
     image?: UploadedItemImage,
   ): Promise<Item> {
     let hex = dto.hex;
+    let accentHex = dto.accentHex ?? null;
     let imageUrl: string | null = null;
     if (image) {
       imageUrl = await this.storage.uploadImage(image);
       if (!hex) {
-        hex = await extractDominantHex(image.buffer);
+        const palette = await extractPalette(image.buffer);
+        hex = palette.hex;
+        if (!accentHex) accentHex = palette.accentHex;
       }
     }
     if (!hex) {
@@ -90,10 +98,13 @@ export class ItemsService {
         category: dto.category,
         subType: dto.subType ?? null,
         pattern: dto.pattern,
-        vibe: dto.vibe,
+        formality:
+          dto.formality ?? deriveFormality(dto.category, dto.subType ?? null),
+        fit: dto.fit ?? null,
         seasonWear: dto.seasonWear,
         imageUrl,
         hex: derived.color.hex,
+        accentHex,
         hue: derived.color.hue,
         temperature: derived.color.temperature,
         brightness: derived.color.brightness,
@@ -119,7 +130,9 @@ export class ItemsService {
     if (dto.category !== undefined) data.category = dto.category;
     if (dto.subType !== undefined) data.subType = dto.subType || null;
     if (dto.pattern !== undefined) data.pattern = dto.pattern;
-    if (dto.vibe !== undefined) data.vibe = dto.vibe;
+    if (dto.formality !== undefined) data.formality = dto.formality ?? null;
+    if (dto.fit !== undefined) data.fit = dto.fit ?? null;
+    if (dto.accentHex !== undefined) data.accentHex = dto.accentHex || null;
     if (dto.seasonWear !== undefined) data.seasonWear = dto.seasonWear;
     if (dto.hex !== undefined) {
       const derived = deriveItemData(dto.hex);
@@ -184,8 +197,8 @@ export class ItemsService {
     return { deleted: true, id };
   }
 
-  async extractColor(image: UploadedItemImage): Promise<{ hex: string }> {
-    return { hex: await extractDominantHex(image.buffer) };
+  async extractColor(image: UploadedItemImage): Promise<ColorPalette> {
+    return extractPalette(image.buffer);
   }
 
   private toItem(row: DbItem): Item {
@@ -204,9 +217,13 @@ export class ItemsService {
         saturation: row.saturation as Saturation,
         isNeutral: row.isNeutral,
       },
+      accent: row.accentHex ? deriveColor(row.accentHex) : null,
       wardrobeRole: row.wardrobeRole as WardrobeRole,
       pattern: row.pattern as Pattern,
-      vibe: row.vibe as Vibe[],
+      formality:
+        (row.formality as Formality | null) ??
+        deriveFormality(row.category as Category, row.subType),
+      fit: row.fit as Fit | null,
       seasonPaletteCompatibility:
         row.seasonPaletteCompatibility as SeasonPalette[],
       seasonWear: row.seasonWear as SeasonWear[],

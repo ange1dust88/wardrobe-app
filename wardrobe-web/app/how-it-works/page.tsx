@@ -22,12 +22,12 @@ const SECTIONS: [string, string][] = [
 const SIGNALS = [
   {
     name: 'Color',
-    pts: 12,
-    desc: 'Neutrals go with everything; neighbours or opposites on the wheel work best; two loud colors fight.',
+    pts: 11,
+    desc: 'Neutrals go with everything; neighbours or opposites on the wheel work best; two loud colors fight. A second (accent) color earns a little extra when it picks up the other piece’s main shade.',
   },
   {
     name: 'Role',
-    pts: 6,
+    pts: 5,
     desc: 'A calm base with one statement reads intentional. Two vivid pops clash.',
   },
   {
@@ -41,29 +41,35 @@ const SIGNALS = [
     desc: 'Your seasonal type boosts shades that suit you and docks ones that fight it.',
   },
   {
-    name: 'Vibe',
+    name: 'Style',
     pts: 5,
-    desc: 'Matching style tags score full; known clashers (sporty + romantic) lose points.',
+    desc: 'Formality match — loungewear with a suit clashes; same dressiness sits right.',
   },
   {
     name: 'Pattern',
     pts: 3,
-    desc: 'One patterned piece is fine; two bold patterns together clash.',
+    desc: 'One patterned piece keeps it clean; two together get busy, two bold ones clash.',
+  },
+  {
+    name: 'Fit',
+    pts: 2,
+    desc: 'Silhouette balance — two extremes (both baggy, both tight, or one of each) throw the proportions off.',
   },
 ]
 
 const EXAMPLE = {
   a: { name: 'Grey trousers', color: '#8c857a' },
   b: { name: 'Navy striped shirt', color: '#2c3550' },
-  total: 28,
+  total: 30,
   tier: { label: 'Great match', color: SCORE_TIER_COLORS.great },
   breakdown: [
-    { name: 'Color', pts: 9, cap: 12 },
-    { name: 'Role', pts: 6, cap: 6 },
+    { name: 'Color', pts: 9, cap: 11 },
+    { name: 'Role', pts: 5, cap: 5 },
     { name: 'Season', pts: 5, cap: 5 },
-    { name: 'Palette', pts: 3, cap: 5 },
-    { name: 'Vibe', pts: 2, cap: 5 },
-    { name: 'Pattern', pts: 3, cap: 3 },
+    { name: 'Palette', pts: 4, cap: 5 },
+    { name: 'Style', pts: 3, cap: 5 },
+    { name: 'Pattern', pts: 2, cap: 3 },
+    { name: 'Fit', pts: 2, cap: 2 },
   ],
   why: 'A neutral base, one calm stripe, same seasons — an easy, polished pair.',
 }
@@ -406,7 +412,7 @@ export default function HowItWorks() {
                 'Color',
                 'Type · subtype',
                 'Pattern',
-                'Vibe',
+                'Formality · fit',
                 'Seasons',
               ].map(p => (
                 <span
@@ -584,7 +590,7 @@ export default function HowItWorks() {
                   <div className='h-2 overflow-hidden rounded-full bg-muted'>
                     <div
                       className='h-full rounded-full'
-                      style={{ width: `${(s.pts / 12) * 100}%`, background: ACCENT }}
+                      style={{ width: `${(s.pts / 11) * 100}%`, background: ACCENT }}
                     />
                   </div>
                   <div className='mt-1.5 text-[13px] leading-snug text-muted-foreground'>
@@ -702,7 +708,7 @@ export default function HowItWorks() {
             {kicker('color')}
             <h2 className={h2cls}>Color, in depth</h2>
             <p className={introCls}>
-              Up to 12 of the 36 points. Drag the two dots — the relationship
+              Up to 11 of the 36 points. Drag the two dots — the relationship
               classifies live.
             </p>
 

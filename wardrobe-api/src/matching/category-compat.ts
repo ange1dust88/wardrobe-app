@@ -13,3 +13,14 @@ export function categoriesConflict(a: Category, b: Category): boolean {
   if (a === b) return false;
   return CONFLICT_SET.has([a, b].sort().join('|'));
 }
+
+const STACKABLE_CATEGORIES = new Set<Category>([
+  Category.Top,
+  Category.Outerwear,
+  Category.Bottom,
+  Category.Accessory,
+]);
+
+export function categoryStacks(category: Category): boolean {
+  return STACKABLE_CATEGORIES.has(category);
+}

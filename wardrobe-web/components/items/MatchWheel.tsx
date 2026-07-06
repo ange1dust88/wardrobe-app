@@ -1,8 +1,12 @@
 import { PencilIcon } from 'lucide-react'
+import { useState } from 'react'
 import { CATEGORIES, getItemImageSrc, type Item } from '../../lib/items'
 import { getMatchScoreTone, matchScoreToPercentage } from '../../lib/match-score'
 import { BRAND_ACCENT } from '../../lib/theme'
+import { cn } from '../../lib/utils'
+import type { ScoreBreakdown } from '../../lib/items'
 import { ScoreBadge } from './ScoreBadge'
+import { ScoreDetail } from './ScoreDetail'
 
 type Props = {
   items: Item[]
@@ -10,6 +14,7 @@ type Props = {
   selectedIds?: string[]
   matchedIds?: Set<string>
   scoreById?: Record<string, number>
+  breakdownById?: Record<string, ScoreBreakdown>
   onHover: (id: string | null) => void
   onSelect: (item: Item) => void
   onEdit: (item: Item) => void
@@ -35,10 +40,12 @@ export function MatchWheel({
   selectedIds = [],
   matchedIds = new Set(),
   scoreById = {},
+  breakdownById = {},
   onHover,
   onSelect,
   onEdit,
 }: Props) {
+  const [openDetailId, setOpenDetailId] = useState<string | null>(null)
   const ordered = [...items].sort((a, b) => {
     const ca = CATEGORIES.indexOf(a.category)
     const cb = CATEGORIES.indexOf(b.category)
@@ -110,7 +117,7 @@ export function MatchWheel({
   return (
     <div
       onMouseLeave={() => onHover(null)}
-      className='relative mx-auto aspect-square w-full max-w-[712px]'
+      className='relative mx-auto aspect-square w-full max-w-[min(712px,calc(100svh-300px))]'
     >
       <style>{`@keyframes wheel-draw { from { stroke-dashoffset: 900 } to { stroke-dashoffset: 0 } }`}</style>
 
@@ -154,6 +161,8 @@ export function MatchWheel({
 
       {ordered.map((item, i) => {
         const p = pos(i)
+        const flipUp = p.y > CY
+        const alignRight = p.x > CX
         const isSel = selectedIds.includes(item.id)
         const isMatch = matchedIds.has(item.id)
         const isHover = item.id === activeId
@@ -171,12 +180,17 @@ export function MatchWheel({
           <div
             key={item.id}
             className='absolute'
+            onMouseEnter={() => {
+              onHover(item.id)
+              setOpenDetailId(prev => (prev && prev !== item.id ? null : prev))
+            }}
+            onMouseLeave={() => onHover(null)}
             style={{
               left: `${((p.x - sz / 2) / BOX) * 100}%`,
               top: `${((p.y - sz / 2) / BOX) * 100}%`,
               width: `${szPct}%`,
               aspectRatio: '1',
-              zIndex: isSrc ? 5 : isSel ? 4 : 2,
+              zIndex: openDetailId === item.id ? 60 : isSrc ? 5 : isSel ? 4 : 2,
               opacity: lit ? 1 : 0.45,
               filter: lit ? 'none' : 'grayscale(.25)',
               transition: 'opacity .3s ease, filter .3s ease',
@@ -184,8 +198,10 @@ export function MatchWheel({
           >
             <button
               type='button'
-              onMouseEnter={() => onHover(item.id)}
-              onClick={() => onSelect(item)}
+              onClick={() => {
+                onSelect(item)
+                setOpenDetailId(null)
+              }}
               aria-label={item.name}
               className='relative block h-full w-full overflow-hidden p-0'
               style={{
@@ -238,6 +254,37 @@ export function MatchWheel({
                 <PencilIcon className='size-3' />
               </button>
             )}
+
+            {isMatch &&
+              breakdownById[item.id] &&
+              (isHover || openDetailId === item.id) && (
+                <div
+                  className='absolute -right-1 -bottom-1 z-20'
+                  onMouseEnter={() => setOpenDetailId(item.id)}
+                  onMouseLeave={() => setOpenDetailId(null)}
+                >
+                  <button
+                    type='button'
+                    onFocus={() => setOpenDetailId(item.id)}
+                    onBlur={() => setOpenDetailId(null)}
+                    aria-label='Why this score'
+                    className='flex size-5 items-center justify-center rounded-full border border-border bg-background text-[11px] font-bold text-muted-foreground shadow-sm'
+                  >
+                    ?
+                  </button>
+                  {openDetailId === item.id && (
+                    <div
+                      className={cn(
+                        'absolute z-50',
+                        flipUp ? 'bottom-full pb-2' : 'top-full pt-2',
+                        alignRight ? 'right-0' : 'left-0'
+                      )}
+                    >
+                      <ScoreDetail breakdown={breakdownById[item.id]} />
+                    </div>
+                  )}
+                </div>
+              )}
           </div>
         )
       })}
