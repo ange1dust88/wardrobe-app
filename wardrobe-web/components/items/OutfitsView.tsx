@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
+import { CreateFolderModal } from './CreateFolderModal'
 import { OutfitDetailModal } from './OutfitDetailModal'
 
 export type SavedLook = {
@@ -81,7 +82,6 @@ export function OutfitsView({
   const [detailId, setDetailId] = useState<string | null>(null)
   const [filter, setFilter] = useState<string>('all')
   const [creating, setCreating] = useState(false)
-  const [newName, setNewName] = useState('')
   const [confirmFolderId, setConfirmFolderId] = useState<string | null>(null)
 
   const unfiledCount = looks.filter(l => !l.folderId).length
@@ -93,13 +93,6 @@ export function OutfitsView({
         : looks.filter(l => l.folderId === filter)
   const ordered = sortLooks(filtered, sort)
   const detailLook = looks.find(l => l.id === detailId) ?? null
-
-  function submitFolder() {
-    const name = newName.trim()
-    if (name) onCreateFolder(name)
-    setNewName('')
-    setCreating(false)
-  }
 
   function chipCls(active: boolean): string {
     return cn(
@@ -201,32 +194,14 @@ export function OutfitsView({
                 </span>
               )
             })}
-            {creating ? (
-              <input
-                autoFocus
-                value={newName}
-                onChange={e => setNewName(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter') submitFolder()
-                  if (e.key === 'Escape') {
-                    setNewName('')
-                    setCreating(false)
-                  }
-                }}
-                onBlur={submitFolder}
-                placeholder='Folder name'
-                className='rounded-full border border-border bg-background px-3.5 py-1.5 text-[13px] outline-none'
-              />
-            ) : (
-              <button
-                type='button'
-                onClick={() => setCreating(true)}
-                className='flex items-center gap-1 rounded-full border border-dashed border-border px-3 py-1.5 text-[13px] font-semibold text-muted-foreground hover:text-foreground'
-              >
-                <PlusIcon className='size-3.5' />
-                New folder
-              </button>
-            )}
+            <button
+              type='button'
+              onClick={() => setCreating(true)}
+              className='flex items-center gap-1 rounded-full border border-dashed border-border px-3 py-1.5 text-[13px] font-semibold text-muted-foreground hover:text-foreground'
+            >
+              <PlusIcon className='size-3.5' />
+              New folder
+            </button>
           </div>
         )}
 
@@ -334,6 +309,13 @@ export function OutfitsView({
           </div>
         )}
       </div>
+
+      {creating && (
+        <CreateFolderModal
+          onClose={() => setCreating(false)}
+          onCreate={onCreateFolder}
+        />
+      )}
 
       {detailLook && (
         <OutfitDetailModal
