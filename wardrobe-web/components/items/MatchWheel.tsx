@@ -1,4 +1,4 @@
-import { EyeOffIcon, PencilIcon } from 'lucide-react'
+import { EyeIcon, EyeOffIcon, PencilIcon } from 'lucide-react'
 import { useState } from 'react'
 import { CATEGORIES, getItemImageSrc, type Item } from '../../lib/items'
 import { getMatchScoreTone, matchScoreToPercentage } from '../../lib/match-score'
@@ -18,6 +18,7 @@ type Props = {
   onHover: (id: string | null) => void
   onSelect: (item: Item) => void
   onEdit: (item: Item) => void
+  onToggleExclude: (item: Item) => void
 }
 
 const BOX = 760
@@ -44,6 +45,7 @@ export function MatchWheel({
   onHover,
   onSelect,
   onEdit,
+  onToggleExclude,
 }: Props) {
   const [openDetailId, setOpenDetailId] = useState<string | null>(null)
   const ordered = [...items].sort((a, b) => {
@@ -239,14 +241,6 @@ export function MatchWheel({
                   ✓
                 </span>
               )}
-              {isExcluded && (
-                <span
-                  className='absolute top-1.5 right-1.5 flex size-6 items-center justify-center rounded-full bg-foreground/70 text-white shadow'
-                  title='Excluded from matching'
-                >
-                  <EyeOffIcon className='size-3.5' />
-                </span>
-              )}
               {isMatch && scoreById[item.id] != null && (
                 <ScoreBadge
                   score={scoreById[item.id]}
@@ -264,6 +258,34 @@ export function MatchWheel({
                 className='absolute -top-1 -left-1 z-10 flex size-6 items-center justify-center rounded-full border border-border bg-background text-foreground shadow-sm'
               >
                 <PencilIcon className='size-3' />
+              </button>
+            )}
+
+            {(isExcluded || isHover) && !isSel && (
+              <button
+                type='button'
+                onClick={e => {
+                  e.stopPropagation()
+                  onToggleExclude(item)
+                }}
+                aria-label={
+                  isExcluded ? 'Include in matching' : 'Exclude from matching'
+                }
+                title={
+                  isExcluded ? 'Include in matching' : 'Exclude from matching'
+                }
+                className={cn(
+                  'absolute -top-1 -right-1 z-10 flex size-6 items-center justify-center rounded-full border shadow-sm',
+                  isExcluded
+                    ? 'border-transparent bg-foreground text-background'
+                    : 'border-border bg-background text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {isExcluded ? (
+                  <EyeOffIcon className='size-3' />
+                ) : (
+                  <EyeIcon className='size-3' />
+                )}
               </button>
             )}
 

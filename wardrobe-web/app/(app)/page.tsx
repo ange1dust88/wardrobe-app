@@ -40,7 +40,8 @@ export default function WardrobePage() {
   const [editingItem, setEditingItem] = useState<Item | null>(null)
   const [allowConflicts, setAllowConflicts] = useState(false)
 
-  const { itemsQuery, updateMutation, deleteMutation } = useItems()
+  const { itemsQuery, updateMutation, deleteMutation, excludeMutation } =
+    useItems()
   const matchMap = useMatchMap(colorType, allowConflicts)
 
   const items = useMemo(() => itemsQuery.data ?? [], [itemsQuery.data])
@@ -175,6 +176,12 @@ export default function WardrobePage() {
               onHover={setHoveredId}
               onSelect={builder.toggle}
               onEdit={setEditingItem}
+              onToggleExclude={item =>
+                excludeMutation.mutate({
+                  id: item.id,
+                  excluded: !item.excluded,
+                })
+              }
             />
           </div>
         ) : (
@@ -188,6 +195,12 @@ export default function WardrobePage() {
               onHover={setHoveredId}
               onSelect={builder.toggle}
               onEdit={setEditingItem}
+              onToggleExclude={item =>
+                excludeMutation.mutate({
+                  id: item.id,
+                  excluded: !item.excluded,
+                })
+              }
             />
           </div>
         )}

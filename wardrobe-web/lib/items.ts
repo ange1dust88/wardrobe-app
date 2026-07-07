@@ -296,6 +296,20 @@ export async function updateItem(
   return res.json()
 }
 
+export async function setItemExcluded(
+  id: string,
+  excluded: boolean
+): Promise<Item> {
+  const formData = new FormData()
+  formData.append('excluded', String(excluded))
+  const res = await apiFetch(`/items/${id}`, {
+    method: 'PATCH',
+    body: formData,
+  })
+  if (!res.ok) throw new Error(`PATCH /items/${id} → ${res.status}`)
+  return res.json()
+}
+
 export async function extractItemColor(
   image: File
 ): Promise<{ hex: string; accentHex?: string | null }> {
