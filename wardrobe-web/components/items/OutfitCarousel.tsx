@@ -93,6 +93,7 @@ export function OutfitCarousel({
                     key={item.id}
                     className='w-24 flex-none'
                     onMouseEnter={() => onHover(item.id)}
+                    onMouseLeave={() => onHover(null)}
                     style={{
                       opacity: lit ? 1 : 0.4,
                       filter: lit ? 'none' : 'grayscale(1)',
