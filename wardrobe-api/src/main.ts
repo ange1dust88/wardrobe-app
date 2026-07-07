@@ -7,7 +7,13 @@ import { validateEnv } from './config/validate-env';
 async function bootstrap() {
   validateEnv();
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  const webOrigins = process.env.WEB_ORIGIN?.split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  app.enableCors({
+    origin: webOrigins && webOrigins.length ? webOrigins : true,
+    credentials: true,
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

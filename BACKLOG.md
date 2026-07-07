@@ -2,13 +2,12 @@
 
 Цель — выкатить бету. Ниже только то, что **не готово**, по фазам (приоритет сверху вниз). Что уже сделано — в конце, в «Готово».
 
-## Фаза 0 — Блокеры запуска (хостинг / хардненинг)
-Маленькая, но без неё деплоя нет.
-- [ ] `GET /health` в API (для аптайм-чеков хостинга).
-- [ ] CORS: закрыть `enableCors()` на конкретный origin (env `WEB_ORIGIN`), сейчас открыт всем.
-- [ ] `.env.example` для `wardrobe-api` и `wardrobe-web` (все нужные переменные без секретов).
-- [ ] Error boundary на фронте — падение не должно давать белый экран (+ фолбэк-экран «что-то пошло не так»).
-- [ ] Деплой: API (Render/Railway/Fly) + web (Vercel), prod `NEXT_PUBLIC_API_URL`, README с шагами.
+## Фаза 0 — Блокеры запуска (хостинг / хардненинг) — DONE
+- [x] `GET /health` в API (публичный, `{status,uptime}`).
+- [x] CORS по env `WEB_ORIGIN` (список origin через запятую; пусто → allow-all для дева).
+- [x] `.env.example` для `wardrobe-api` и `wardrobe-web`.
+- [x] Error boundary на фронте (`app/error.tsx` + `app/global-error.tsx`).
+- [x] `DEPLOY.md` — шаги деплоя (Supabase, API на Render/Railway, web на Vercel). Сам деплой — вручную по инструкции.
 
 ## Фаза 1 — Must-have для беты (in-app)
 - [ ] **Фидбек / баг-репорт** — кнопка «Сообщить» + модалка; слать в БД (таблица `Feedback`) или на вебхук/почту. Бетам надо как-то писать.
