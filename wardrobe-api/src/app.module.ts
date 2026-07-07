@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
+import { FeedbackModule } from './feedback/feedback.module';
 import { FoldersModule } from './folders/folders.module';
 import { HealthModule } from './health/health.module';
 import { ItemsModule } from './items/items.module';
@@ -20,6 +21,7 @@ import { StorageModule } from './storage/storage.module';
     ItemsModule,
     OutfitsModule,
     FoldersModule,
+    FeedbackModule,
     MatchingModule,
     ProfileModule,
   ],

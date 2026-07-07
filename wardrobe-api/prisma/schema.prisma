@@ -144,6 +144,15 @@ model Folder {
   @@index([userId])
 }
 
+model Feedback {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  userId    String?
+  email     String?
+  message   String
+  page      String?
+}
+
 enum Who {
   men
   women

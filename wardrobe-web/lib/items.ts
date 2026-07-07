@@ -446,3 +446,21 @@ export async function deleteFolder(id: string): Promise<void> {
   const res = await apiFetch(`/folders/${id}`, { method: 'DELETE' })
   if (!res.ok) throw new Error(`DELETE /folders/${id} → ${res.status}`)
 }
+
+export async function sendFeedback(
+  message: string,
+  page?: string
+): Promise<void> {
+  const res = await apiFetch('/feedback', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, page }),
+  })
+  if (!res.ok) {
+    const data = await res.json().catch(() => null)
+    const msg = Array.isArray(data?.message)
+      ? data.message.join(', ')
+      : (data?.message ?? `POST /feedback → ${res.status}`)
+    throw new Error(msg)
+  }
+}

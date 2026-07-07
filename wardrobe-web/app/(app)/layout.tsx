@@ -6,6 +6,7 @@ import { LoginScreen } from '@/components/auth/LoginScreen'
 import { Onboarding } from '@/components/onboarding/Onboarding'
 import { AppHeader } from '@/components/AppHeader'
 import { AppProvider } from '@/components/AppContext'
+import { FeedbackModal } from '@/components/FeedbackModal'
 import { AddItemModal } from '@/components/items/AddItemModal'
 import { ProfileModal } from '@/components/profile/ProfileModal'
 import { Spinner } from '@/components/ui/spinner'
@@ -61,6 +62,7 @@ function FrameChrome({
   const { user } = useAuth()
   const [addOpen, setAddOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [editingOutfit, setEditingOutfit] = useState<Outfit | null>(null)
   const [wardrobeView, setWardrobeView] = useState<WardrobeView>('circular')
   const [showBreakdown, setShowBreakdownState] = useState(() => {
@@ -124,6 +126,7 @@ function FrameChrome({
           view={wardrobeView}
           onView={setWardrobeView}
           onAddItem={() => setAddOpen(true)}
+          onFeedback={() => setFeedbackOpen(true)}
           onProfile={() => setProfileOpen(true)}
         />
 
@@ -149,6 +152,10 @@ function FrameChrome({
             itemCount={itemCount}
             outfitCount={savedCount}
           />
+        )}
+
+        {feedbackOpen && (
+          <FeedbackModal onClose={() => setFeedbackOpen(false)} />
         )}
       </div>
     </AppProvider>

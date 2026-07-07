@@ -1,6 +1,6 @@
 'use client'
 
-import { LayoutList, PlusIcon, Target } from 'lucide-react'
+import { LayoutList, MessageCircle, PlusIcon, Target } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { WardrobeView } from '@/components/AppContext'
@@ -16,6 +16,7 @@ type Props = {
   view: WardrobeView
   onView: (view: WardrobeView) => void
   onAddItem: () => void
+  onFeedback: () => void
   onProfile: () => void
 }
 
@@ -43,6 +44,7 @@ export function AppHeader({
   view,
   onView,
   onAddItem,
+  onFeedback,
   onProfile,
 }: Props) {
   const pathname = usePathname()
@@ -115,6 +117,14 @@ export function AppHeader({
         >
           <PlusIcon className='size-4' />
           Add item
+        </button>
+        <button
+          type='button'
+          onClick={onFeedback}
+          aria-label='Send feedback'
+          className='hidden size-[38px] items-center justify-center rounded-full border border-border bg-muted/60 text-muted-foreground transition-colors hover:text-foreground sm:flex'
+        >
+          <MessageCircle className='size-[18px]' />
         </button>
         <button
           type='button'
