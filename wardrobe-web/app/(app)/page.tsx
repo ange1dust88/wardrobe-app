@@ -182,8 +182,12 @@ export default function WardrobePage() {
             <OutfitCarousel
               items={items}
               selectedIds={builder.selectedIds}
-              map={map}
+              activeId={hoveredId}
+              matchedIds={matchedIds}
+              scoreById={scoreById}
+              onHover={setHoveredId}
               onSelect={builder.toggle}
+              onEdit={setEditingItem}
             />
           </div>
         )}

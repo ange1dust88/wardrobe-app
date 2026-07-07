@@ -1,23 +1,37 @@
 'use client'
 
+import { PencilIcon } from 'lucide-react'
 import {
   CATEGORIES,
   CATEGORY_LABELS,
   getItemImageSrc,
   type Item,
-  type MatchMap,
 } from '@/lib/items'
+import { getMatchScoreTone } from '@/lib/match-score'
 import { BRAND_ACCENT } from '@/lib/theme'
 import { ScoreBadge } from './ScoreBadge'
 
 type Props = {
   items: Item[]
   selectedIds: string[]
-  map: MatchMap
+  activeId: string | null
+  matchedIds: Set<string>
+  scoreById: Record<string, number>
+  onHover: (id: string | null) => void
   onSelect: (item: Item) => void
+  onEdit: (item: Item) => void
 }
 
-export function OutfitCarousel({ items, selectedIds, map, onSelect }: Props) {
+export function OutfitCarousel({
+  items,
+  selectedIds,
+  activeId,
+  matchedIds,
+  scoreById,
+  onHover,
+  onSelect,
+  onEdit,
+}: Props) {
   const byId = new Map(items.map(i => [i.id, i]))
   const selectedSet = new Set(selectedIds)
   const selByCat = new Map<string, string>()
@@ -28,30 +42,20 @@ export function OutfitCarousel({ items, selectedIds, map, onSelect }: Props) {
 
   const building = selectedIds.length > 0
 
-  function fit(item: Item): number {
-    let sum = 0
-    let n = 0
-    for (const id of selectedIds) {
-      const sel = byId.get(id)
-      if (!sel || sel.category === item.category) continue
-      const s = (map[item.id]?.[id] ?? map[id]?.[item.id])?.score ?? 0
-      sum += s
-      n += 1
-    }
-    return n ? Math.round(sum / n) : 0
-  }
-
-  const lanes = CATEGORIES.filter(cat => items.some(i => i.category === cat)).map(
-    cat => ({
-      cat,
-      label: CATEGORY_LABELS[cat],
-      items: items.filter(i => i.category === cat),
-      selName: byId.get(selByCat.get(cat) ?? '')?.name ?? '',
-    })
-  )
+  const lanes = CATEGORIES.filter(cat =>
+    items.some(i => i.category === cat)
+  ).map(cat => ({
+    cat,
+    label: CATEGORY_LABELS[cat],
+    items: items.filter(i => i.category === cat),
+    selName: byId.get(selByCat.get(cat) ?? '')?.name ?? '',
+  }))
 
   return (
-    <div className='rounded-[20px] border border-border bg-card pb-2 shadow-sm'>
+    <div
+      className='rounded-[20px] border border-border bg-card pb-2 shadow-sm'
+      onMouseLeave={() => onHover(null)}
+    >
       <style>{`.ds-lane::-webkit-scrollbar{height:0}`}</style>
 
       <div className='flex flex-col'>
@@ -66,61 +70,96 @@ export function OutfitCarousel({ items, selectedIds, map, onSelect }: Props) {
             <div className='ds-lane flex gap-4 overflow-x-auto px-6 pt-3 pb-2'>
               {lane.items.map(item => {
                 const selected = selectedSet.has(item.id)
+                const isMatch = matchedIds.has(item.id)
+                const isHover = item.id === activeId
+                const score = scoreById[item.id]
+                const lit = building
+                  ? selected || isMatch
+                  : !activeId || isHover || isMatch
                 const img = getItemImageSrc(item)
-                const f = fit(item)
-                const inactive = building && !selected && f === 0
-                const showChip = !selected && building && f > 0
+                const tone =
+                  isMatch && score != null ? getMatchScoreTone(score) : null
+
+                const boxShadow = selected
+                  ? `0 0 0 2px var(--card), 0 0 0 4px ${BRAND_ACCENT}, 0 8px 20px rgba(0,0,0,.16)`
+                  : isHover
+                    ? `0 0 0 2px var(--card), 0 0 0 3px var(--foreground), 0 6px 16px rgba(0,0,0,.15)`
+                    : tone
+                      ? `0 0 0 2px var(--card), 0 0 0 3px ${tone.solidColor}, 0 4px 12px rgba(0,0,0,.12)`
+                      : '0 1px 3px rgba(0,0,0,.08)'
+
                 return (
                   <div
                     key={item.id}
                     className='w-24 flex-none'
+                    onMouseEnter={() => onHover(item.id)}
                     style={{
-                      opacity: inactive ? 0.4 : 1,
-                      filter: inactive ? 'grayscale(1)' : 'none',
+                      opacity: lit ? 1 : 0.4,
+                      filter: lit ? 'none' : 'grayscale(1)',
+                      transition: 'opacity .25s ease, filter .25s ease',
                     }}
                   >
-                    <button
-                      type='button'
-                      onClick={() => onSelect(item)}
-                      aria-label={item.name}
-                      className='relative block size-24 overflow-hidden rounded-[14px] p-0'
-                      style={{
-                        background: item.color.hex,
-                        border: '1px solid var(--border)',
-                        cursor: 'pointer',
-                        transform: selected ? 'translateY(-2px)' : 'none',
-                        boxShadow: selected
-                          ? `0 0 0 2px var(--card), 0 0 0 4px ${BRAND_ACCENT}, 0 8px 20px rgba(0,0,0,.16)`
-                          : '0 1px 3px rgba(0,0,0,.08)',
-                        transition: 'box-shadow .2s ease, transform .2s ease',
-                      }}
-                    >
-                      {img && (
-                        <img
-                          src={img}
-                          alt=''
-                          className='absolute inset-0 h-full w-full object-cover'
-                        />
-                      )}
-                      {selected && (
-                        <span
-                          className='absolute top-1.5 right-1.5 flex size-6 items-center justify-center rounded-full text-[13px] text-white shadow'
-                          style={{ background: BRAND_ACCENT }}
+                    <div className='relative'>
+                      <button
+                        type='button'
+                        onClick={() => onSelect(item)}
+                        aria-label={item.name}
+                        className='relative block size-24 overflow-hidden rounded-[14px] p-0'
+                        style={{
+                          background: item.color.hex,
+                          border: '1px solid var(--border)',
+                          cursor: 'pointer',
+                          transform:
+                            selected || isHover ? 'translateY(-2px)' : 'none',
+                          boxShadow,
+                          transition: 'box-shadow .2s ease, transform .2s ease',
+                        }}
+                      >
+                        {img && (
+                          <img
+                            src={img}
+                            alt=''
+                            className='absolute inset-0 h-full w-full object-cover'
+                          />
+                        )}
+                        {selected && (
+                          <span
+                            className='absolute top-1.5 right-1.5 flex size-6 items-center justify-center rounded-full text-[13px] text-white shadow'
+                            style={{ background: BRAND_ACCENT }}
+                          >
+                            ✓
+                          </span>
+                        )}
+                        {isMatch && !selected && score != null && (
+                          <ScoreBadge
+                            score={score}
+                            variant='chip'
+                            className='absolute bottom-1.5 left-1.5'
+                          />
+                        )}
+                      </button>
+
+                      {isHover && (
+                        <button
+                          type='button'
+                          onClick={e => {
+                            e.stopPropagation()
+                            onEdit(item)
+                          }}
+                          aria-label={`Edit ${item.name}`}
+                          className='absolute -top-1 -left-1 z-10 flex size-6 items-center justify-center rounded-full border border-border bg-background text-foreground shadow-sm'
                         >
-                          ✓
-                        </span>
+                          <PencilIcon className='size-3' />
+                        </button>
                       )}
-                      {showChip && (
-                        <ScoreBadge
-                          score={f}
-                          variant='chip'
-                          className='absolute bottom-1.5 left-1.5'
-                        />
-                      )}
-                    </button>
+                    </div>
                     <div
                       className='mt-2 text-center text-xs leading-tight font-medium'
-                      style={{ color: selected ? 'var(--foreground)' : 'var(--muted-foreground)' }}
+                      style={{
+                        color: selected
+                          ? 'var(--foreground)'
+                          : 'var(--muted-foreground)',
+                      }}
                     >
                       {item.name}
                     </div>
