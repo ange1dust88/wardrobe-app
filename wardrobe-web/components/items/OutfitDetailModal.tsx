@@ -11,7 +11,7 @@ import {
   XIcon,
 } from 'lucide-react'
 import { useState } from 'react'
-import { getItemImageSrc, type Folder, type Item } from '@/lib/items'
+import { CATEGORIES, getItemImageSrc, type Folder, type Item } from '@/lib/items'
 import { timeAgo } from '@/lib/date'
 import { getMatchScoreTone } from '@/lib/match-score'
 import { cn } from '@/lib/utils'
@@ -74,6 +74,20 @@ function seasonLabel(items: Item[]): string | null {
   return labels.join('–')
 }
 
+function byCategory(a: Item, b: Item): number {
+  return CATEGORIES.indexOf(a.category) - CATEGORIES.indexOf(b.category)
+}
+
+function groupByCategory(items: Item[]): Item[][] {
+  const byCat = new Map<string, Item[]>()
+  for (const it of items) {
+    const arr = byCat.get(it.category) ?? []
+    arr.push(it)
+    byCat.set(it.category, arr)
+  }
+  return CATEGORIES.filter(c => byCat.has(c)).map(c => byCat.get(c) as Item[])
+}
+
 function ScoreRing({ value, color }: { value: number; color: string }) {
   const r = 26
   const circ = 2 * Math.PI * r
@@ -115,6 +129,8 @@ export function OutfitDetailModal({
 }: Props) {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const tier = getMatchScoreTone(look.harmony)
+  const sorted = [...look.items].sort(byCategory)
+  const groups = groupByCategory(look.items)
 
   const chips: { icon: typeof Contrast; label: string }[] = [
     { icon: Contrast, label: paletteLabel(look.items) },
@@ -144,27 +160,31 @@ export function OutfitDetailModal({
               The look
             </div>
             <div className='flex min-h-0 flex-1 flex-col gap-3'>
-              {look.items.map(item => {
-                const img = getItemImageSrc(item)
-                return (
-                  <div
-                    key={item.id}
-                    className={cn(
-                      'relative min-h-[72px] flex-1 overflow-hidden rounded-[18px] border border-border shadow-sm',
-                      img && 'bg-background'
-                    )}
-                    style={img ? undefined : { background: item.color.hex }}
-                  >
-                    {img && (
-                      <img
-                        src={img}
-                        alt=''
-                        className='absolute inset-0 h-full w-full object-contain p-2'
-                      />
-                    )}
-                  </div>
-                )
-              })}
+              {groups.map((group, gi) => (
+                <div key={gi} className='flex min-h-[72px] flex-1 gap-3'>
+                  {group.map(item => {
+                    const img = getItemImageSrc(item)
+                    return (
+                      <div
+                        key={item.id}
+                        className={cn(
+                          'relative flex-1 overflow-hidden rounded-[18px] border border-border shadow-sm',
+                          img && 'bg-background'
+                        )}
+                        style={img ? undefined : { background: item.color.hex }}
+                      >
+                        {img && (
+                          <img
+                            src={img}
+                            alt=''
+                            className='absolute inset-0 h-full w-full object-contain p-2'
+                          />
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              ))}
               {look.items.length === 0 && (
                 <div className='flex flex-1 items-center justify-center rounded-[18px] border border-dashed border-border text-[13px] text-muted-foreground'>
                   No pieces left
@@ -240,7 +260,7 @@ export function OutfitDetailModal({
                 {look.items.length} piece{look.items.length === 1 ? '' : 's'}
               </div>
               <div className='mt-1'>
-                {look.items.map((item, idx) => {
+                {sorted.map((item, idx) => {
                   const img = getItemImageSrc(item)
                   return (
                     <div
