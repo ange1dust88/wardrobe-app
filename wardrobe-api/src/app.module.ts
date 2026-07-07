@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AccountModule } from './account/account.module';
 import { AuthModule } from './auth/auth.module';
 import { FeedbackModule } from './feedback/feedback.module';
 import { FoldersModule } from './folders/folders.module';
@@ -22,6 +23,7 @@ import { StorageModule } from './storage/storage.module';
     OutfitsModule,
     FoldersModule,
     FeedbackModule,
+    AccountModule,
     MatchingModule,
     ProfileModule,
   ],

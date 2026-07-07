@@ -22,6 +22,8 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
+import { deleteAccount, exportAccount } from '@/lib/items'
+import { notifyError, notifySuccess } from '@/lib/toast'
 import { cn } from '@/lib/utils'
 
 type Props = {
@@ -66,6 +68,9 @@ export function ProfileModal({ onClose, itemCount, outfitCount }: Props) {
     profile?.climate ?? null
   )
   const [palettes, setPalettes] = useState<PaletteId[]>(profile?.palettes ?? [])
+  const [exporting, setExporting] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   function togglePalette(value: PaletteId) {
     setPalettes(prev => {
@@ -83,6 +88,43 @@ export function ProfileModal({ onClose, itemCount, outfitCount }: Props) {
         onSuccess: onClose,
       }
     )
+  }
+
+  async function handleExport() {
+    setExporting(true)
+    try {
+      const data = await exportAccount()
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: 'application/json',
+      })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'dress-export.json'
+      a.click()
+      URL.revokeObjectURL(url)
+      notifySuccess('Your data downloaded')
+    } catch (e) {
+      notifyError('Export failed', (e as Error).message)
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  async function handleDelete() {
+    if (!confirmDelete) {
+      setConfirmDelete(true)
+      return
+    }
+    setDeleting(true)
+    try {
+      await deleteAccount()
+      await signOut()
+    } catch (e) {
+      notifyError('Delete failed', (e as Error).message)
+      setDeleting(false)
+      setConfirmDelete(false)
+    }
   }
 
   return (
@@ -183,6 +225,33 @@ export function ProfileModal({ onClose, itemCount, outfitCount }: Props) {
                 </span>
               </div>
               <Switch checked={showBreakdown} onCheckedChange={setShowBreakdown} />
+            </div>
+
+            <div className='border-t border-border pt-4'>
+              <div className='mb-2.5 text-[11px] font-semibold tracking-widest text-muted-foreground uppercase'>
+                Account
+              </div>
+              <div className='flex flex-wrap items-center gap-2.5'>
+                <Button
+                  variant='outline'
+                  onClick={handleExport}
+                  loading={exporting}
+                >
+                  Export my data
+                </Button>
+                <Button
+                  variant='outline'
+                  onClick={handleDelete}
+                  onBlur={() => setConfirmDelete(false)}
+                  loading={deleting}
+                  className={cn(
+                    'border-destructive/30 text-destructive hover:bg-destructive/5',
+                    confirmDelete && 'bg-destructive/10'
+                  )}
+                >
+                  {confirmDelete ? 'Delete for good?' : 'Delete account'}
+                </Button>
+              </div>
             </div>
 
             <div className='flex items-center justify-between gap-2 pt-2'>
