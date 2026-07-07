@@ -27,6 +27,7 @@ import {
   deriveItemData,
 } from './item-derivation';
 import { StorageService, UploadedImage } from '../storage/storage.service';
+import { optimizeForStorage } from './image-optimize';
 import { MatchMapCacheService } from '../matching/match-map-cache.service';
 
 export type UploadedItemImage = UploadedImage;
@@ -80,7 +81,9 @@ export class ItemsService {
     let accentHex = dto.accentHex ?? null;
     let imageUrl: string | null = null;
     if (image) {
-      imageUrl = await this.storage.uploadImage(image);
+      imageUrl = await this.storage.uploadImage(
+        await optimizeForStorage(image),
+      );
       if (!hex) {
         const palette = await extractPalette(image.buffer);
         hex = palette.hex;
@@ -148,7 +151,9 @@ export class ItemsService {
 
     let newImageUrl: string | null = null;
     if (image) {
-      newImageUrl = await this.storage.uploadImage(image);
+      newImageUrl = await this.storage.uploadImage(
+        await optimizeForStorage(image),
+      );
       data.imageUrl = newImageUrl;
     }
 
