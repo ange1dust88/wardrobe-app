@@ -66,7 +66,7 @@ export function OutfitBar({
   const missingSlots = missingCoreSlots(items)
 
   return (
-    <div className='pointer-events-none fixed right-4 bottom-4 z-30 flex max-w-[calc(100%-2rem)] flex-col items-end gap-2'>
+    <div className='pointer-events-none fixed right-4 bottom-4 left-4 z-30 flex flex-col items-end gap-2 sm:left-auto sm:max-w-[calc(100%-2rem)]'>
       {items.length === 0 ? (
         <div className='pointer-events-auto flex items-center gap-3.5 rounded-[22px] border border-border bg-card px-5 py-4 shadow-[0_16px_44px_-10px_rgba(37,37,35,0.3)]'>
           <div className='flex size-11 flex-none items-center justify-center rounded-[13px] bg-muted'>
@@ -84,7 +84,7 @@ export function OutfitBar({
       ) : (
         <>
           {conflicts.length > 0 && !allowConflicts && (
-            <div className='pointer-events-auto flex w-[min(1080px,100%)] flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl border border-warning/40 bg-warning/10 px-4 py-2.5 text-[12.5px] shadow-lg backdrop-blur'>
+            <div className='pointer-events-auto flex w-full flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl border border-warning/40 bg-warning/10 px-4 py-2.5 text-[12.5px] shadow-lg backdrop-blur sm:w-[min(1080px,calc(100vw-2rem))]'>
               <span className='font-semibold tracking-wide text-warning uppercase'>
                 Doesn&apos;t go together
               </span>
@@ -113,7 +113,7 @@ export function OutfitBar({
             </div>
           )}
 
-          <div className='pointer-events-auto flex w-[min(1080px,100%)] items-center gap-4 rounded-[22px] border border-border bg-card px-5 py-3.5 shadow-[0_16px_44px_-10px_rgba(37,37,35,0.3)]'>
+          <div className='pointer-events-auto flex w-full flex-wrap items-center gap-x-4 gap-y-2 rounded-[22px] border border-border bg-card px-5 py-3.5 shadow-[0_16px_44px_-10px_rgba(37,37,35,0.3)] sm:w-[min(1080px,calc(100vw-2rem))] sm:flex-nowrap'>
             <div className='flex flex-none flex-col leading-none'>
               {harmony != null && tier ? (
                 <>
@@ -152,7 +152,7 @@ export function OutfitBar({
               </button>
             </div>
 
-            <div className='h-12 w-px flex-none bg-border' />
+            <div className='hidden h-12 w-px flex-none bg-border sm:block' />
 
             <div className='flex min-w-0 flex-1 items-start gap-3 overflow-x-auto px-2 pt-3 pb-1'>
               {[...items].sort(byCategory).map(item => {
@@ -205,13 +205,13 @@ export function OutfitBar({
               ))}
             </div>
 
-            <div className='flex flex-none items-center gap-2.5'>
-              <div className='flex flex-col items-end'>
+            <div className='flex w-full flex-none items-center justify-end gap-2.5 sm:w-auto'>
+              <div className='flex flex-1 flex-col items-end sm:flex-none'>
                 <input
                   value={name}
                   onChange={e => onNameChange(e.target.value)}
                   placeholder='Name this look'
-                  className='w-[150px] rounded-[11px] border border-border bg-background px-3 py-2.5 text-[13.5px] outline-none'
+                  className='w-full rounded-[11px] border border-border bg-background px-3 py-2.5 text-[13.5px] outline-none sm:w-[150px]'
                 />
                 {errorMessage && (
                   <span className='mt-1 max-w-[150px] text-right text-[11px] text-destructive'>

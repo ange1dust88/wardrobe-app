@@ -156,7 +156,7 @@ export function OutfitDetailModal({
         showCloseButton={false}
         className='max-h-[calc(100svh-3rem)] w-[min(880px,calc(100vw-2rem))] max-w-none gap-0 overflow-hidden rounded-[28px] p-0'
       >
-        <div className='flex max-h-[calc(100svh-3rem)] flex-col md:flex-row'>
+        <div className='flex max-h-[calc(100svh-3rem)] flex-col overflow-y-auto md:flex-row md:overflow-hidden'>
           <div className='flex flex-col gap-4 border-b border-border bg-muted p-6 md:w-[42%] md:border-r md:border-b-0'>
             <div className='text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase'>
               The look

@@ -113,10 +113,10 @@ export function AppHeader({
         <button
           type='button'
           onClick={onAddItem}
-          className='flex items-center gap-1.5 rounded-[11px] bg-foreground px-4 py-2.5 text-[13.5px] font-semibold text-background'
+          className='flex items-center gap-1.5 rounded-[11px] bg-foreground px-3 py-2.5 text-[13.5px] font-semibold text-background sm:px-4'
         >
           <PlusIcon className='size-4' />
-          Add item
+          <span className='hidden sm:inline'>Add item</span>
         </button>
         <button
           type='button'
