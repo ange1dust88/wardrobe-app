@@ -130,7 +130,9 @@ export function OutfitDetailModal({
   const [confirmDelete, setConfirmDelete] = useState(false)
   const tier = getMatchScoreTone(look.harmony)
   const sorted = [...look.items].sort(byCategory)
-  const groups = groupByCategory(look.items)
+  const garments = look.items.filter(i => i.category !== 'accessory')
+  const accessories = look.items.filter(i => i.category === 'accessory')
+  const groups = groupByCategory(garments)
 
   const chips: { icon: typeof Contrast; label: string }[] = [
     { icon: Contrast, label: paletteLabel(look.items) },
@@ -191,6 +193,34 @@ export function OutfitDetailModal({
                 </div>
               )}
             </div>
+
+            {accessories.length > 0 && (
+              <div className='flex flex-none flex-wrap gap-2'>
+                {accessories.map(item => {
+                  const img = getItemImageSrc(item)
+                  return (
+                    <span
+                      key={item.id}
+                      title={item.name}
+                      className={cn(
+                        'relative size-12 flex-none overflow-hidden rounded-[13px] border border-border shadow-sm',
+                        img && 'bg-background'
+                      )}
+                      style={img ? undefined : { background: item.color.hex }}
+                    >
+                      {img && (
+                        <img
+                          src={img}
+                          alt=''
+                          className='absolute inset-0 h-full w-full object-contain p-1.5'
+                        />
+                      )}
+                    </span>
+                  )
+                })}
+              </div>
+            )}
+
             <div className='flex items-center gap-4'>
               <div className='relative flex-none'>
                 <ScoreRing value={look.harmony} color={tier.solidColor} />
