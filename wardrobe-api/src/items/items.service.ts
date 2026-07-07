@@ -104,6 +104,7 @@ export class ItemsService {
         formality:
           dto.formality ?? deriveFormality(dto.category, dto.subType ?? null),
         fit: dto.fit ?? null,
+        excluded: dto.excluded ?? false,
         seasonWear: dto.seasonWear,
         imageUrl,
         hex: derived.color.hex,
@@ -135,6 +136,7 @@ export class ItemsService {
     if (dto.pattern !== undefined) data.pattern = dto.pattern;
     if (dto.formality !== undefined) data.formality = dto.formality ?? null;
     if (dto.fit !== undefined) data.fit = dto.fit ?? null;
+    if (dto.excluded !== undefined) data.excluded = dto.excluded;
     if (dto.accentHex !== undefined) data.accentHex = dto.accentHex || null;
     if (dto.seasonWear !== undefined) data.seasonWear = dto.seasonWear;
     if (dto.hex !== undefined) {
@@ -229,6 +231,7 @@ export class ItemsService {
         (row.formality as Formality | null) ??
         deriveFormality(row.category as Category, row.subType),
       fit: row.fit as Fit | null,
+      excluded: row.excluded,
       seasonPaletteCompatibility:
         row.seasonPaletteCompatibility as SeasonPalette[],
       seasonWear: row.seasonWear as SeasonWear[],

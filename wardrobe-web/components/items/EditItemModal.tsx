@@ -43,6 +43,7 @@ export function EditItemModal({
     pattern: item.pattern as Pattern,
     formality: (item.formality as Formality | null) ?? null,
     fit: (item.fit as Fit | null) ?? null,
+    excluded: item.excluded ?? false,
     seasonWear: item.seasonWear,
     image: null,
   })
@@ -58,6 +59,7 @@ export function EditItemModal({
       pattern,
       formality,
       fit,
+      excluded,
       seasonWear,
       image,
     } = form.values
@@ -72,6 +74,7 @@ export function EditItemModal({
         pattern,
         formality,
         fit,
+        excluded,
         seasonWear,
         image,
       },
@@ -97,6 +100,7 @@ export function EditItemModal({
       onDelete={handleDelete}
       deleting={deleting}
       initialImageUrl={getItemImageSrc(item)}
+      showExclude
     />
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { PencilIcon } from 'lucide-react'
+import { EyeOffIcon, PencilIcon } from 'lucide-react'
 import {
   CATEGORIES,
   CATEGORY_LABELS,
@@ -69,13 +69,16 @@ export function OutfitCarousel({
             </div>
             <div className='ds-lane flex gap-4 overflow-x-auto px-6 pt-3 pb-2'>
               {lane.items.map(item => {
+                const isExcluded = !!item.excluded
                 const selected = selectedSet.has(item.id)
                 const isMatch = matchedIds.has(item.id)
                 const isHover = item.id === activeId
                 const score = scoreById[item.id]
-                const lit = building
-                  ? selected || isMatch
-                  : !activeId || isHover || isMatch
+                const lit =
+                  !isExcluded &&
+                  (building
+                    ? selected || isMatch
+                    : !activeId || isHover || isMatch)
                 const img = getItemImageSrc(item)
                 const tone =
                   isMatch && score != null ? getMatchScoreTone(score) : null
@@ -103,13 +106,16 @@ export function OutfitCarousel({
                     <div className='relative'>
                       <button
                         type='button'
-                        onClick={() => onSelect(item)}
+                        onClick={() => {
+                          if (isExcluded) return
+                          onSelect(item)
+                        }}
                         aria-label={item.name}
                         className='relative block size-24 overflow-hidden rounded-[14px] p-0'
                         style={{
                           background: item.color.hex,
                           border: '1px solid var(--border)',
-                          cursor: 'pointer',
+                          cursor: isExcluded ? 'default' : 'pointer',
                           transform:
                             selected || isHover ? 'translateY(-2px)' : 'none',
                           boxShadow,
@@ -137,6 +143,14 @@ export function OutfitCarousel({
                             variant='chip'
                             className='absolute bottom-1.5 left-1.5'
                           />
+                        )}
+                        {isExcluded && (
+                          <span
+                            className='absolute top-1.5 right-1.5 flex size-6 items-center justify-center rounded-full bg-foreground/70 text-white shadow'
+                            title='Excluded from matching'
+                          >
+                            <EyeOffIcon className='size-3.5' />
+                          </span>
                         )}
                       </button>
 

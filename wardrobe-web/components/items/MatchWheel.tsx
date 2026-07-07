@@ -1,4 +1,4 @@
-import { PencilIcon } from 'lucide-react'
+import { EyeOffIcon, PencilIcon } from 'lucide-react'
 import { useState } from 'react'
 import { CATEGORIES, getItemImageSrc, type Item } from '../../lib/items'
 import { getMatchScoreTone, matchScoreToPercentage } from '../../lib/match-score'
@@ -163,11 +163,14 @@ export function MatchWheel({
         const p = pos(i)
         const flipUp = p.y > CY
         const alignRight = p.x > CX
+        const isExcluded = !!item.excluded
         const isSel = selectedIds.includes(item.id)
         const isMatch = matchedIds.has(item.id)
         const isHover = item.id === activeId
         const isSrc = building ? isSel : isHover
-        const lit = building ? isSel || isMatch : !active || isHover || isMatch
+        const lit =
+          !isExcluded &&
+          (building ? isSel || isMatch : !active || isHover || isMatch)
         const img = getItemImageSrc(item)
         const boxShadow = isSel
           ? `0 0 0 2px var(--background), 0 0 0 4px ${BRAND_ACCENT}, 0 8px 22px rgba(0,0,0,.18)`
@@ -199,6 +202,7 @@ export function MatchWheel({
             <button
               type='button'
               onClick={() => {
+                if (isExcluded) return
                 onSelect(item)
                 setOpenDetailId(null)
               }}
@@ -210,7 +214,7 @@ export function MatchWheel({
                 border: isLightHex(item.color.hex)
                   ? '1px solid var(--border)'
                   : '1px solid transparent',
-                cursor: 'pointer',
+                cursor: isExcluded ? 'default' : 'pointer',
                 transform: isSel
                   ? 'scale(1.15)'
                   : isMatch
@@ -233,6 +237,14 @@ export function MatchWheel({
                   style={{ background: BRAND_ACCENT }}
                 >
                   ✓
+                </span>
+              )}
+              {isExcluded && (
+                <span
+                  className='absolute top-1.5 right-1.5 flex size-6 items-center justify-center rounded-full bg-foreground/70 text-white shadow'
+                  title='Excluded from matching'
+                >
+                  <EyeOffIcon className='size-3.5' />
                 </span>
               )}
               {isMatch && scoreById[item.id] != null && (

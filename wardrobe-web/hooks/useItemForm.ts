@@ -12,6 +12,7 @@ const EMPTY_FORM: CreateItem = {
   hex: '#000000',
   accentHex: null,
   pattern: 'solid',
+  excluded: false,
   seasonWear: [],
   image: null,
 }

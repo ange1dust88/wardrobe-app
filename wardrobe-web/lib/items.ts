@@ -192,6 +192,7 @@ export type Item = {
   pattern: string
   formality?: string | null
   fit?: string | null
+  excluded?: boolean
   seasonPaletteCompatibility: string[]
   seasonWear: Season[]
 }
@@ -205,6 +206,7 @@ export type CreateItem = {
   pattern: Pattern
   formality?: Formality | null
   fit?: Fit | null
+  excluded?: boolean
   seasonWear: Season[]
   image?: File | null
 }
@@ -225,6 +227,8 @@ export async function createItem(body: CreateItem): Promise<Item> {
   formData.append('pattern', body.pattern)
   if (body.formality) formData.append('formality', body.formality)
   if (body.fit) formData.append('fit', body.fit)
+  if (body.excluded !== undefined)
+    formData.append('excluded', String(body.excluded))
   body.seasonWear.forEach(season => formData.append('seasonWear', season))
   if (body.image) {
     formData.append('image', body.image)
@@ -253,6 +257,7 @@ export type UpdateItem = {
   pattern: Pattern
   formality?: Formality | null
   fit?: Fit | null
+  excluded?: boolean
   seasonWear: Season[]
   image?: File | null
 }
@@ -270,6 +275,8 @@ export async function updateItem(
   formData.append('pattern', body.pattern)
   if (body.formality) formData.append('formality', body.formality)
   if (body.fit) formData.append('fit', body.fit)
+  if (body.excluded !== undefined)
+    formData.append('excluded', String(body.excluded))
   body.seasonWear.forEach(season => formData.append('seasonWear', season))
   if (body.image) {
     formData.append('image', body.image)

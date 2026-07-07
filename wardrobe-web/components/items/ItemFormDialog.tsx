@@ -26,6 +26,7 @@ type Props = {
   onDelete?: () => void
   deleting?: boolean
   initialImageUrl?: string | null
+  showExclude?: boolean
 }
 
 export function ItemFormDialog({
@@ -41,6 +42,7 @@ export function ItemFormDialog({
   onDelete,
   deleting,
   initialImageUrl,
+  showExclude,
 }: Props) {
   const valid = form.isValid
 
@@ -80,7 +82,11 @@ export function ItemFormDialog({
           className='flex min-h-0 flex-1 flex-col'
         >
           <div className='min-h-0 flex-1 overflow-y-auto px-6 pt-[18px] pb-2'>
-            <ItemForm form={form} initialImageUrl={initialImageUrl} />
+            <ItemForm
+              form={form}
+              initialImageUrl={initialImageUrl}
+              showExclude={showExclude}
+            />
             {errorMessage && (
               <Alert variant='error' className='mt-4'>
                 <AlertDescription>{errorMessage}</AlertDescription>
