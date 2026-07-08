@@ -18,6 +18,7 @@ type Props = {
   activeId: string | null
   matchedIds: Set<string>
   scoreById: Record<string, number>
+  excludedIds?: Set<string>
   onHover: (id: string | null) => void
   onSelect: (item: Item) => void
   onEdit: (item: Item) => void
@@ -30,6 +31,7 @@ export function OutfitCarousel({
   activeId,
   matchedIds,
   scoreById,
+  excludedIds = new Set(),
   onHover,
   onSelect,
   onEdit,
@@ -72,7 +74,7 @@ export function OutfitCarousel({
             </div>
             <div className='ds-lane flex gap-4 overflow-x-auto px-6 pt-3 pb-2'>
               {lane.items.map(item => {
-                const isExcluded = !!item.excluded
+                const isExcluded = excludedIds.has(item.id)
                 const selected = selectedSet.has(item.id)
                 const isMatch = matchedIds.has(item.id)
                 const isHover = item.id === activeId

@@ -22,6 +22,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { STACK_POLICY, type Item, type ScoreBreakdown } from '@/lib/items'
 import { harmonyOf } from '@/lib/harmony'
 import { notifySuccess } from '@/lib/toast'
+import { useExcluded } from '@/hooks/useExcluded'
 import { useItems } from '@/hooks/useItems'
 import { useMatchMap } from '@/hooks/useMatchMap'
 
@@ -40,15 +41,18 @@ export default function WardrobePage() {
   const [editingItem, setEditingItem] = useState<Item | null>(null)
   const [allowConflicts, setAllowConflicts] = useState(false)
 
-  const { itemsQuery, updateMutation, deleteMutation, excludeMutation } =
-    useItems()
+  const { itemsQuery, updateMutation, deleteMutation } = useItems()
+  const { excludedIds, toggle: toggleExcluded } = useExcluded()
   const matchMap = useMatchMap(colorType, allowConflicts)
 
   const items = useMemo(() => itemsQuery.data ?? [], [itemsQuery.data])
   const map = matchMap.data ?? {}
 
   const building = builder.selectedIds.length > 0
-  const hoverCells = !building && hoveredId ? (map[hoveredId] ?? {}) : {}
+  const hoverCells =
+    !building && hoveredId && !excludedIds.has(hoveredId)
+      ? (map[hoveredId] ?? {})
+      : {}
   const itemById = new Map(items.map(i => [i.id, i]))
   const hoveredItem = hoveredId ? itemById.get(hoveredId) : undefined
 
@@ -62,6 +66,7 @@ export default function WardrobePage() {
     )
     for (const item of items) {
       if (sel.includes(item.id)) continue
+      if (excludedIds.has(item.id)) continue
       if (
         STACK_POLICY[item.category] !== 'unlimited' &&
         filledCategories.has(item.category)
@@ -110,6 +115,7 @@ export default function WardrobePage() {
     }
   } else {
     for (const [id, cell] of Object.entries(hoverCells)) {
+      if (excludedIds.has(id)) continue
       const cand = itemById.get(id)
       if (
         hoveredItem &&
@@ -176,12 +182,8 @@ export default function WardrobePage() {
               onHover={setHoveredId}
               onSelect={builder.toggle}
               onEdit={setEditingItem}
-              onToggleExclude={item =>
-                excludeMutation.mutate({
-                  id: item.id,
-                  excluded: !item.excluded,
-                })
-              }
+              excludedIds={excludedIds}
+              onToggleExclude={item => toggleExcluded(item.id)}
             />
           </div>
         ) : (
@@ -195,12 +197,8 @@ export default function WardrobePage() {
               onHover={setHoveredId}
               onSelect={builder.toggle}
               onEdit={setEditingItem}
-              onToggleExclude={item =>
-                excludeMutation.mutate({
-                  id: item.id,
-                  excluded: !item.excluded,
-                })
-              }
+              excludedIds={excludedIds}
+              onToggleExclude={item => toggleExcluded(item.id)}
             />
           </div>
         )}

@@ -3,7 +3,6 @@ import {
   createItem,
   deleteItem,
   fetchItems,
-  setItemExcluded,
   updateItem,
   type CreateItem,
   type Item,
@@ -45,20 +44,5 @@ export function useItems() {
     onSuccess: invalidate,
   })
 
-  const excludeMutation = useMutation<
-    Item,
-    Error,
-    { id: string; excluded: boolean }
-  >({
-    mutationFn: ({ id, excluded }) => setItemExcluded(id, excluded),
-    onSuccess: invalidate,
-  })
-
-  return {
-    itemsQuery,
-    createMutation,
-    updateMutation,
-    deleteMutation,
-    excludeMutation,
-  }
+  return { itemsQuery, createMutation, updateMutation, deleteMutation }
 }

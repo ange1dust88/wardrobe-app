@@ -15,6 +15,7 @@ type Props = {
   matchedIds?: Set<string>
   scoreById?: Record<string, number>
   breakdownById?: Record<string, ScoreBreakdown>
+  excludedIds?: Set<string>
   onHover: (id: string | null) => void
   onSelect: (item: Item) => void
   onEdit: (item: Item) => void
@@ -42,6 +43,7 @@ export function MatchWheel({
   matchedIds = new Set(),
   scoreById = {},
   breakdownById = {},
+  excludedIds = new Set(),
   onHover,
   onSelect,
   onEdit,
@@ -165,7 +167,7 @@ export function MatchWheel({
         const p = pos(i)
         const flipUp = p.y > CY
         const alignRight = p.x > CX
-        const isExcluded = !!item.excluded
+        const isExcluded = excludedIds.has(item.id)
         const isSel = selectedIds.includes(item.id)
         const isMatch = matchedIds.has(item.id)
         const isHover = item.id === activeId

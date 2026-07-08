@@ -31,9 +31,7 @@ export class MatchingService {
       return cached;
     }
 
-    const items = (await this.itemsService.findAll(userId)).filter(
-      (item) => !item.excluded,
-    );
+    const items = await this.itemsService.findAll(userId);
     const map: MatchMap = {};
     for (const anchor of items) {
       const ctx = { userColorType };

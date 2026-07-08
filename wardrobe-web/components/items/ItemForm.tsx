@@ -23,7 +23,6 @@ import {
 import type { ItemFormApi } from '@/hooks/useItemForm'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
-import { Switch } from '@/components/ui/switch'
 
 const ANY_SUBTYPE = '__any'
 
@@ -117,11 +116,9 @@ function Swatch({ color, label }: { color: string; label: string }) {
 export function ItemForm({
   form,
   initialImageUrl,
-  showExclude,
 }: {
   form: ItemFormApi
   initialImageUrl?: string | null
-  showExclude?: boolean
 }) {
   const { values, patch, toggle } = form
   const [extractingColor, setExtractingColor] = useState(false)
@@ -395,23 +392,6 @@ export function ItemForm({
           )
         })}
       </div>
-
-      {showExclude && (
-        <div className='flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/40 px-4 py-3'>
-          <div className='flex min-w-0 flex-col'>
-            <span className='text-[13.5px] font-semibold'>
-              Exclude from matching
-            </span>
-            <span className='text-[12px] text-muted-foreground'>
-              Keep it in your wardrobe but leave it out of suggestions.
-            </span>
-          </div>
-          <Switch
-            checked={!!values.excluded}
-            onCheckedChange={v => patch({ excluded: v })}
-          />
-        </div>
-      )}
     </div>
   )
 }

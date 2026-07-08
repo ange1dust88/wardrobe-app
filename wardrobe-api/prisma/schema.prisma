@@ -114,7 +114,6 @@ model Item {
   pattern                    Pattern
   formality                  Formality?
   fit                        Fit?
-  excluded                   Boolean         @default(false)
   vibe                       Vibe[]
   seasonPaletteCompatibility SeasonPalette[]
   seasonWear                 SeasonWear[]

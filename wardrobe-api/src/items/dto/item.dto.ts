@@ -3,19 +3,12 @@ import { Transform } from 'class-transformer';
 import {
   ArrayNotEmpty,
   IsArray,
-  IsBoolean,
   IsEnum,
   IsHexColor,
   IsNotEmpty,
   IsOptional,
   IsString,
 } from 'class-validator';
-
-function toBool({ value }: { value: unknown }): unknown {
-  if (value === 'true' || value === true) return true;
-  if (value === 'false' || value === false) return false;
-  return value;
-}
 
 function toArray({ value }: { value: unknown }): unknown[] {
   if (Array.isArray(value)) {
@@ -129,11 +122,6 @@ export class CreateItemDto {
   @IsEnum(Fit)
   fit?: Fit;
 
-  @IsOptional()
-  @Transform(toBool)
-  @IsBoolean()
-  excluded?: boolean;
-
   @Transform(toArray)
   @IsArray()
   @ArrayNotEmpty()
@@ -165,7 +153,6 @@ export interface Item {
   pattern: Pattern;
   formality: Formality | null;
   fit: Fit | null;
-  excluded: boolean;
   seasonPaletteCompatibility: SeasonPalette[];
   seasonWear: SeasonWear[];
 }
