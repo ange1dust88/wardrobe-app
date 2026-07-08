@@ -26,6 +26,7 @@ Schema changes here have been additive; `db push` is safe. Avoid `--accept-data-
 - **Start:** `npm run start:prod` (runs `node dist/main`)
 - **Env** (see `.env.example`): `DATABASE_URL`, `DIRECT_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_BUCKET`, `PORT` (platform-provided), `WEB_ORIGIN` (the deployed web URL, e.g. `https://your-app.vercel.app`).
 - **Health check:** `GET /health` → `{ "status": "ok" }`.
+- **Region (important for speed):** deploy the API in the **same region as the Supabase DB** (this project's DB is `aws-0-eu-west-1`). Every page load makes several DB queries; a cross-region API pays ~200ms round-trip *per query*, co-located pays ~1–5ms. Keep using the pooled connection string (`:6543`, `?pgbouncer=true`) for `DATABASE_URL`. (Local dev is slow for exactly this reason — your machine → the remote DB.)
 
 ## 4. Web — `wardrobe-web` (Vercel)
 - **Root dir:** `wardrobe-web`

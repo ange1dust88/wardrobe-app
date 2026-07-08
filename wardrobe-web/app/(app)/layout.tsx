@@ -40,6 +40,9 @@ export default function AppLayout({
 function AuthedFrame({ children }: { children: React.ReactNode }) {
   const { profileQuery, saveMutation } = useProfile()
 
+  useItems()
+  useOutfits()
+
   if (profileQuery.isLoading) return <Loading />
 
   const profile = profileQuery.data ?? null
