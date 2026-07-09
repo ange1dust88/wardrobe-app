@@ -20,17 +20,17 @@ export function useOutfitBuilder() {
       : name.trim() !== baseline.name ||
         [...selectedIds].sort().join(',') !== baseline.itemIds
 
-  function toggle(item: Item) {
+  const toggle = useCallback((item: Item) => {
     setSelected(prev => toggleOutfitItem(prev, item))
-  }
+  }, [])
 
-  function remove(id: string) {
+  const remove = useCallback((id: string) => {
     setSelected(prev => prev.filter(s => s.id !== id))
-  }
+  }, [])
 
-  function clearItems() {
+  const clearItems = useCallback(() => {
     setSelected([])
-  }
+  }, [])
 
   const clear = useCallback(() => {
     setSelected([])

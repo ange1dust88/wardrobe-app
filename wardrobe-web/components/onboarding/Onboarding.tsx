@@ -20,6 +20,7 @@ const PILL =
 
 type Props = {
   onComplete: (result: ProfileInput) => void
+  saving?: boolean
 }
 
 function Chip({
@@ -46,7 +47,7 @@ function Chip({
   )
 }
 
-export function Onboarding({ onComplete }: Props) {
+export function Onboarding({ onComplete, saving }: Props) {
   const [step, setStep] = useState(0)
   const [who, setWho] = useState<Who | null>(null)
   const [climate, setClimate] = useState<Climate | null>(null)
@@ -252,9 +253,10 @@ export function Onboarding({ onComplete }: Props) {
           <button
             type='button'
             onClick={complete}
-            className={`${PILL} mt-[34px]`}
+            disabled={saving}
+            className={`${PILL} mt-[34px] disabled:opacity-60`}
           >
-            enter wardrobe
+            {saving ? 'setting up…' : 'enter wardrobe'}
           </button>
         </div>
       )}

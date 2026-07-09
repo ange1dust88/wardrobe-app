@@ -1,9 +1,11 @@
 'use client'
 
 import { XIcon } from 'lucide-react'
+import { useState } from 'react'
 import type { ItemFormApi } from '@/hooks/useItemForm'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import {
   Dialog,
   DialogClose,
@@ -43,6 +45,7 @@ export function ItemFormDialog({
   initialImageUrl,
 }: Props) {
   const valid = form.isValid
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   return (
     <Dialog
@@ -93,12 +96,22 @@ export function ItemFormDialog({
               <Button
                 type='button'
                 variant='outline'
-                onClick={onDelete}
+                onClick={() => {
+                  if (!confirmDelete) {
+                    setConfirmDelete(true)
+                    return
+                  }
+                  onDelete()
+                }}
+                onBlur={() => setConfirmDelete(false)}
                 loading={deleting}
                 disabled={pending}
-                className='h-12 rounded-[13px] border-destructive/30 text-destructive hover:bg-destructive/5'
+                className={cn(
+                  'h-12 rounded-[13px] border-destructive/30 text-destructive hover:bg-destructive/5',
+                  confirmDelete && 'bg-destructive/10'
+                )}
               >
-                Delete
+                {confirmDelete ? 'Delete for good?' : 'Delete'}
               </Button>
             )}
             <Button

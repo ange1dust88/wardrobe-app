@@ -9,7 +9,7 @@ import {
 
 const OUTFITS_KEY = ['outfits'] as const
 
-type CreateVars = { name: string; itemIds: string[] }
+type CreateVars = { name: string; itemIds: string[]; folderId?: string | null }
 type MoveVars = { id: string; folderId: string | null }
 
 export function useOutfits() {
@@ -25,9 +25,28 @@ export function useOutfits() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: OUTFITS_KEY }),
   })
 
-  const moveMutation = useMutation<Outfit, Error, MoveVars>({
+  const moveMutation = useMutation<
+    Outfit,
+    Error,
+    MoveVars,
+    { previous?: Outfit[] }
+  >({
     mutationFn: ({ id, folderId }) => moveOutfitToFolder(id, folderId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: OUTFITS_KEY }),
+    onMutate: async ({ id, folderId }) => {
+      await queryClient.cancelQueries({ queryKey: OUTFITS_KEY })
+      const previous = queryClient.getQueryData<Outfit[]>(OUTFITS_KEY)
+      if (previous) {
+        queryClient.setQueryData<Outfit[]>(
+          OUTFITS_KEY,
+          previous.map(o => (o.id === id ? { ...o, folderId } : o))
+        )
+      }
+      return { previous }
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(OUTFITS_KEY, ctx.previous)
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: OUTFITS_KEY }),
   })
 
   const deleteMutation = useMutation<void, Error, string>({

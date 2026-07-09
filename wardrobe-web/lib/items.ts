@@ -361,6 +361,7 @@ export type Folder = {
 export async function createOutfit(body: {
   name: string
   itemIds: string[]
+  folderId?: string | null
 }): Promise<Outfit> {
   const res = await apiFetch('/outfits', {
     method: 'POST',

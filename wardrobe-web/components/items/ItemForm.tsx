@@ -21,6 +21,7 @@ import {
   type Season,
 } from '@/lib/items'
 import type { ItemFormApi } from '@/hooks/useItemForm'
+import { notifyError } from '@/lib/toast'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 
@@ -153,7 +154,14 @@ export function ItemForm({
     if (!file) return
     setExtractingColor(true)
     const result = await extractItemColor(file).catch(() => null)
-    if (result) patch({ hex: result.hex, accentHex: result.accentHex ?? null })
+    if (result) {
+      patch({ hex: result.hex, accentHex: result.accentHex ?? null })
+    } else {
+      notifyError(
+        'Could not read colors from the photo',
+        'Pick the main color manually below.'
+      )
+    }
     setExtractingColor(false)
   }
 

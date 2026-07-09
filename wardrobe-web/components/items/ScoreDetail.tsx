@@ -20,7 +20,7 @@ export function ScoreDetail({ breakdown }: { breakdown: ScoreBreakdown }) {
         {AXES.map(axis => {
           const value = Math.round(breakdown[axis.key])
           const positive = value >= 0
-          const pct = Math.max(0, Math.min(1, value / axis.cap)) * 100
+          const pct = Math.min(1, Math.abs(value) / axis.cap) * 100
           return (
             <div key={axis.key} className='flex items-center gap-2'>
               <span className='w-[44px] flex-none text-[11px] font-medium'>

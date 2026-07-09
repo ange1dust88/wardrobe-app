@@ -16,7 +16,7 @@ export type SavedLook = {
   id: string
   name: string
   createdAt: string
-  harmony: number
+  harmony: number | null
   items: Item[]
   missingCount: number
   folderId: string | null
@@ -46,7 +46,8 @@ type Props = {
 
 function sortLooks(looks: SavedLook[], key: SortKey): SavedLook[] {
   const copy = [...looks]
-  if (key === 'harmony') return copy.sort((a, b) => b.harmony - a.harmony)
+  if (key === 'harmony')
+    return copy.sort((a, b) => (b.harmony ?? -1) - (a.harmony ?? -1))
   if (key === 'name') return copy.sort((a, b) => a.name.localeCompare(b.name))
   return copy.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 }
@@ -222,7 +223,8 @@ export function OutfitsView({
         ) : (
           <div className='grid grid-cols-[repeat(auto-fill,minmax(264px,1fr))] gap-5'>
             {ordered.map(look => {
-              const tier = getMatchScoreTone(look.harmony)
+              const tier =
+                look.harmony != null ? getMatchScoreTone(look.harmony) : null
               const shown = look.items.slice(0, 6)
               const overflow = look.items.length - shown.length
               return (
@@ -256,18 +258,26 @@ export function OutfitsView({
                       </div>
                     </div>
                     <div className='flex flex-none flex-col items-end leading-none'>
-                      <span
-                        className='font-heading text-[22px] font-bold'
-                        style={{ color: tier.solidColor }}
-                      >
-                        {look.harmony}
-                      </span>
-                      <span
-                        className='mt-0.5 text-[11px] font-semibold'
-                        style={{ color: tier.solidColor }}
-                      >
-                        {tier.shortLabel}
-                      </span>
+                      {look.harmony != null && tier ? (
+                        <>
+                          <span
+                            className='font-heading text-[22px] font-bold'
+                            style={{ color: tier.solidColor }}
+                          >
+                            {look.harmony}
+                          </span>
+                          <span
+                            className='mt-0.5 text-[11px] font-semibold'
+                            style={{ color: tier.solidColor }}
+                          >
+                            {tier.shortLabel}
+                          </span>
+                        </>
+                      ) : (
+                        <span className='font-heading text-[22px] font-bold text-muted-foreground'>
+                          —
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className='flex gap-2'>

@@ -112,7 +112,7 @@ export function OutfitCarousel({
                       <button
                         type='button'
                         onClick={() => {
-                          if (isExcluded) return
+                          if (isExcluded && !selected) return
                           onSelect(item)
                         }}
                         aria-label={item.name}

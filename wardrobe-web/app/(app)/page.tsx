@@ -21,7 +21,8 @@ import {
 import { Spinner } from '@/components/ui/spinner'
 import { STACK_POLICY, type Item, type ScoreBreakdown } from '@/lib/items'
 import { harmonyOf } from '@/lib/harmony'
-import { notifySuccess } from '@/lib/toast'
+import { MIN_RECOMMENDABLE_SCORE } from '@/lib/match-score'
+import { notifyError, notifySuccess } from '@/lib/toast'
 import { useExcluded } from '@/hooks/useExcluded'
 import { useItems } from '@/hooks/useItems'
 import { useMatchMap } from '@/hooks/useMatchMap'
@@ -101,7 +102,9 @@ export default function WardrobePage() {
       }
       if (ok) {
         const n = sel.length
-        scoreById[item.id] = Math.round(sum / n)
+        const avg = Math.round(sum / n)
+        if (avg < MIN_RECOMMENDABLE_SCORE) continue
+        scoreById[item.id] = avg
         breakdownById[item.id] = {
           color: acc.color / n,
           role: acc.role / n,
@@ -115,6 +118,7 @@ export default function WardrobePage() {
     }
   } else {
     for (const [id, cell] of Object.entries(hoverCells)) {
+      if (cell.score < MIN_RECOMMENDABLE_SCORE) continue
       if (excludedIds.has(id)) continue
       const cand = itemById.get(id)
       if (
@@ -133,7 +137,9 @@ export default function WardrobePage() {
   const matchedIds = new Set(Object.keys(scoreById))
 
   const harmony =
-    builder.selectedIds.length >= 1 ? harmonyOf(builder.selectedIds, map) : null
+    builder.selectedIds.length >= 2 && !matchMap.isLoading
+      ? harmonyOf(builder.selectedIds, map)
+      : null
 
   const errorMessage = itemsQuery.error
     ? (itemsQuery.error as Error).message
@@ -214,6 +220,7 @@ export default function WardrobePage() {
           onNameChange={builder.setName}
           onCancel={() => {
             setAllowConflicts(false)
+            builder.saveMutation.reset()
             builder.clear()
             setEditingOutfit(null)
             router.push('/outfits')
@@ -223,12 +230,14 @@ export default function WardrobePage() {
           onRemove={builder.remove}
           onClear={() => {
             setAllowConflicts(false)
+            builder.saveMutation.reset()
             builder.clearItems()
           }}
           onSave={() => {
             const wasEditing = builder.editingId != null
             builder.saveMutation.mutate(undefined, {
               onSuccess: () => {
+                setAllowConflicts(false)
                 setEditingOutfit(null)
                 notifySuccess(wasEditing ? 'Outfit updated' : 'Outfit saved')
                 if (wasEditing) router.push('/outfits')
@@ -252,7 +261,13 @@ export default function WardrobePage() {
           onSubmit={(id, body, callbacks) =>
             updateMutation.mutate({ id, body }, callbacks)
           }
-          onDelete={(id, callbacks) => deleteMutation.mutate(id, callbacks)}
+          onDelete={(id, callbacks) =>
+            deleteMutation.mutate(id, {
+              ...callbacks,
+              onError: err =>
+                notifyError('Could not delete item', (err as Error).message),
+            })
+          }
           pending={updateMutation.isPending}
           deleting={deleteMutation.isPending}
           errorMessage={

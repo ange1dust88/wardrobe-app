@@ -80,7 +80,10 @@ export function MatchWheel({
     centerTitle = 'All set'
     centerSub = 'create your outfit →'
   } else if (active) {
-    if (matchEntries.length) {
+    if (excludedIds.has(active.id)) {
+      centerTitle = active.name
+      centerSub = 'excluded from matching'
+    } else if (matchEntries.length) {
       const [topId, topScore] = matchEntries.reduce((a, b) =>
         b[1] > a[1] ? b : a
       )
@@ -206,7 +209,7 @@ export function MatchWheel({
             <button
               type='button'
               onClick={() => {
-                if (isExcluded) return
+                if (isExcluded && !isSel) return
                 onSelect(item)
                 setOpenDetailId(null)
               }}

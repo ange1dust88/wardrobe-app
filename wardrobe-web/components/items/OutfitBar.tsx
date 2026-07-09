@@ -67,7 +67,7 @@ export function OutfitBar({
 
   return (
     <div className='pointer-events-none fixed right-4 bottom-4 left-4 z-30 flex flex-col items-end gap-2 sm:left-auto sm:max-w-[calc(100%-2rem)]'>
-      {items.length === 0 ? (
+      {items.length === 0 && !editing ? (
         <div className='pointer-events-auto flex items-center gap-3.5 rounded-[22px] border border-border bg-card px-5 py-4 shadow-[0_16px_44px_-10px_rgba(37,37,35,0.3)]'>
           <div className='flex size-11 flex-none items-center justify-center rounded-[13px] bg-muted'>
             <Target className='size-5 text-muted-foreground' />
@@ -77,7 +77,8 @@ export function OutfitBar({
               Start a look
             </div>
             <div className='text-[13px] text-muted-foreground'>
-              Tap pieces on the wheel — hover any piece to preview its matches.
+              Tap pieces to start a look — hover any piece to preview its
+              matches.
             </div>
           </div>
         </div>

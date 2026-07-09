@@ -47,7 +47,12 @@ function AuthedFrame({ children }: { children: React.ReactNode }) {
 
   const profile = profileQuery.data ?? null
   if (!profile || !profile.onboardedAt) {
-    return <Onboarding onComplete={input => saveMutation.mutate(input)} />
+    return (
+      <Onboarding
+        onComplete={input => saveMutation.mutate(input)}
+        saving={saveMutation.isPending}
+      />
+    )
   }
 
   return (
@@ -106,6 +111,16 @@ function FrameChrome({
     loadOutfit(editingOutfit, picked)
   }, [editingOutfit, items, loadOutfit])
 
+  const removeFromBuilder = builder.remove
+  const selectedItems = builder.selected
+  useEffect(() => {
+    if (!itemsQuery.data) return
+    const valid = new Set(itemsQuery.data.map(i => i.id))
+    for (const it of selectedItems) {
+      if (!valid.has(it.id)) removeFromBuilder(it.id)
+    }
+  }, [itemsQuery.data, selectedItems, removeFromBuilder])
+
   return (
     <AppProvider
       value={{
@@ -137,7 +152,10 @@ function FrameChrome({
 
         <AddItemModal
           open={addOpen}
-          onClose={() => setAddOpen(false)}
+          onClose={() => {
+            setAddOpen(false)
+            createMutation.reset()
+          }}
           onSubmit={(values, callbacks) =>
             createMutation.mutate(values, callbacks)
           }

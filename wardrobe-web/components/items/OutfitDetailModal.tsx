@@ -62,11 +62,7 @@ function formalityLabel(items: Item[]): string | null {
 function seasonLabel(items: Item[]): string | null {
   if (items.length === 0) return null
   const sets = items.map(i => new Set<string>(i.seasonWear))
-  let common = SEASON_ORDER.filter(s => sets.every(set => set.has(s)))
-  if (common.length === 0) {
-    const union = new Set<string>(items.flatMap(i => i.seasonWear))
-    common = SEASON_ORDER.filter(s => union.has(s))
-  }
+  const common = SEASON_ORDER.filter(s => sets.every(set => set.has(s)))
   if (common.length === 0) return null
   if (common.length === 4) return 'year-round'
   if (common.length === 3) return 'versatile'
@@ -128,7 +124,8 @@ export function OutfitDetailModal({
   onDelete,
 }: Props) {
   const [confirmDelete, setConfirmDelete] = useState(false)
-  const tier = getMatchScoreTone(look.harmony)
+  const tier =
+    look.harmony != null ? getMatchScoreTone(look.harmony) : null
   const sorted = [...look.items].sort(byCategory)
   const garments = look.items.filter(i => i.category !== 'accessory')
   const accessories = look.items.filter(i => i.category === 'accessory')
@@ -223,19 +220,22 @@ export function OutfitDetailModal({
 
             <div className='flex items-center gap-4'>
               <div className='relative flex-none'>
-                <ScoreRing value={look.harmony} color={tier.solidColor} />
+                <ScoreRing
+                  value={look.harmony ?? 0}
+                  color={tier?.solidColor ?? 'var(--border)'}
+                />
                 <div className='absolute inset-0 flex items-center justify-center'>
                   <span className='font-heading text-[18px] font-bold'>
-                    {look.harmony}
+                    {look.harmony ?? '—'}
                   </span>
                 </div>
               </div>
               <div className='leading-tight'>
                 <div
                   className='text-[15px] font-bold'
-                  style={{ color: tier.solidColor }}
+                  style={{ color: tier?.solidColor ?? 'var(--muted-foreground)' }}
                 >
-                  {tier.label}
+                  {tier ? tier.label : 'Not scored'}
                 </div>
                 <div className='mt-0.5 text-[12.5px] text-muted-foreground'>
                   out of 36
@@ -361,6 +361,7 @@ export function OutfitDetailModal({
                   type='button'
                   variant='outline'
                   onClick={onDuplicate}
+                  disabled={look.items.length === 0}
                   className='h-12 rounded-[13px]'
                 >
                   <CopyIcon className='size-4' />

@@ -1,6 +1,6 @@
 import type { MatchMap } from './items'
 
-export function harmonyOf(ids: string[], map: MatchMap): number {
+export function harmonyOf(ids: string[], map: MatchMap): number | null {
   let sum = 0
   let count = 0
   for (let i = 0; i < ids.length; i++) {
@@ -12,5 +12,5 @@ export function harmonyOf(ids: string[], map: MatchMap): number {
       }
     }
   }
-  return count ? Math.round(sum / count) : 0
+  return count ? Math.round(sum / count) : null
 }
