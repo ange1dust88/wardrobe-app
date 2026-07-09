@@ -26,7 +26,6 @@ export type ScoreBreakdown = {
 };
 
 const MAX_SCORE = 36;
-const MIN_RECOMMENDABLE_SCORE = 22;
 
 const SCORE_CAPS: ScoreBreakdown = {
   color: 11,
@@ -320,8 +319,4 @@ export function computeTotalScore(
   const total = clamp(Math.round(rawTotal), 0, MAX_SCORE);
 
   return { total, breakdown };
-}
-
-export function isRecommendableScore(score: number): boolean {
-  return score >= MIN_RECOMMENDABLE_SCORE;
 }

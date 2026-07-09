@@ -74,7 +74,10 @@ export type DerivedItemData = {
 };
 
 function hexToHsl(hex: string): Hsl {
-  const clean = hex.replace('#', '');
+  let clean = hex.replace('#', '');
+  if (clean.length === 4 || clean.length === 8) {
+    clean = clean.slice(0, clean.length === 4 ? 3 : 6);
+  }
   const full =
     clean.length === 3
       ? clean

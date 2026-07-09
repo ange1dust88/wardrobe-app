@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadGatewayException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 
@@ -10,13 +10,14 @@ export class AccountService {
   ) {}
 
   async exportData(userId: string): Promise<unknown> {
-    const [items, outfits, folders, profile] = await Promise.all([
+    const [items, outfits, folders, profile, feedback] = await Promise.all([
       this.prisma.item.findMany({ where: { userId } }),
       this.prisma.outfit.findMany({ where: { userId } }),
       this.prisma.folder.findMany({ where: { userId } }),
       this.prisma.userProfile.findFirst({ where: { userId } }),
+      this.prisma.feedback.findMany({ where: { userId } }),
     ]);
-    return { items, outfits, folders, profile };
+    return { items, outfits, folders, profile, feedback };
   }
 
   async remove(userId: string): Promise<{ deleted: true }> {
@@ -37,7 +38,12 @@ export class AccountService {
     await this.prisma.userProfile.deleteMany({ where: { userId } });
     await this.prisma.feedback.deleteMany({ where: { userId } });
 
-    await this.storage.deleteAuthUser(userId);
+    const authDeleted = await this.storage.deleteAuthUser(userId);
+    if (!authDeleted) {
+      throw new BadGatewayException(
+        'Your data was removed, but the sign-in account could not be deleted. Please retry.',
+      );
+    }
     return { deleted: true };
   }
 }

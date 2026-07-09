@@ -94,29 +94,37 @@ export class ItemsService {
       throw new BadRequestException('Provide an image or a hex color');
     }
     const derived = deriveItemData(hex);
-    const row = await this.prisma.item.create({
-      data: {
-        userId,
-        name: dto.name,
-        category: dto.category,
-        subType: dto.subType ?? null,
-        pattern: dto.pattern,
-        formality:
-          dto.formality ?? deriveFormality(dto.category, dto.subType ?? null),
-        fit: dto.fit ?? null,
-        seasonWear: dto.seasonWear,
-        imageUrl,
-        hex: derived.color.hex,
-        accentHex,
-        hue: derived.color.hue,
-        temperature: derived.color.temperature,
-        brightness: derived.color.brightness,
-        saturation: derived.color.saturation,
-        isNeutral: derived.color.isNeutral,
-        wardrobeRole: derived.wardrobeRole,
-        seasonPaletteCompatibility: derived.seasonPaletteCompatibility,
-      },
-    });
+    let row: DbItem;
+    try {
+      row = await this.prisma.item.create({
+        data: {
+          userId,
+          name: dto.name,
+          category: dto.category,
+          subType: dto.subType ?? null,
+          pattern: dto.pattern,
+          formality:
+            dto.formality ?? deriveFormality(dto.category, dto.subType ?? null),
+          fit: dto.fit ?? null,
+          seasonWear: dto.seasonWear,
+          imageUrl,
+          hex: derived.color.hex,
+          accentHex,
+          hue: derived.color.hue,
+          temperature: derived.color.temperature,
+          brightness: derived.color.brightness,
+          saturation: derived.color.saturation,
+          isNeutral: derived.color.isNeutral,
+          wardrobeRole: derived.wardrobeRole,
+          seasonPaletteCompatibility: derived.seasonPaletteCompatibility,
+        },
+      });
+    } catch (err) {
+      if (imageUrl) {
+        await this.storage.deleteImage(imageUrl);
+      }
+      throw err;
+    }
     this.matchMapCache.invalidate(userId);
     return this.toItem(row);
   }

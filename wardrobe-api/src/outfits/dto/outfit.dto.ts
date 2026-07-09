@@ -1,20 +1,24 @@
 import { PartialType } from '@nestjs/mapped-types';
 import {
+  ArrayMaxSize,
   ArrayNotEmpty,
   IsArray,
   IsNotEmpty,
   IsOptional,
   IsString,
+  MaxLength,
 } from 'class-validator';
 import { Item } from '../../items/dto/item.dto';
 
 export class CreateOutfitDto {
   @IsString()
   @IsNotEmpty()
+  @MaxLength(80)
   name!: string;
 
   @IsArray()
   @ArrayNotEmpty()
+  @ArrayMaxSize(60)
   @IsString({ each: true })
   itemIds!: string[];
 

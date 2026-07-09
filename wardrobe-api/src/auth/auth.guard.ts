@@ -2,9 +2,17 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  Logger,
+  ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { createRemoteJWKSet, jwtVerify, type JWTVerifyGetKey } from 'jose';
+import {
+  createRemoteJWKSet,
+  errors as joseErrors,
+  jwtVerify,
+  type JWTPayload,
+  type JWTVerifyGetKey,
+} from 'jose';
 import { Request } from 'express';
 
 export type AuthUser = {
@@ -14,6 +22,7 @@ export type AuthUser = {
 
 @Injectable()
 export class AuthGuard implements CanActivate {
+  private readonly logger = new Logger(AuthGuard.name);
   private jwks: JWTVerifyGetKey | null = null;
   private issuer = '';
 
@@ -21,7 +30,10 @@ export class AuthGuard implements CanActivate {
     if (!this.jwks) {
       const url = process.env.SUPABASE_URL;
       if (!url) {
-        throw new Error('SUPABASE_URL is not configured');
+        this.logger.error(
+          'SUPABASE_URL is not configured — cannot verify JWTs',
+        );
+        throw new ServiceUnavailableException('Auth is not configured');
       }
       this.issuer = `${url}/auth/v1`;
       this.jwks = createRemoteJWKSet(
@@ -41,20 +53,31 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Missing bearer token');
     }
 
+    const jwks = this.getJwks();
+
+    let payload: JWTPayload;
     try {
-      const { payload } = await jwtVerify(token, this.getJwks(), {
-        issuer: this.issuer,
-      });
-      if (!payload.sub) {
-        throw new Error('Token has no subject');
+      ({ payload } = await jwtVerify(token, jwks, { issuer: this.issuer }));
+    } catch (err) {
+      const transient =
+        err instanceof joseErrors.JWKSTimeout ||
+        !(err instanceof joseErrors.JOSEError);
+      if (transient) {
+        this.logger.error(`JWKS fetch failed: ${(err as Error).message}`);
+        throw new ServiceUnavailableException(
+          'Auth is temporarily unavailable',
+        );
       }
-      req.user = {
-        id: payload.sub,
-        email: typeof payload.email === 'string' ? payload.email : undefined,
-      };
-      return true;
-    } catch {
       throw new UnauthorizedException('Invalid token');
     }
+
+    if (!payload.sub) {
+      throw new UnauthorizedException('Invalid token');
+    }
+    req.user = {
+      id: payload.sub,
+      email: typeof payload.email === 'string' ? payload.email : undefined,
+    };
+    return true;
   }
 }

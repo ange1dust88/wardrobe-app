@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import sharp from 'sharp';
 import type { UploadedItemImage } from './items.service';
 
@@ -12,6 +13,6 @@ export async function optimizeForStorage(
       .toBuffer();
     return { buffer, originalname: 'item.webp', mimetype: 'image/webp' };
   } catch {
-    return image;
+    throw new BadRequestException('Unsupported or corrupted image file');
   }
 }

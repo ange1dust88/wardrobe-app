@@ -8,6 +8,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  MaxLength,
 } from 'class-validator';
 
 function toArray({ value }: { value: unknown }): unknown[] {
@@ -94,6 +95,7 @@ export enum Fit {
 export class CreateItemDto {
   @IsString()
   @IsNotEmpty()
+  @MaxLength(80)
   name: string;
 
   @IsEnum(Category)

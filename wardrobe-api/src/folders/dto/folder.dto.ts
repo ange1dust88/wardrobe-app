@@ -1,9 +1,10 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 
 export class CreateFolderDto {
   @IsString()
   @IsNotEmpty()
+  @MaxLength(60)
   name!: string;
 }
 

@@ -8,7 +8,7 @@ import {
 } from './match-map-cache.service';
 import { categoriesConflict, categoryStacks } from './category-compat';
 import { seasonsConflict } from './season-compat';
-import { computeTotalScore, isRecommendableScore } from './match-scoring';
+import { computeTotalScore } from './match-scoring';
 
 @Injectable()
 export class MatchingService {
@@ -56,9 +56,7 @@ export class MatchingService {
           }
         }
         const { total, breakdown } = computeTotalScore(anchor, candidate, ctx);
-        if (isRecommendableScore(total)) {
-          scores[candidate.id] = { score: total, breakdown };
-        }
+        scores[candidate.id] = { score: total, breakdown };
       }
       map[anchor.id] = scores;
     }

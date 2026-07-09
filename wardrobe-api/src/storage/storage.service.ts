@@ -73,9 +73,14 @@ export class StorageService {
       .catch(() => undefined);
   }
 
-  async deleteAuthUser(userId: string): Promise<void> {
+  async deleteAuthUser(userId: string): Promise<boolean> {
     const client = this.getClient();
-    if (!client) return;
-    await client.auth.admin.deleteUser(userId).catch(() => undefined);
+    if (!client) return false;
+    try {
+      const { error } = await client.auth.admin.deleteUser(userId);
+      return !error;
+    } catch {
+      return false;
+    }
   }
 }
