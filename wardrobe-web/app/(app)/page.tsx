@@ -26,6 +26,7 @@ import { notifyError, notifySuccess } from '@/lib/toast'
 import { useExcluded } from '@/hooks/useExcluded'
 import { useItems } from '@/hooks/useItems'
 import { useMatchMap } from '@/hooks/useMatchMap'
+import { useOutfits } from '@/hooks/useOutfits'
 
 export default function WardrobePage() {
   const router = useRouter()
@@ -43,6 +44,7 @@ export default function WardrobePage() {
   const [allowConflicts, setAllowConflicts] = useState(false)
 
   const { itemsQuery, updateMutation, deleteMutation } = useItems()
+  const { outfitsQuery } = useOutfits()
   const { excludedIds, toggle: toggleExcluded } = useExcluded()
   const matchMap = useMatchMap(colorType, allowConflicts)
 
@@ -235,6 +237,19 @@ export default function WardrobePage() {
           }}
           onSave={() => {
             const wasEditing = builder.editingId != null
+            const sig = [...builder.selectedIds].sort().join(',')
+            const dup = (outfitsQuery.data ?? []).find(
+              o =>
+                o.id !== builder.editingId &&
+                [...o.itemIds].sort().join(',') === sig
+            )
+            if (dup) {
+              notifyError(
+                'Already saved',
+                `This exact set of pieces is saved as “${dup.name}”. Use Duplicate on it if you want a copy.`
+              )
+              return
+            }
             builder.saveMutation.mutate(undefined, {
               onSuccess: () => {
                 setAllowConflicts(false)
