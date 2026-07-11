@@ -67,9 +67,15 @@ export default function WardrobePage() {
     const filledCategories = new Set(
       items.filter(i => sel.includes(i.id)).map(i => i.category)
     )
+    const savedSignatures = new Set(
+      (outfitsQuery.data ?? [])
+        .filter(o => o.id !== builder.editingId)
+        .map(o => [...o.itemIds].sort().join(','))
+    )
     for (const item of items) {
       if (sel.includes(item.id)) continue
       if (excludedIds.has(item.id)) continue
+      if (savedSignatures.has([...sel, item.id].sort().join(','))) continue
       if (
         STACK_POLICY[item.category] !== 'unlimited' &&
         filledCategories.has(item.category)
