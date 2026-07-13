@@ -56,7 +56,7 @@ export function ItemFormDialog({
     >
       <DialogPopup
         showCloseButton={false}
-        className='max-h-[calc(100svh-3rem)] max-w-[560px] gap-0 overflow-hidden rounded-[24px] p-0'
+        className='max-h-[calc(100svh-3rem)] max-w-[600px] gap-0 overflow-hidden rounded-[16px] p-0'
       >
         <div className='flex flex-none items-center justify-between gap-4 border-b border-border px-6 py-[18px]'>
           <div className='flex items-baseline gap-3'>
@@ -107,7 +107,7 @@ export function ItemFormDialog({
                 loading={deleting}
                 disabled={pending}
                 className={cn(
-                  'h-12 rounded-[13px] border-destructive/30 text-destructive hover:bg-destructive/5',
+                  'h-[52px] rounded-[8px] text-[14px] border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10 sm:h-[52px]',
                   confirmDelete && 'bg-destructive/10'
                 )}
               >
@@ -118,7 +118,7 @@ export function ItemFormDialog({
               type='submit'
               disabled={!valid || deleting}
               loading={pending}
-              className='h-12 flex-1 rounded-[13px] text-[15px] font-bold'
+              className='h-[52px] flex-1 rounded-[8px] text-[15px] font-semibold sm:h-[52px]'
             >
               {submitLabel}
             </Button>

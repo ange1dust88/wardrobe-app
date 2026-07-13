@@ -1,6 +1,6 @@
 'use client'
 
-import { EyeIcon, EyeOffIcon, PencilIcon } from 'lucide-react'
+import { EyeOffIcon, PencilIcon } from 'lucide-react'
 import {
   CATEGORIES,
   CATEGORY_LABELS,
@@ -9,7 +9,6 @@ import {
 } from '@/lib/items'
 import { getMatchScoreTone } from '@/lib/match-score'
 import { BRAND_ACCENT } from '@/lib/theme'
-import { cn } from '@/lib/utils'
 import { ScoreBadge } from './ScoreBadge'
 
 type Props = {
@@ -19,6 +18,7 @@ type Props = {
   matchedIds: Set<string>
   scoreById: Record<string, number>
   excludedIds?: Set<string>
+  filterMatchIds?: Set<string> | null
   onHover: (id: string | null) => void
   onSelect: (item: Item) => void
   onEdit: (item: Item) => void
@@ -32,6 +32,7 @@ export function OutfitCarousel({
   matchedIds,
   scoreById,
   excludedIds = new Set(),
+  filterMatchIds = null,
   onHover,
   onSelect,
   onEdit,
@@ -48,31 +49,35 @@ export function OutfitCarousel({
   const building = selectedIds.length > 0
 
   const lanes = CATEGORIES.filter(cat =>
-    items.some(i => i.category === cat)
+    items.some(i => i.category === cat && !excludedIds.has(i.id))
   ).map(cat => ({
     cat,
     label: CATEGORY_LABELS[cat],
-    items: items.filter(i => i.category === cat),
+    items: items.filter(i => i.category === cat && !excludedIds.has(i.id)),
     selName: byId.get(selByCat.get(cat) ?? '')?.name ?? '',
   }))
 
   return (
-    <div
-      className='rounded-[20px] border border-border bg-card pb-2 shadow-sm'
-      onMouseLeave={() => onHover(null)}
-    >
+    <div className='w-full' onMouseLeave={() => onHover(null)}>
       <style>{`.ds-lane::-webkit-scrollbar{height:0}`}</style>
 
       <div className='flex flex-col'>
         {lanes.map(lane => (
-          <div key={lane.cat} className='border-t border-border py-3.5'>
-            <div className='flex items-baseline justify-between px-6 pb-3'>
-              <div className='text-[11px] font-semibold tracking-[0.16em] text-muted-foreground uppercase'>
+          <div key={lane.cat} className='border-t border-border py-[18px]'>
+            <div className='flex items-baseline gap-3 px-2 pb-3'>
+              <div className='font-mono text-[11px] tracking-[0.18em] text-muted-foreground uppercase'>
                 {lane.label}
               </div>
-              <div className='text-xs text-muted-foreground'>{lane.selName}</div>
+              {lane.selName && (
+                <div className='text-[11.5px] text-muted-foreground'>
+                  in look ·{' '}
+                  <span className='font-semibold text-foreground'>
+                    {lane.selName}
+                  </span>
+                </div>
+              )}
             </div>
-            <div className='ds-lane flex gap-4 overflow-x-auto px-6 pt-3 pb-2'>
+            <div className='ds-lane flex gap-5 overflow-x-auto px-2 pt-3 pb-2'>
               {lane.items.map(item => {
                 const isExcluded = excludedIds.has(item.id)
                 const selected = selectedSet.has(item.id)
@@ -84,6 +89,11 @@ export function OutfitCarousel({
                   (building
                     ? selected || isMatch
                     : !activeId || isHover || isMatch)
+                const dimByFilter =
+                  filterMatchIds != null &&
+                  !filterMatchIds.has(item.id) &&
+                  !activeId &&
+                  !building
                 const img = getItemImageSrc(item)
                 const tone =
                   isMatch && score != null ? getMatchScoreTone(score) : null
@@ -99,12 +109,12 @@ export function OutfitCarousel({
                 return (
                   <div
                     key={item.id}
-                    className='w-24 flex-none'
+                    className='w-32 flex-none'
                     onMouseEnter={() => onHover(item.id)}
                     onMouseLeave={() => onHover(null)}
                     style={{
-                      opacity: lit ? 1 : 0.4,
-                      filter: lit ? 'none' : 'grayscale(1)',
+                      opacity: dimByFilter ? 0.2 : lit ? 1 : 0.4,
+                      filter: dimByFilter || !lit ? 'grayscale(1)' : 'none',
                       transition: 'opacity .25s ease, filter .25s ease',
                     }}
                   >
@@ -116,7 +126,7 @@ export function OutfitCarousel({
                           onSelect(item)
                         }}
                         aria-label={item.name}
-                        className='relative block size-24 overflow-hidden rounded-[14px] p-0'
+                        className='relative block size-32 overflow-hidden rounded-[12px] p-0'
                         style={{
                           background: item.color.hex,
                           border: '1px solid var(--border)',
@@ -165,48 +175,29 @@ export function OutfitCarousel({
                         </button>
                       )}
 
-                      {(isExcluded || isHover) && !selected && (
+                      {isHover && !selected && (
                         <button
                           type='button'
                           onClick={e => {
                             e.stopPropagation()
                             onToggleExclude(item)
                           }}
-                          aria-label={
-                            isExcluded
-                              ? 'Include in matching'
-                              : 'Exclude from matching'
-                          }
-                          title={
-                            isExcluded
-                              ? 'Include in matching'
-                              : 'Exclude from matching'
-                          }
-                          className={cn(
-                            'absolute -top-1 -right-1 z-10 flex size-6 items-center justify-center rounded-full border shadow-sm',
-                            isExcluded
-                              ? 'border-transparent bg-foreground text-background'
-                              : 'border-border bg-background text-muted-foreground hover:text-foreground'
-                          )}
+                          aria-label='Hide from wheel'
+                          title='Hide from wheel'
+                          className='absolute -top-1 -right-1 z-10 flex size-6 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-sm hover:text-foreground'
                         >
-                          {isExcluded ? (
-                            <EyeOffIcon className='size-3' />
-                          ) : (
-                            <EyeIcon className='size-3' />
-                          )}
+                          <EyeOffIcon className='size-3' />
                         </button>
                       )}
                     </div>
-                    <div
-                      className='mt-2 text-center text-xs leading-tight font-medium'
-                      style={{
-                        color: selected
-                          ? 'var(--foreground)'
-                          : 'var(--muted-foreground)',
-                      }}
-                    >
+                    <div className='mt-2.5 text-center text-[12.5px] leading-tight font-semibold text-foreground'>
                       {item.name}
                     </div>
+                    {item.subType && (
+                      <div className='font-mono mt-0.5 text-center text-[9.5px] tracking-[0.05em] text-muted-foreground uppercase'>
+                        {item.subType}
+                      </div>
+                    )}
                   </div>
                 )
               })}

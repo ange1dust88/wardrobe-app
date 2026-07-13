@@ -18,7 +18,6 @@ import {
   type Fit,
   type Formality,
   type Pattern,
-  type Season,
 } from '@/lib/items'
 import type { ItemFormApi } from '@/hooks/useItemForm'
 import { notifyError } from '@/lib/toast'
@@ -34,15 +33,8 @@ const FIT_CATEGORIES = new Set<Category>([
   'dress',
 ])
 
-const SEASON_ICONS: Record<Season, string> = {
-  spring: '✿',
-  summer: '☀',
-  autumn: '❦',
-  winter: '❄',
-}
-
 const labelCls =
-  'mb-1.5 text-[10.5px] font-bold uppercase tracking-[0.1em] text-muted-foreground'
+  'mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted-foreground'
 
 const categoryItems = CATEGORIES.map(value => ({
   label: CATEGORY_LABELS[value],
@@ -86,7 +78,7 @@ function FieldSelect({
         <select
           value={value}
           onChange={e => onChange(e.target.value)}
-          className='w-full cursor-pointer appearance-none rounded-xl border border-input bg-background py-[11px] pr-9 pl-[13px] text-[14.5px] text-foreground shadow-xs/5 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/24'
+          className='h-11 w-full cursor-pointer appearance-none rounded-xl border border-input bg-background pr-9 pl-[13px] text-[14.5px] text-foreground shadow-xs/5 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/24'
         >
           {items.map(item => (
             <option key={item.value} value={item.value}>
@@ -94,7 +86,7 @@ function FieldSelect({
             </option>
           ))}
         </select>
-        <ChevronDownIcon className='pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground' />
+        <ChevronDownIcon className='pointer-events-none absolute top-1/2 right-3 size-3.5 -translate-y-1/2 text-muted-foreground/70' />
       </div>
     </div>
   )
@@ -176,7 +168,7 @@ export function ItemForm({
           value={values.name}
           onChange={e => patch({ name: e.target.value })}
           placeholder='Converse All Star red'
-          className='rounded-xl'
+          className='h-11 items-center rounded-xl'
         />
       </div>
 
@@ -208,9 +200,7 @@ export function ItemForm({
       <div
         className={cn(
           'mb-3.5 grid gap-3',
-          optionCount + (subtypes ? 1 : 0) >= 3
-            ? 'grid-cols-3'
-            : 'grid-cols-2'
+          optionCount + (subtypes ? 1 : 0) >= 3 ? 'grid-cols-3' : 'grid-cols-2'
         )}
       >
         <FieldSelect
@@ -283,7 +273,7 @@ export function ItemForm({
             {shownImage ? (
               <>
                 <span
-                  className='size-10 rounded-[11px] border border-border bg-cover bg-center'
+                  className='size-10 rounded-[8px] border border-border bg-cover bg-center'
                   style={{ backgroundImage: `url(${shownImage})` }}
                 />
                 <span className='text-[12px] font-semibold text-foreground'>
@@ -292,7 +282,7 @@ export function ItemForm({
               </>
             ) : (
               <>
-                <span className='flex size-[30px] items-center justify-center rounded-[9px] bg-muted text-[15px] text-muted-foreground'>
+                <span className='flex size-[30px] items-center justify-center rounded-[7px] bg-muted text-[15px] text-muted-foreground'>
                   ▦
                 </span>
                 <span className='text-[12.5px] font-semibold text-foreground'>
@@ -377,7 +367,7 @@ export function ItemForm({
       <div className={labelCls}>
         When to wear <span className='text-warning'>*</span>
       </div>
-      <div className='grid grid-cols-4 gap-2'>
+      <div className='flex flex-wrap gap-[9px]'>
         {SEASONS.map(season => {
           const on = values.seasonWear.includes(season)
           return (
@@ -386,15 +376,12 @@ export function ItemForm({
               type='button'
               onClick={() => toggle('seasonWear', season)}
               className={cn(
-                'flex items-center justify-center gap-1.5 rounded-xl border py-2.5 text-[13px] font-semibold transition-colors',
+                'inline-flex h-11 items-center justify-center rounded-[10px] border px-[18px] text-[13.5px] font-semibold transition-colors',
                 on
                   ? 'border-transparent bg-foreground text-white'
                   : 'border-border bg-background text-foreground hover:bg-muted'
               )}
             >
-              <span className='text-[14px] leading-none'>
-                {SEASON_ICONS[season]}
-              </span>
               {formatOption(season)}
             </button>
           )

@@ -1,11 +1,13 @@
-import { EyeIcon, EyeOffIcon, PencilIcon } from 'lucide-react'
+import { EyeOffIcon, PencilIcon } from 'lucide-react'
 import { useState } from 'react'
 import { CATEGORIES, getItemImageSrc, type Item } from '../../lib/items'
-import { getMatchScoreTone, matchScoreToPercentage } from '../../lib/match-score'
+import {
+  getMatchScoreTone,
+  matchScoreToPercentage,
+} from '../../lib/match-score'
 import { BRAND_ACCENT } from '../../lib/theme'
 import { cn } from '../../lib/utils'
 import type { ScoreBreakdown } from '../../lib/items'
-import { ScoreBadge } from './ScoreBadge'
 import { ScoreDetail } from './ScoreDetail'
 
 type Props = {
@@ -16,6 +18,8 @@ type Props = {
   scoreById?: Record<string, number>
   breakdownById?: Record<string, ScoreBreakdown>
   excludedIds?: Set<string>
+  matchLoading?: boolean
+  filterMatchIds?: Set<string> | null
   onHover: (id: string | null) => void
   onSelect: (item: Item) => void
   onEdit: (item: Item) => void
@@ -27,15 +31,6 @@ const CX = 380
 const CY = 380
 const R = 270
 
-function isLightHex(hex: string): boolean {
-  const h = hex.replace('#', '')
-  if (h.length < 6) return false
-  const r = parseInt(h.slice(0, 2), 16)
-  const g = parseInt(h.slice(2, 4), 16)
-  const b = parseInt(h.slice(4, 6), 16)
-  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.86
-}
-
 export function MatchWheel({
   items,
   activeId,
@@ -44,17 +39,21 @@ export function MatchWheel({
   scoreById = {},
   breakdownById = {},
   excludedIds = new Set(),
+  matchLoading = false,
+  filterMatchIds = null,
   onHover,
   onSelect,
   onEdit,
   onToggleExclude,
 }: Props) {
   const [openDetailId, setOpenDetailId] = useState<string | null>(null)
-  const ordered = [...items].sort((a, b) => {
-    const ca = CATEGORIES.indexOf(a.category)
-    const cb = CATEGORIES.indexOf(b.category)
-    return ca !== cb ? ca - cb : a.name.localeCompare(b.name)
-  })
+  const ordered = [...items]
+    .filter(i => !excludedIds.has(i.id))
+    .sort((a, b) => {
+      const ca = CATEGORIES.indexOf(a.category)
+      const cb = CATEGORIES.indexOf(b.category)
+      return ca !== cb ? ca - cb : a.name.localeCompare(b.name)
+    })
 
   const n = ordered.length
   const indexById: Record<string, number> = {}
@@ -65,18 +64,19 @@ export function MatchWheel({
     return { x: CX + R * Math.cos(ang), y: CY + R * Math.sin(ang), ang }
   }
 
-  const crowd = Math.min(1, (2 * Math.PI * R) / (n * 110))
-  const sz = Math.round(84 * crowd)
+  const crowd = Math.min(1, (2 * Math.PI * R) / (n * 122))
+  const sz = Math.round(100 * crowd)
   const szPct = (sz / BOX) * 100
 
-  const active = activeId != null ? ordered.find(it => it.id === activeId) : null
+  const active =
+    activeId != null ? ordered.find(it => it.id === activeId) : null
   const matchEntries = Object.entries(scoreById)
 
   const building = selectedIds.length > 0
 
-  let centerTitle = 'hover an item'
-  let centerSub = 'matches arc across the wheel'
-  if (building && matchEntries.length === 0) {
+  let centerTitle = 'Your wardrobe'
+  let centerSub = 'hover to bloom its matches'
+  if (building && matchEntries.length === 0 && !matchLoading) {
     centerTitle = 'All set'
     centerSub = 'create your outfit →'
   } else if (active) {
@@ -95,6 +95,10 @@ export function MatchWheel({
     }
   }
 
+  if (matchLoading && matchEntries.length === 0) {
+    centerSub = 'reading matches…'
+  }
+
   const sourceIds = building
     ? selectedIds.filter(id => indexById[id] != null)
     : active
@@ -109,14 +113,16 @@ export function MatchWheel({
         const bp = pos(indexById[id])
         const mx = (ap.x + bp.x) / 2
         const my = (ap.y + bp.y) / 2
-        const cpx = mx + (CX - mx) * 0.72
-        const cpy = my + (CY - my) * 0.72
+        const cpx = mx + (CX - mx) * 0.55
+        const cpy = my + (CY - my) * 0.55
         return {
           key: `${srcId}-${id}`,
           d: `M ${ap.x.toFixed(0)} ${ap.y.toFixed(0)} Q ${cpx.toFixed(0)} ${cpy.toFixed(0)} ${bp.x.toFixed(0)} ${bp.y.toFixed(0)}`,
           color: getMatchScoreTone(score).solidColor,
-          width: Number((1.4 + matchScoreToPercentage(score) / 36).toFixed(1)),
-          opacity: Number((0.42 + matchScoreToPercentage(score) / 180).toFixed(2)),
+          width: Number(
+            (1.5 + (matchScoreToPercentage(score) / 100) * 3.4).toFixed(1)
+          ),
+          opacity: 0.76,
         }
       })
   })
@@ -160,10 +166,12 @@ export function MatchWheel({
       </svg>
 
       <div className='pointer-events-none absolute top-1/2 left-1/2 z-1 w-[46%] -translate-x-1/2 -translate-y-1/2 text-center'>
-        <div className='font-heading text-[17px] leading-tight font-bold text-foreground'>
+        <div className='font-heading text-[22px] leading-tight font-extrabold tracking-[-0.03em] text-foreground'>
           {centerTitle}
         </div>
-        <div className='mt-1 text-[13px] text-muted-foreground'>{centerSub}</div>
+        <div className='mt-1.5 text-[13px] font-medium text-muted-foreground'>
+          {centerSub}
+        </div>
       </div>
 
       {ordered.map((item, i) => {
@@ -178,14 +186,19 @@ export function MatchWheel({
         const lit =
           !isExcluded &&
           (building ? isSel || isMatch : !active || isHover || isMatch)
+        const dimByFilter =
+          filterMatchIds != null &&
+          !filterMatchIds.has(item.id) &&
+          !active &&
+          !building
         const img = getItemImageSrc(item)
         const boxShadow = isSel
-          ? `0 0 0 2px var(--background), 0 0 0 4px ${BRAND_ACCENT}, 0 8px 22px rgba(0,0,0,.18)`
-          : isSrc
-            ? '0 0 0 2px var(--background), 0 0 0 4px #c08a2d, 0 10px 26px rgba(0,0,0,.2)'
+          ? '0 0 0 3px rgba(61,90,61,.9), 0 6px 18px rgba(20,16,8,.18)'
+          : isHover
+            ? '0 6px 18px rgba(20,16,8,.22)'
             : isMatch
-              ? '0 8px 22px rgba(0,0,0,.16)'
-              : '0 2px 7px rgba(0,0,0,.1)'
+              ? '0 6px 18px rgba(20,16,8,.14)'
+              : '0 6px 18px rgba(20,16,8,.09)'
         return (
           <div
             key={item.id}
@@ -201,8 +214,12 @@ export function MatchWheel({
               width: `${szPct}%`,
               aspectRatio: '1',
               zIndex: openDetailId === item.id ? 60 : isSrc ? 5 : isSel ? 4 : 2,
-              opacity: lit ? 1 : 0.45,
-              filter: lit ? 'none' : 'grayscale(.25)',
+              opacity: dimByFilter ? 0.2 : lit ? 1 : 0.45,
+              filter: dimByFilter
+                ? 'grayscale(1)'
+                : lit
+                  ? 'none'
+                  : 'grayscale(.25)',
               transition: 'opacity .3s ease, filter .3s ease',
             }}
           >
@@ -214,44 +231,60 @@ export function MatchWheel({
                 setOpenDetailId(null)
               }}
               aria-label={item.name}
-              className='relative block h-full w-full overflow-hidden p-0'
+              className='relative block h-full w-full p-0'
               style={{
-                borderRadius: 15,
-                background: item.color.hex,
-                border: isLightHex(item.color.hex)
-                  ? '1px solid var(--border)'
-                  : '1px solid transparent',
+                borderRadius: 18,
+                background: 'var(--card)',
+                border: isSel
+                  ? `1px solid ${BRAND_ACCENT}`
+                  : '1px solid var(--border)',
                 cursor: isExcluded ? 'default' : 'pointer',
                 transform: isSel
-                  ? 'scale(1.15)'
-                  : isMatch
-                    ? 'scale(1.06)'
-                    : 'scale(1)',
+                  ? 'scale(1.12)'
+                  : isHover
+                    ? 'scale(1.09)'
+                    : isMatch
+                      ? 'scale(1.04)'
+                      : 'scale(1)',
                 boxShadow,
-                transition: 'transform .25s ease, box-shadow .25s ease',
+                transition:
+                  'transform .2s ease, box-shadow .2s ease, border-color .18s',
               }}
             >
-              {img && (
-                <img
-                  src={img}
-                  alt=''
-                  className='absolute inset-0 h-full w-full object-cover'
-                />
-              )}
+              <span
+                className='absolute inset-[6px] block overflow-hidden rounded-[12px]'
+                style={{ background: item.color.hex }}
+              >
+                {img && (
+                  <img
+                    src={img}
+                    alt=''
+                    className='absolute inset-0 h-full w-full object-cover'
+                  />
+                )}
+              </span>
               {isSel && (
                 <span
-                  className='absolute top-1.5 right-1.5 flex size-6 items-center justify-center rounded-full text-[13px] text-white shadow'
-                  style={{ background: BRAND_ACCENT }}
+                  className='absolute -top-[12px] -right-[12px] flex size-[22px] items-center justify-center rounded-full text-[12px] text-white shadow-[0_2px_6px_rgba(0,0,0,0.2)]'
+                  style={{
+                    background: BRAND_ACCENT,
+                    animation: 'wpop .3s ease both',
+                  }}
                 >
                   ✓
                 </span>
               )}
               {isMatch && scoreById[item.id] != null && (
-                <ScoreBadge
-                  score={scoreById[item.id]}
-                  variant='chip'
-                  className='absolute top-1.5 left-1.5 text-[11px] leading-tight'
-                />
+                <span
+                  className='font-mono absolute -bottom-[12px] -left-[12px] flex h-[23px] min-w-[23px] items-center justify-center rounded-[8px] px-[5px] text-[12px] font-semibold text-white shadow-[0_3px_8px_rgba(0,0,0,0.22)]'
+                  style={{
+                    background: getMatchScoreTone(scoreById[item.id])
+                      .solidColor,
+                    animation: 'wpop .3s ease both',
+                  }}
+                >
+                  {scoreById[item.id]}
+                </span>
               )}
             </button>
 
@@ -260,37 +293,24 @@ export function MatchWheel({
                 type='button'
                 onClick={() => onEdit(item)}
                 aria-label={`Edit ${item.name}`}
-                className='absolute -top-1 -left-1 z-10 flex size-6 items-center justify-center rounded-full border border-border bg-background text-foreground shadow-sm'
+                className='absolute -top-[12px] -left-[12px] z-10 flex size-[22px] items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-sm hover:text-foreground'
               >
-                <PencilIcon className='size-3' />
+                <PencilIcon className='size-3.5' />
               </button>
             )}
 
-            {(isExcluded || isHover) && !isSel && (
+            {isHover && !isSel && (
               <button
                 type='button'
                 onClick={e => {
                   e.stopPropagation()
                   onToggleExclude(item)
                 }}
-                aria-label={
-                  isExcluded ? 'Include in matching' : 'Exclude from matching'
-                }
-                title={
-                  isExcluded ? 'Include in matching' : 'Exclude from matching'
-                }
-                className={cn(
-                  'absolute -top-1 -right-1 z-10 flex size-6 items-center justify-center rounded-full border shadow-sm',
-                  isExcluded
-                    ? 'border-transparent bg-foreground text-background'
-                    : 'border-border bg-background text-muted-foreground hover:text-foreground'
-                )}
+                aria-label='Hide from wheel'
+                title='Hide from wheel'
+                className='absolute -top-[12px] -right-[12px] z-10 flex size-[22px] items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-sm hover:text-foreground'
               >
-                {isExcluded ? (
-                  <EyeOffIcon className='size-3' />
-                ) : (
-                  <EyeIcon className='size-3' />
-                )}
+                <EyeOffIcon className='size-3.5' />
               </button>
             )}
 
@@ -298,7 +318,7 @@ export function MatchWheel({
               breakdownById[item.id] &&
               (isHover || openDetailId === item.id) && (
                 <div
-                  className='absolute -right-1 -bottom-1 z-20'
+                  className='absolute -right-[12px] -bottom-[12px] z-20'
                   onMouseEnter={() => setOpenDetailId(item.id)}
                   onMouseLeave={() => setOpenDetailId(null)}
                 >
@@ -307,7 +327,7 @@ export function MatchWheel({
                     onFocus={() => setOpenDetailId(item.id)}
                     onBlur={() => setOpenDetailId(null)}
                     aria-label='Why this score'
-                    className='flex size-5 items-center justify-center rounded-full border border-border bg-background text-[11px] font-bold text-muted-foreground shadow-sm'
+                    className='flex size-[22px] items-center justify-center rounded-full border border-border bg-card text-[12px] font-bold text-muted-foreground shadow-sm'
                   >
                     ?
                   </button>

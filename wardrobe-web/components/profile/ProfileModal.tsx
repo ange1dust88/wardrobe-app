@@ -151,7 +151,7 @@ export function ProfileModal({ onClose, itemCount, outfitCount }: Props) {
             </div>
 
             <div className='flex flex-col gap-2'>
-              <span className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>
+              <span className='font-mono text-[10.5px] tracking-[0.14em] text-muted-foreground uppercase'>
                 Who
               </span>
               <div className='flex flex-wrap gap-2'>
@@ -167,7 +167,7 @@ export function ProfileModal({ onClose, itemCount, outfitCount }: Props) {
             </div>
 
             <div className='flex flex-col gap-2'>
-              <span className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>
+              <span className='font-mono text-[10.5px] tracking-[0.14em] text-muted-foreground uppercase'>
                 Climate
               </span>
               <div className='flex flex-wrap gap-2'>
@@ -183,7 +183,7 @@ export function ProfileModal({ onClose, itemCount, outfitCount }: Props) {
             </div>
 
             <div className='flex flex-col gap-2'>
-              <span className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>
+              <span className='font-mono text-[10.5px] tracking-[0.14em] text-muted-foreground uppercase'>
                 Palettes
               </span>
               <div className='flex flex-wrap gap-3'>
@@ -208,7 +208,9 @@ export function ProfileModal({ onClose, itemCount, outfitCount }: Props) {
                           />
                         ))}
                       </div>
-                      <span className='text-xs capitalize'>{palette.label}</span>
+                      <span className='text-xs capitalize'>
+                        {palette.label}
+                      </span>
                     </button>
                   )
                 })}
@@ -224,11 +226,14 @@ export function ProfileModal({ onClose, itemCount, outfitCount }: Props) {
                   Show the “?” match explainer on the wheel
                 </span>
               </div>
-              <Switch checked={showBreakdown} onCheckedChange={setShowBreakdown} />
+              <Switch
+                checked={showBreakdown}
+                onCheckedChange={setShowBreakdown}
+              />
             </div>
 
             <div className='border-t border-border pt-4'>
-              <div className='mb-2.5 text-[11px] font-semibold tracking-widest text-muted-foreground uppercase'>
+              <div className='mb-2.5 font-mono text-[10.5px] tracking-[0.14em] text-muted-foreground uppercase'>
                 Account
               </div>
               <div className='flex flex-wrap items-center gap-2.5'>
@@ -245,7 +250,7 @@ export function ProfileModal({ onClose, itemCount, outfitCount }: Props) {
                   onBlur={() => setConfirmDelete(false)}
                   loading={deleting}
                   className={cn(
-                    'border-destructive/30 text-destructive hover:bg-destructive/5',
+                    'border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10',
                     confirmDelete && 'bg-destructive/10'
                   )}
                 >

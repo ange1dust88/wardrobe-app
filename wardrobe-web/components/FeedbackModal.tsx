@@ -37,7 +37,7 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
     <Dialog open onOpenChange={next => !next && onClose()}>
       <DialogPopup
         showCloseButton={false}
-        className='max-w-[440px] gap-0 rounded-[22px] p-0'
+        className='max-w-[440px] gap-0 rounded-[14px] p-0'
       >
         <div className='flex items-start justify-between gap-4 border-b border-border px-6 py-[18px]'>
           <div>
@@ -63,14 +63,14 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
             onChange={e => setMessage(e.target.value)}
             rows={5}
             placeholder="What's on your mind?"
-            className='w-full resize-none rounded-[12px] border border-border bg-background px-3.5 py-3 text-[14px] outline-none'
+            className='w-full resize-none rounded-[8px] border border-border bg-background px-3.5 py-3 text-[14px] outline-none'
           />
           <div className='mt-4 flex items-center justify-end gap-2.5'>
             <Button
               type='button'
               variant='outline'
               onClick={onClose}
-              className='h-11 rounded-[12px]'
+              className='h-11 rounded-[8px]'
             >
               Cancel
             </Button>
@@ -79,7 +79,7 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
               onClick={submit}
               disabled={!canSend}
               loading={sending}
-              className='h-11 rounded-[12px] px-6 font-bold'
+              className='h-11 rounded-[8px] px-6 font-bold'
             >
               Send
             </Button>

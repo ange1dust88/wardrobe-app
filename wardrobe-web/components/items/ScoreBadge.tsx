@@ -14,7 +14,7 @@ export function ScoreBadge({ score, variant = 'full', className }: Props) {
       className={cn(
         'font-heading font-bold text-white',
         variant === 'full'
-          ? 'rounded-[9px] px-2.5 py-0.5 text-[13px]'
+          ? 'rounded-[7px] px-2.5 py-0.5 text-[13px]'
           : 'rounded-md px-1.5 text-[12px] shadow',
         className
       )}

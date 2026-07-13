@@ -1,13 +1,20 @@
 import type { Metadata } from 'next'
-import { Geist_Mono, Inter } from 'next/font/google'
+import {
+  Bricolage_Grotesque,
+  Hanken_Grotesk,
+  JetBrains_Mono,
+} from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 import Package from '@/package.json'
 import { cn } from '@/lib/utils'
 
-const interHeading = Inter({ subsets: ['latin'], variable: '--font-heading' })
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
-const geistMono = Geist_Mono({ variable: '--font-mono', subsets: ['latin'] })
+const heading = Bricolage_Grotesque({
+  subsets: ['latin'],
+  variable: '--font-heading',
+})
+const sans = Hanken_Grotesk({ subsets: ['latin'], variable: '--font-sans' })
+const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' })
 
 export const metadata: Metadata = {
   title: Package.name,
@@ -26,9 +33,9 @@ export default function RootLayout({
         'h-full',
         'antialiased',
         'font-sans',
-        geistMono.variable,
-        inter.variable,
-        interHeading.variable
+        mono.variable,
+        sans.variable,
+        heading.variable
       )}
     >
       <body>

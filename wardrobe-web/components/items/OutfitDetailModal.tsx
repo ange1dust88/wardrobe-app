@@ -11,7 +11,12 @@ import {
   XIcon,
 } from 'lucide-react'
 import { useState } from 'react'
-import { CATEGORIES, getItemImageSrc, type Folder, type Item } from '@/lib/items'
+import {
+  CATEGORIES,
+  getItemImageSrc,
+  type Folder,
+  type Item,
+} from '@/lib/items'
 import { timeAgo } from '@/lib/date'
 import { getMatchScoreTone } from '@/lib/match-score'
 import { cn } from '@/lib/utils'
@@ -51,7 +56,9 @@ function paletteLabel(items: Item[]): string {
 }
 
 function formalityLabel(items: Item[]): string | null {
-  const present = FORMALITY_ORDER.filter(f => items.some(i => i.formality === f))
+  const present = FORMALITY_ORDER.filter(f =>
+    items.some(i => i.formality === f)
+  )
   if (present.length === 0) return null
   return present
     .slice(0, 2)
@@ -124,8 +131,7 @@ export function OutfitDetailModal({
   onDelete,
 }: Props) {
   const [confirmDelete, setConfirmDelete] = useState(false)
-  const tier =
-    look.harmony != null ? getMatchScoreTone(look.harmony) : null
+  const tier = look.harmony != null ? getMatchScoreTone(look.harmony) : null
   const sorted = [...look.items].sort(byCategory)
   const garments = look.items.filter(i => i.category !== 'accessory')
   const accessories = look.items.filter(i => i.category === 'accessory')
@@ -151,11 +157,11 @@ export function OutfitDetailModal({
     <Dialog open onOpenChange={next => !next && onClose()}>
       <DialogPopup
         showCloseButton={false}
-        className='max-h-[calc(100svh-3rem)] w-[min(880px,calc(100vw-2rem))] max-w-none gap-0 overflow-hidden rounded-[28px] p-0'
+        className='max-h-[calc(100svh-3rem)] w-[min(880px,calc(100vw-2rem))] max-w-none gap-0 overflow-hidden rounded-[16px] p-0'
       >
         <div className='flex max-h-[calc(100svh-3rem)] flex-col overflow-y-auto md:flex-row md:overflow-hidden'>
           <div className='flex flex-col gap-4 border-b border-border bg-muted p-6 md:w-[42%] md:border-r md:border-b-0'>
-            <div className='text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase'>
+            <div className='font-mono text-[10.5px] tracking-[0.14em] text-muted-foreground uppercase'>
               The look
             </div>
             <div className='flex min-h-0 flex-1 flex-col gap-3'>
@@ -167,7 +173,7 @@ export function OutfitDetailModal({
                       <div
                         key={item.id}
                         className={cn(
-                          'relative flex-1 overflow-hidden rounded-[18px] border border-border shadow-sm',
+                          'relative flex-1 overflow-hidden rounded-[12px] border border-border shadow-sm',
                           img && 'bg-background'
                         )}
                         style={img ? undefined : { background: item.color.hex }}
@@ -185,7 +191,7 @@ export function OutfitDetailModal({
                 </div>
               ))}
               {look.items.length === 0 && (
-                <div className='flex flex-1 items-center justify-center rounded-[18px] border border-dashed border-border text-[13px] text-muted-foreground'>
+                <div className='flex flex-1 items-center justify-center rounded-[12px] border border-dashed border-border text-[13px] text-muted-foreground'>
                   No pieces left
                 </div>
               )}
@@ -200,7 +206,7 @@ export function OutfitDetailModal({
                       key={item.id}
                       title={item.name}
                       className={cn(
-                        'relative size-12 flex-none overflow-hidden rounded-[13px] border border-border shadow-sm',
+                        'relative size-12 flex-none overflow-hidden rounded-[11px] border border-border shadow-sm',
                         img && 'bg-background'
                       )}
                       style={img ? undefined : { background: item.color.hex }}
@@ -225,7 +231,12 @@ export function OutfitDetailModal({
                   color={tier?.solidColor ?? 'var(--border)'}
                 />
                 <div className='absolute inset-0 flex items-center justify-center'>
-                  <span className='font-heading text-[18px] font-bold'>
+                  <span
+                    className='font-heading text-[20px] font-extrabold'
+                    style={{
+                      color: tier?.solidColor ?? 'var(--muted-foreground)',
+                    }}
+                  >
                     {look.harmony ?? '—'}
                   </span>
                 </div>
@@ -233,7 +244,9 @@ export function OutfitDetailModal({
               <div className='leading-tight'>
                 <div
                   className='text-[15px] font-bold'
-                  style={{ color: tier?.solidColor ?? 'var(--muted-foreground)' }}
+                  style={{
+                    color: tier?.solidColor ?? 'var(--muted-foreground)',
+                  }}
                 >
                   {tier ? tier.label : 'Not scored'}
                 </div>
@@ -286,7 +299,7 @@ export function OutfitDetailModal({
                 )}
               </div>
 
-              <div className='mt-6 text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase'>
+              <div className='mt-6 font-mono text-[10.5px] tracking-[0.14em] text-muted-foreground uppercase'>
                 {look.items.length} piece{look.items.length === 1 ? '' : 's'}
               </div>
               <div className='mt-1'>
@@ -301,7 +314,7 @@ export function OutfitDetailModal({
                       )}
                     >
                       <span
-                        className='relative size-11 flex-none overflow-hidden rounded-[11px] border border-border'
+                        className='relative size-12 flex-none overflow-hidden rounded-[11px] border border-border'
                         style={{ background: item.color.hex }}
                       >
                         {img && (
@@ -315,7 +328,7 @@ export function OutfitDetailModal({
                       <span className='min-w-0 flex-1 truncate text-[15px] font-semibold'>
                         {item.name}
                       </span>
-                      <span className='text-[11px] font-semibold tracking-wide text-muted-foreground uppercase'>
+                      <span className='font-mono text-[10px] tracking-[0.1em] text-muted-foreground uppercase'>
                         {item.category}
                       </span>
                     </div>
@@ -325,7 +338,7 @@ export function OutfitDetailModal({
 
               {chips.length > 0 && look.items.length > 0 && (
                 <>
-                  <div className='mt-6 text-[11px] font-semibold tracking-[0.14em] text-muted-foreground uppercase'>
+                  <div className='mt-6 font-mono text-[10.5px] tracking-[0.14em] text-muted-foreground uppercase'>
                     Why it works
                   </div>
                   <div className='mt-3 flex flex-wrap gap-2'>
@@ -350,7 +363,7 @@ export function OutfitDetailModal({
                 onClick={handleDelete}
                 onBlur={() => setConfirmDelete(false)}
                 className={cn(
-                  'h-12 rounded-[13px] border-destructive/30 text-destructive hover:bg-destructive/5',
+                  'h-10 rounded-[8px] text-[13.5px] border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10',
                   confirmDelete && 'bg-destructive/10'
                 )}
               >
@@ -362,7 +375,7 @@ export function OutfitDetailModal({
                   variant='outline'
                   onClick={onDuplicate}
                   disabled={look.items.length === 0}
-                  className='h-12 rounded-[13px]'
+                  className='h-10 rounded-[8px] text-[13.5px]'
                 >
                   <CopyIcon className='size-4' />
                   Duplicate
@@ -370,7 +383,7 @@ export function OutfitDetailModal({
                 <Button
                   type='button'
                   onClick={onEdit}
-                  className='h-12 rounded-[13px] px-6 text-[15px] font-bold'
+                  className='h-10 rounded-[8px] px-5 text-[13.5px] font-semibold'
                 >
                   <PencilIcon className='size-4' />
                   Edit

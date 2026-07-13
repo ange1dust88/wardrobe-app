@@ -18,12 +18,19 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty'
-import { Spinner } from '@/components/ui/spinner'
-import { STACK_POLICY, type Item, type ScoreBreakdown } from '@/lib/items'
+import { GarmentLoader } from '@/components/GarmentLoader'
+import { HiddenShelf } from '@/components/items/HiddenShelf'
+import { WardrobeFilter } from '@/components/items/WardrobeFilter'
+import {
+  CATEGORIES,
+  STACK_POLICY,
+  type Category,
+  type Item,
+  type ScoreBreakdown,
+} from '@/lib/items'
 import { harmonyOf } from '@/lib/harmony'
 import { MIN_RECOMMENDABLE_SCORE } from '@/lib/match-score'
 import { notifyError, notifySuccess } from '@/lib/toast'
-import { useExcluded } from '@/hooks/useExcluded'
 import { useItems } from '@/hooks/useItems'
 import { useMatchMap } from '@/hooks/useMatchMap'
 import { useOutfits } from '@/hooks/useOutfits'
@@ -36,20 +43,47 @@ export default function WardrobePage() {
     showBreakdown,
     setEditingOutfit,
     wardrobeView,
+    searchOpen,
+    setSearchOpen,
+    hiddenOpen,
+    setHiddenOpen,
+    excluded,
     builder,
   } = useAppContext()
   const view = wardrobeView
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [editingItem, setEditingItem] = useState<Item | null>(null)
   const [allowConflicts, setAllowConflicts] = useState(false)
+  const [query, setQuery] = useState('')
+  const [catFilter, setCatFilter] = useState<Category | null>(null)
 
   const { itemsQuery, updateMutation, deleteMutation } = useItems()
   const { outfitsQuery } = useOutfits()
-  const { excludedIds, toggle: toggleExcluded } = useExcluded()
+  const excludedIds = excluded.excludedIds
+  const toggleExcluded = excluded.toggle
   const matchMap = useMatchMap(colorType, allowConflicts)
 
   const items = useMemo(() => itemsQuery.data ?? [], [itemsQuery.data])
   const map = matchMap.data ?? {}
+
+  const presentCategories = useMemo(
+    () => CATEGORIES.filter(c => items.some(i => i.category === c)),
+    [items]
+  )
+  const filterMatchIds = useMemo(() => {
+    if (!searchOpen) return null
+    const q = query.trim().toLowerCase()
+    if (q.length === 0 && catFilter == null) return null
+    return new Set(
+      items
+        .filter(
+          i =>
+            (!q || i.name.toLowerCase().includes(q)) &&
+            (!catFilter || i.category === catFilter)
+        )
+        .map(i => i.id)
+    )
+  }, [items, query, catFilter, searchOpen])
 
   const building = builder.selectedIds.length > 0
   const hoverCells =
@@ -156,11 +190,25 @@ export default function WardrobePage() {
 
   return (
     <div className='px-6 pt-6 pb-[168px] sm:px-8'>
-      <div className='mx-auto flex min-h-[calc(100svh-232px)] max-w-[1100px] items-center justify-center'>
+      {hasItems && searchOpen && (
+        <WardrobeFilter
+          query={query}
+          onQuery={setQuery}
+          categories={presentCategories}
+          activeCat={catFilter}
+          onCat={setCatFilter}
+          resultCount={filterMatchIds?.size ?? 0}
+          total={items.length}
+          onClose={() => setSearchOpen(false)}
+        />
+      )}
+      <div
+        className={`mx-auto flex min-h-[calc(100svh-232px)] max-w-[1100px] justify-center ${
+          view === 'list' ? 'items-start' : 'items-center'
+        } ${searchOpen && view === 'list' ? 'pt-[56px]' : ''}`}
+      >
         {itemsQuery.isLoading ? (
-          <div className='flex items-center justify-center py-24'>
-            <Spinner className='size-6 text-muted-foreground' />
-          </div>
+          <GarmentLoader label='loading your wardrobe' />
         ) : errorMessage ? (
           <Alert variant='error' className='max-w-lg'>
             <AlertTitle>Failed to load items</AlertTitle>
@@ -197,6 +245,8 @@ export default function WardrobePage() {
               onSelect={builder.toggle}
               onEdit={setEditingItem}
               excludedIds={excludedIds}
+              matchLoading={matchMap.isLoading}
+              filterMatchIds={filterMatchIds}
               onToggleExclude={item => toggleExcluded(item.id)}
             />
           </div>
@@ -212,11 +262,22 @@ export default function WardrobePage() {
               onSelect={builder.toggle}
               onEdit={setEditingItem}
               excludedIds={excludedIds}
+              filterMatchIds={filterMatchIds}
               onToggleExclude={item => toggleExcluded(item.id)}
             />
           </div>
         )}
       </div>
+
+      <HiddenShelf
+        open={hiddenOpen}
+        onClose={() => setHiddenOpen(false)}
+        items={items}
+        excludedIds={excludedIds}
+        onRestore={excluded.restore}
+        onRestoreAll={excluded.restoreAll}
+        onHideMany={excluded.hideMany}
+      />
 
       {hasItems && (
         <OutfitBar

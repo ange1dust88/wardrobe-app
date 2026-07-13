@@ -16,7 +16,7 @@ import { BRAND_ACCENT } from '@/lib/theme'
 const ACCENT = BRAND_ACCENT
 const FONT = "'Helvetica Neue', Helvetica, Arial, sans-serif"
 const PILL =
-  'inline-flex cursor-pointer items-center justify-center rounded-full bg-[#111] px-[30px] py-[15px] text-[20px] font-bold text-white'
+  'inline-flex cursor-pointer items-center justify-center rounded-full bg-[#1b1e20] px-[30px] py-[15px] text-[20px] font-bold text-white'
 
 type Props = {
   onComplete: (result: ProfileInput) => void
@@ -36,7 +36,7 @@ function Chip({
     <button
       type='button'
       onClick={onClick}
-      className='inline-flex cursor-pointer items-center gap-[11px] rounded-full bg-[#111] py-[13px] pr-[24px] pl-[15px]'
+      className='inline-flex cursor-pointer items-center gap-[11px] rounded-full bg-[#1b1e20] py-[13px] pr-[24px] pl-[15px]'
     >
       <span
         className='h-[18px] w-[18px] flex-none rounded-full transition-colors'
@@ -96,7 +96,7 @@ export function Onboarding({ onComplete, saving }: Props) {
 
   return (
     <div
-      className='flex min-h-screen flex-col items-center bg-white px-6 pt-[44px] pb-10 text-[#111]'
+      className='flex min-h-screen flex-col items-center bg-[#eef0f1] px-6 pt-[44px] pb-10 text-[#1b1e20]'
       style={{ fontFamily: FONT }}
     >
       {step === 0 && (
@@ -179,7 +179,7 @@ export function Onboarding({ onComplete, saving }: Props) {
                         className='flex cursor-pointer flex-col items-center gap-[11px] bg-transparent'
                       >
                         <div
-                          className='rounded-[22px] p-2 transition-[border-color,filter] duration-200'
+                          className='rounded-[14px] p-2 transition-[border-color,filter] duration-200'
                           style={{
                             border: `3px solid ${selected ? ACCENT : 'transparent'}`,
                             filter: faded ? 'saturate(.3) opacity(.5)' : 'none',
@@ -189,7 +189,7 @@ export function Onboarding({ onComplete, saving }: Props) {
                             {palette.colors.map(color => (
                               <div
                                 key={color}
-                                className='h-[60px] w-[60px] rounded-[15px]'
+                                className='h-[60px] w-[60px] rounded-[10px]'
                                 style={{ background: color }}
                               />
                             ))}
@@ -198,7 +198,7 @@ export function Onboarding({ onComplete, saving }: Props) {
                         <div
                           className='text-[17px] transition-colors'
                           style={{
-                            color: faded ? '#c4c4c4' : '#111',
+                            color: faded ? '#c4c4c4' : '#1b1e20',
                             fontWeight: selected ? 500 : 400,
                           }}
                         >
@@ -246,7 +246,9 @@ export function Onboarding({ onComplete, saving }: Props) {
           >
             ✓
           </div>
-          <div className='mt-[26px] text-[31px] font-bold'>you&apos;re all set</div>
+          <div className='mt-[26px] text-[31px] font-bold'>
+            you&apos;re all set
+          </div>
           <div className='mt-[10px] text-[20px] font-normal text-[#8a8a8a]'>
             dress is tuned to your picks
           </div>

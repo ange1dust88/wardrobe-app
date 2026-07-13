@@ -17,18 +17,38 @@ function load(): string[] {
 export function useExcluded() {
   const [ids, setIds] = useState<string[]>(load)
 
-  const toggle = useCallback((id: string) => {
-    const current = load()
-    const next = current.includes(id)
-      ? current.filter(x => x !== id)
-      : [...current, id]
+  const write = useCallback((next: string[]) => {
     setIds(next)
     if (typeof window !== 'undefined') {
       localStorage.setItem(KEY, JSON.stringify(next))
     }
   }, [])
 
+  const toggle = useCallback(
+    (id: string) => {
+      const current = load()
+      write(
+        current.includes(id) ? current.filter(x => x !== id) : [...current, id]
+      )
+    },
+    [write]
+  )
+
+  const restore = useCallback(
+    (id: string) => write(load().filter(x => x !== id)),
+    [write]
+  )
+
+  const restoreAll = useCallback(() => write([]), [write])
+
+  const hideMany = useCallback(
+    (add: string[]) => write([...new Set([...load(), ...add])]),
+    [write]
+  )
+
   const excludedIds = useMemo(() => new Set(ids), [ids])
 
-  return { excludedIds, toggle }
+  return { excludedIds, toggle, restore, restoreAll, hideMany }
 }
+
+export type ExcludedApi = ReturnType<typeof useExcluded>

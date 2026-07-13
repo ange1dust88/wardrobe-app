@@ -29,7 +29,7 @@ export function CreateFolderModal({ onClose, onCreate }: Props) {
     <Dialog open onOpenChange={next => !next && onClose()}>
       <DialogPopup
         showCloseButton={false}
-        className='max-w-[400px] gap-0 rounded-[22px] p-0'
+        className='max-w-[400px] gap-0 rounded-[14px] p-0'
       >
         <div className='flex items-center justify-between gap-4 border-b border-border px-6 py-[18px]'>
           <DialogTitle className='font-heading text-[19px] leading-none font-bold tracking-tight'>
@@ -55,21 +55,21 @@ export function CreateFolderModal({ onClose, onCreate }: Props) {
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder='e.g. Work, Casual, Event'
-            className='w-full rounded-[12px] border border-border bg-background px-3.5 py-3 text-[15px] outline-none'
+            className='w-full rounded-[8px] border border-border bg-background px-3.5 py-3 text-[15px] outline-none'
           />
           <div className='mt-4 flex items-center justify-end gap-2.5'>
             <Button
               type='button'
               variant='outline'
               onClick={onClose}
-              className='h-11 rounded-[12px]'
+              className='h-11 rounded-[8px]'
             >
               Cancel
             </Button>
             <Button
               type='submit'
               disabled={!canCreate}
-              className='h-11 rounded-[12px] px-6 font-bold'
+              className='h-11 rounded-[8px] px-6 font-bold'
             >
               Create
             </Button>

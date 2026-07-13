@@ -34,7 +34,7 @@ export default function GlobalError({
           type='button'
           onClick={() => reset()}
           style={{
-            borderRadius: 12,
+            borderRadius: 8,
             border: 'none',
             background: '#252523',
             color: '#fbfaf6',
