@@ -7,12 +7,12 @@ import { LoginScreen } from '@/components/auth/LoginScreen'
 import { Onboarding } from '@/components/onboarding/Onboarding'
 import { AppRail } from '@/components/AppRail'
 import { AppTopStrip } from '@/components/AppTopStrip'
+import { PageTransition } from '@/components/PageTransition'
 import { AppProvider } from '@/components/AppContext'
 import { FeedbackModal } from '@/components/FeedbackModal'
 import { AddItemModal } from '@/components/items/AddItemModal'
 import { ProfileModal } from '@/components/profile/ProfileModal'
 import { GarmentLoader } from '@/components/GarmentLoader'
-import type { WardrobeView } from '@/components/AppContext'
 import type { Item, Outfit } from '@/lib/items'
 import { useExcluded } from '@/hooks/useExcluded'
 import { useItems } from '@/hooks/useItems'
@@ -73,7 +73,6 @@ function FrameChrome({
   const [profileOpen, setProfileOpen] = useState(false)
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [editingOutfit, setEditingOutfit] = useState<Outfit | null>(null)
-  const [wardrobeView, setWardrobeView] = useState<WardrobeView>('circular')
   const [searchOpen, setSearchOpen] = useState(false)
   const [hiddenOpen, setHiddenOpen] = useState(false)
   const excluded = useExcluded()
@@ -132,7 +131,9 @@ function FrameChrome({
   useEffect(() => {
     const prev = prevPathRef.current
     prevPathRef.current = pathname
-    if (prev === '/' && pathname !== '/' && editingOutfit != null) {
+    const wasWardrobe = prev === '/' || prev === '/list'
+    const nowWardrobe = pathname === '/' || pathname === '/list'
+    if (wasWardrobe && !nowWardrobe && editingOutfit != null) {
       setEditingOutfit(null)
       clearBuilder()
     }
@@ -169,8 +170,6 @@ function FrameChrome({
         setShowBreakdown,
         editingOutfit,
         setEditingOutfit,
-        wardrobeView,
-        setWardrobeView,
         searchOpen,
         setSearchOpen,
         hiddenOpen,
@@ -194,8 +193,6 @@ function FrameChrome({
             itemCount={itemCount}
             catCount={catCount}
             savedCount={savedCount}
-            view={wardrobeView}
-            onView={setWardrobeView}
             searchOpen={searchOpen}
             onToggleSearch={() => setSearchOpen(!searchOpen)}
             hiddenCount={hiddenCount}
@@ -204,7 +201,7 @@ function FrameChrome({
             onAddItem={() => setAddOpen(true)}
           />
 
-          {children}
+          <PageTransition>{children}</PageTransition>
         </div>
 
         <AddItemModal

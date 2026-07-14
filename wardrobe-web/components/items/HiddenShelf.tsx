@@ -11,6 +11,7 @@ import {
   type Season,
 } from '@/lib/items'
 import { cn } from '@/lib/utils'
+import { usePresence } from '@/hooks/usePresence'
 
 type Props = {
   open: boolean
@@ -51,7 +52,8 @@ export function HiddenShelf({
   onRestoreAll,
   onHideMany,
 }: Props) {
-  if (!open) return null
+  const { rendered, state } = usePresence(open)
+  if (!rendered) return null
 
   const hidden = items.filter(i => excludedIds.has(i.id))
   const visible = items.filter(i => !excludedIds.has(i.id))
@@ -69,7 +71,12 @@ export function HiddenShelf({
   return (
     <div
       className='fixed top-[64px] right-[24px] z-40 flex max-h-[calc(100svh-96px)] w-[340px] max-w-[calc(100vw-40px)] flex-col overflow-hidden rounded-[16px] border border-border bg-card/95 shadow-[0_16px_44px_rgba(20,28,36,0.18)] backdrop-blur-md'
-      style={{ animation: 'bar-dock 0.22s ease both' }}
+      style={{
+        animation:
+          state === 'in'
+            ? 'bar-dock 0.3s cubic-bezier(0.2,0.7,0.2,1) both'
+            : 'bar-undock 0.3s cubic-bezier(0.2,0.7,0.2,1) both',
+      }}
     >
       <div className='flex flex-none items-center justify-between border-b border-border px-5 py-4'>
         <div className='flex items-baseline gap-2'>

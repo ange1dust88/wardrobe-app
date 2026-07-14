@@ -4,8 +4,10 @@ import {
   ChartColumn,
   HelpCircle,
   LayoutGrid,
+  LayoutList,
   MessageCircle,
   Plus,
+  Sparkles,
   Target,
 } from 'lucide-react'
 import Link from 'next/link'
@@ -39,9 +41,11 @@ export function AppRail({
   onProfile,
 }: Props) {
   const pathname = usePathname()
-  const isWardrobe = pathname === '/'
+  const isWheel = pathname === '/'
+  const isList = pathname === '/list'
   const isOutfits = pathname === '/outfits'
   const isAnalytics = pathname === '/analytics'
+  const isTestDrive = pathname === '/test-drive'
   const isHow = pathname === '/how-it-works'
 
   return (
@@ -61,12 +65,20 @@ export function AppRail({
 
       <Link
         href='/'
-        aria-label='Wardrobe'
-        title='Wardrobe'
+        aria-label='Wheel'
+        title='Wheel'
         onClick={onHome}
-        className={railLink(isWardrobe)}
+        className={railLink(isWheel)}
       >
         <Target className='size-[18px]' />
+      </Link>
+      <Link
+        href='/list'
+        aria-label='List'
+        title='List'
+        className={railLink(isList)}
+      >
+        <LayoutList className='size-[18px]' />
       </Link>
       <Link
         href='/outfits'
@@ -82,20 +94,28 @@ export function AppRail({
         )}
       </Link>
       <Link
-        href='/analytics'
-        aria-label='Analytics'
-        title='Analytics'
-        className={railLink(isAnalytics)}
-      >
-        <ChartColumn className='size-[18px]' />
-      </Link>
-      <Link
         href='/how-it-works'
         aria-label='How it works'
         title='How it works'
         className={railLink(isHow)}
       >
         <HelpCircle className='size-[18px]' />
+      </Link>
+      <Link
+        href='/analytics'
+        aria-label='Insights'
+        title='Insights'
+        className={railLink(isAnalytics)}
+      >
+        <ChartColumn className='size-[18px]' />
+      </Link>
+      <Link
+        href='/test-drive'
+        aria-label='Should I buy?'
+        title='Should I buy?'
+        className={railLink(isTestDrive)}
+      >
+        <Sparkles className='size-[18px]' />
       </Link>
 
       <div className='flex-1' />

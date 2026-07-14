@@ -70,7 +70,9 @@ export function OutfitBar({
       {items.length === 0 && !editing ? (
         <div
           className='pointer-events-auto flex items-center gap-3 rounded-[16px] border border-border bg-card/95 px-[24px] py-[17px] text-[14px] text-muted-foreground shadow-[0_14px_44px_-8px_rgba(20,28,36,0.24)] backdrop-blur-md'
-          style={{ animation: 'bar-dock 0.35s ease both' }}
+          style={{
+            animation: 'bar-dock 0.3s cubic-bezier(0.2,0.7,0.2,1) both',
+          }}
         >
           <span className='size-[34px] flex-none rounded-[10px] bg-border' />
           <div>
@@ -83,7 +85,9 @@ export function OutfitBar({
           {conflicts.length > 0 && !allowConflicts && (
             <div
               className='pointer-events-auto flex max-w-[calc(100vw-70px-48px)] flex-wrap items-center gap-x-3 gap-y-1 rounded-[16px] border border-warning/40 bg-warning/10 px-[18px] py-[11px] text-[12.5px] shadow-[0_14px_44px_-10px_rgba(20,28,36,0.24)] backdrop-blur-md'
-              style={{ animation: 'bar-dock 0.35s ease both' }}
+              style={{
+                animation: 'bar-dock 0.3s cubic-bezier(0.2,0.7,0.2,1) both',
+              }}
             >
               <span className='font-semibold tracking-wide text-warning uppercase'>
                 Doesn&apos;t go together
@@ -115,7 +119,9 @@ export function OutfitBar({
 
           <div
             className='pointer-events-auto flex max-w-[calc(100vw-70px-48px)] flex-wrap items-center gap-[15px] rounded-[18px] border border-border bg-card/95 px-[18px] py-[14px] shadow-[0_14px_44px_-10px_rgba(20,28,36,0.24)] backdrop-blur-md'
-            style={{ animation: 'bar-dock 0.35s ease both' }}
+            style={{
+              animation: 'bar-dock 0.3s cubic-bezier(0.2,0.7,0.2,1) both',
+            }}
           >
             <div className='flex flex-none flex-col items-start gap-px border-r border-border pr-[15px] leading-none'>
               {harmony != null && tier ? (

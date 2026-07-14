@@ -8,7 +8,9 @@ import {
 import { BRAND_ACCENT } from '../../lib/theme'
 import { cn } from '../../lib/utils'
 import type { ScoreBreakdown } from '../../lib/items'
+import { useCoarsePointer } from '../../hooks/useCoarsePointer'
 import { ScoreDetail } from './ScoreDetail'
+import { TileMenu } from './TileMenu'
 
 type Props = {
   items: Item[]
@@ -47,6 +49,7 @@ export function MatchWheel({
   onToggleExclude,
 }: Props) {
   const [openDetailId, setOpenDetailId] = useState<string | null>(null)
+  const coarse = useCoarsePointer()
   const ordered = [...items]
     .filter(i => !excludedIds.has(i.id))
     .sort((a, b) => {
@@ -65,7 +68,7 @@ export function MatchWheel({
   }
 
   const crowd = Math.min(1, (2 * Math.PI * R) / (n * 122))
-  const sz = Math.round(100 * crowd)
+  const sz = Math.round(114 * crowd)
   const szPct = (sz / BOX) * 100
 
   const active =
@@ -288,7 +291,7 @@ export function MatchWheel({
               )}
             </button>
 
-            {isHover && (
+            {!coarse && isHover && (
               <button
                 type='button'
                 onClick={() => onEdit(item)}
@@ -299,7 +302,7 @@ export function MatchWheel({
               </button>
             )}
 
-            {isHover && !isSel && (
+            {!coarse && isHover && !isSel && (
               <button
                 type='button'
                 onClick={e => {
@@ -314,7 +317,17 @@ export function MatchWheel({
               </button>
             )}
 
-            {isMatch &&
+            {coarse && (
+              <TileMenu
+                canHide={!isSel}
+                breakdown={isMatch ? breakdownById[item.id] : null}
+                onEdit={() => onEdit(item)}
+                onHide={() => onToggleExclude(item)}
+              />
+            )}
+
+            {!coarse &&
+              isMatch &&
               breakdownById[item.id] &&
               (isHover || openDetailId === item.id) && (
                 <div

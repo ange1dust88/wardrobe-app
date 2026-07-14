@@ -1,15 +1,20 @@
 'use client'
 
 import { EyeOffIcon, PencilIcon } from 'lucide-react'
+import { useState } from 'react'
 import {
   CATEGORIES,
   CATEGORY_LABELS,
   getItemImageSrc,
   type Item,
+  type ScoreBreakdown,
 } from '@/lib/items'
 import { getMatchScoreTone } from '@/lib/match-score'
 import { BRAND_ACCENT } from '@/lib/theme'
+import { useCoarsePointer } from '@/hooks/useCoarsePointer'
 import { ScoreBadge } from './ScoreBadge'
+import { ScoreDetail } from './ScoreDetail'
+import { TileMenu } from './TileMenu'
 
 type Props = {
   items: Item[]
@@ -17,6 +22,7 @@ type Props = {
   activeId: string | null
   matchedIds: Set<string>
   scoreById: Record<string, number>
+  breakdownById?: Record<string, ScoreBreakdown>
   excludedIds?: Set<string>
   filterMatchIds?: Set<string> | null
   onHover: (id: string | null) => void
@@ -25,12 +31,15 @@ type Props = {
   onToggleExclude: (item: Item) => void
 }
 
+type Detail = { id: string; left: number; y: number; flipUp: boolean }
+
 export function OutfitCarousel({
   items,
   selectedIds,
   activeId,
   matchedIds,
   scoreById,
+  breakdownById = {},
   excludedIds = new Set(),
   filterMatchIds = null,
   onHover,
@@ -38,6 +47,9 @@ export function OutfitCarousel({
   onEdit,
   onToggleExclude,
 }: Props) {
+  const coarse = useCoarsePointer()
+  const [detail, setDetail] = useState<Detail | null>(null)
+
   const byId = new Map(items.map(i => [i.id, i]))
   const selectedSet = new Set(selectedIds)
   const selByCat = new Map<string, string>()
@@ -56,6 +68,16 @@ export function OutfitCarousel({
     items: items.filter(i => i.category === cat && !excludedIds.has(i.id)),
     selName: byId.get(selByCat.get(cat) ?? '')?.name ?? '',
   }))
+
+  function toggleDetail(id: string, el: HTMLElement) {
+    const r = el.getBoundingClientRect()
+    const flipUp = r.bottom > window.innerHeight - 260
+    setDetail(d =>
+      d?.id === id
+        ? null
+        : { id, left: r.left, y: flipUp ? r.top : r.bottom, flipUp }
+    )
+  }
 
   return (
     <div className='w-full' onMouseLeave={() => onHover(null)}>
@@ -84,6 +106,7 @@ export function OutfitCarousel({
                 const isMatch = matchedIds.has(item.id)
                 const isHover = item.id === activeId
                 const score = scoreById[item.id]
+                const breakdown = breakdownById[item.id]
                 const lit =
                   !isExcluded &&
                   (building
@@ -161,7 +184,7 @@ export function OutfitCarousel({
                         )}
                       </button>
 
-                      {isHover && (
+                      {!coarse && isHover && (
                         <button
                           type='button'
                           onClick={e => {
@@ -175,7 +198,7 @@ export function OutfitCarousel({
                         </button>
                       )}
 
-                      {isHover && !selected && (
+                      {!coarse && isHover && !selected && (
                         <button
                           type='button'
                           onClick={e => {
@@ -188,6 +211,29 @@ export function OutfitCarousel({
                         >
                           <EyeOffIcon className='size-3' />
                         </button>
+                      )}
+
+                      {!coarse && isMatch && breakdown && isHover && (
+                        <button
+                          type='button'
+                          onClick={e => {
+                            e.stopPropagation()
+                            toggleDetail(item.id, e.currentTarget)
+                          }}
+                          aria-label='Why this score'
+                          className='absolute -right-1 -bottom-1 z-10 flex size-6 items-center justify-center rounded-full border border-border bg-background text-[12px] font-bold text-muted-foreground shadow-sm hover:text-foreground'
+                        >
+                          ?
+                        </button>
+                      )}
+
+                      {coarse && !isExcluded && (
+                        <TileMenu
+                          canHide={!selected}
+                          breakdown={isMatch ? breakdown : null}
+                          onEdit={() => onEdit(item)}
+                          onHide={() => onToggleExclude(item)}
+                        />
                       )}
                     </div>
                     <div className='mt-2.5 text-center text-[12.5px] leading-tight font-semibold text-foreground'>
@@ -205,6 +251,30 @@ export function OutfitCarousel({
           </div>
         ))}
       </div>
+
+      {detail && breakdownById[detail.id] && (
+        <>
+          <button
+            type='button'
+            aria-hidden
+            tabIndex={-1}
+            onClick={() => setDetail(null)}
+            className='fixed inset-0 z-40 cursor-default'
+          />
+          <div
+            className='fixed z-50'
+            style={{
+              left: detail.left,
+              top: detail.y,
+              transform: detail.flipUp
+                ? 'translateY(calc(-100% - 8px))'
+                : 'translateY(8px)',
+            }}
+          >
+            <ScoreDetail breakdown={breakdownById[detail.id]} />
+          </div>
+        </>
+      )}
     </div>
   )
 }

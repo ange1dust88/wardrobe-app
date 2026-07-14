@@ -2,8 +2,10 @@
 
 import { CATEGORY_LABELS, type Category } from '@/lib/items'
 import { cn } from '@/lib/utils'
+import { usePresence } from '@/hooks/usePresence'
 
 type Props = {
+  open: boolean
   query: string
   onQuery: (value: string) => void
   categories: Category[]
@@ -24,6 +26,7 @@ function chip(active: boolean): string {
 }
 
 export function WardrobeFilter({
+  open,
   query,
   onQuery,
   categories,
@@ -33,13 +36,21 @@ export function WardrobeFilter({
   total,
   onClose,
 }: Props) {
+  const { rendered, state } = usePresence(open)
   const active = query.trim().length > 0 || activeCat != null
+
+  if (!rendered) return null
 
   return (
     <div className='pointer-events-none fixed top-[84px] right-0 left-[70px] z-30 px-6 sm:px-[26px]'>
       <div
         className='pointer-events-auto mx-auto flex max-w-[820px] flex-wrap items-center gap-3 rounded-[16px] border border-border bg-card/95 py-[10px] pr-[12px] pl-4 shadow-[0_10px_30px_rgba(30,40,50,0.09)] backdrop-blur-md'
-        style={{ animation: 'bar-dock 0.22s ease both' }}
+        style={{
+          animation:
+            state === 'in'
+              ? 'bar-dock 0.3s cubic-bezier(0.2,0.7,0.2,1) both'
+              : 'bar-undock 0.3s cubic-bezier(0.2,0.7,0.2,1) both',
+        }}
       >
         <svg
           width='16'

@@ -14,8 +14,6 @@ type AppContextValue = {
   setShowBreakdown: (value: boolean) => void
   editingOutfit: Outfit | null
   setEditingOutfit: (outfit: Outfit | null) => void
-  wardrobeView: WardrobeView
-  setWardrobeView: (view: WardrobeView) => void
   searchOpen: boolean
   setSearchOpen: (value: boolean) => void
   hiddenOpen: boolean
@@ -31,8 +29,6 @@ const AppContext = createContext<AppContextValue>({
   setShowBreakdown: () => {},
   editingOutfit: null,
   setEditingOutfit: () => {},
-  wardrobeView: 'circular',
-  setWardrobeView: () => {},
   searchOpen: false,
   setSearchOpen: () => {},
   hiddenOpen: false,

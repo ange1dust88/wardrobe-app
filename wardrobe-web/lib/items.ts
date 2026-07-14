@@ -257,10 +257,7 @@ export type UpdateItem = {
   image?: File | null
 }
 
-export async function updateItem(
-  id: string,
-  body: UpdateItem
-): Promise<Item> {
+export async function updateItem(id: string, body: UpdateItem): Promise<Item> {
   const formData = new FormData()
   formData.append('name', body.name)
   formData.append('category', body.category)
@@ -341,6 +338,68 @@ export async function fetchMatchMap(
   const query = params.toString() ? `?${params.toString()}` : ''
   const res = await apiFetch(`/items/matches/map${query}`)
   if (!res.ok) throw new Error(`GET /items/matches/map → ${res.status}`)
+  return res.json()
+}
+
+export type PreviewItemBody = {
+  category: Category
+  hex: string
+  accentHex?: string | null
+  pattern: Pattern
+  subType?: string | null
+  formality?: Formality | null
+  fit?: Fit | null
+  seasonWear: Season[]
+  excludeId?: string | null
+}
+
+export type MatchPreviewPair = {
+  id: string
+  name: string
+  category: Category
+  hex: string
+  imageUrl: string | null
+  score: number
+}
+
+export type MatchPreviewSlot = {
+  category: Category
+  owned: number
+  matches: number
+  compatible: boolean
+}
+
+export type MatchPreview = {
+  wardrobeSize: number
+  matchCount: number
+  avgScore: number | null
+  topScore: number | null
+  results: MatchPreviewPair[]
+  skipped: number
+  byCategory: MatchPreviewSlot[]
+}
+
+export async function previewMatches(
+  body: PreviewItemBody,
+  colorType?: string
+): Promise<MatchPreview> {
+  const query = colorType ? `?colorType=${encodeURIComponent(colorType)}` : ''
+  const res = await apiFetch(`/items/matches/preview${query}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      category: body.category,
+      hex: body.hex,
+      accentHex: body.accentHex ?? undefined,
+      pattern: body.pattern,
+      subType: body.subType ?? undefined,
+      formality: body.formality ?? undefined,
+      fit: body.fit ?? undefined,
+      seasonWear: body.seasonWear,
+      excludeId: body.excludeId ?? undefined,
+    }),
+  })
+  if (!res.ok) throw new Error(`POST /items/matches/preview → ${res.status}`)
   return res.json()
 }
 

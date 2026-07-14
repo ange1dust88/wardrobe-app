@@ -10,6 +10,7 @@ type Props = {
   onSubmit: (values: CreateItem, callbacks: { onSuccess: () => void }) => void
   pending?: boolean
   errorMessage?: string
+  initial?: CreateItem
 }
 
 export function AddItemModal({
@@ -18,8 +19,9 @@ export function AddItemModal({
   onSubmit,
   pending,
   errorMessage,
+  initial,
 }: Props) {
-  const form = useItemForm()
+  const form = useItemForm(initial)
 
   function submit() {
     if (!form.isValid) return

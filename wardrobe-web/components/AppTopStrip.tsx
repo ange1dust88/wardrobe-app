@@ -1,16 +1,13 @@
 'use client'
 
-import { EyeOff, LayoutList, Plus, Search, Target } from 'lucide-react'
+import { EyeOff, Plus, Search } from 'lucide-react'
 import { usePathname } from 'next/navigation'
-import type { WardrobeView } from '@/components/AppContext'
 import { cn } from '@/lib/utils'
 
 type Props = {
   itemCount: number
   catCount: number
   savedCount: number
-  view: WardrobeView
-  onView: (view: WardrobeView) => void
   searchOpen: boolean
   onToggleSearch: () => void
   hiddenCount: number
@@ -19,21 +16,10 @@ type Props = {
   onAddItem: () => void
 }
 
-function viewTab(active: boolean): string {
-  return cn(
-    'flex size-[30px] items-center justify-center rounded-lg transition-colors',
-    active
-      ? 'bg-card text-foreground shadow-sm'
-      : 'text-muted-foreground hover:text-foreground'
-  )
-}
-
 export function AppTopStrip({
   itemCount,
   catCount,
   savedCount,
-  view,
-  onView,
   searchOpen,
   onToggleSearch,
   hiddenCount,
@@ -42,7 +28,7 @@ export function AppTopStrip({
   onAddItem,
 }: Props) {
   const pathname = usePathname()
-  const isWardrobe = pathname === '/'
+  const isWardrobe = pathname === '/' || pathname === '/list'
   const isOutfits = pathname === '/outfits'
 
   let title = 'Wardrobe'
@@ -53,8 +39,11 @@ export function AppTopStrip({
     title = 'Saved outfits'
     subtitle = `${savedCount} look${savedCount === 1 ? '' : 's'}`
   } else if (pathname === '/analytics') {
-    title = 'Analytics'
+    title = 'Insights'
     subtitle = 'Your wardrobe, by the numbers'
+  } else if (pathname === '/test-drive') {
+    title = 'Should I buy?'
+    subtitle = 'Test-drive a piece against your wardrobe'
   } else if (pathname === '/how-it-works') {
     title = 'How it works'
     subtitle = 'The seven axes of a match'
@@ -112,32 +101,14 @@ export function AppTopStrip({
           </button>
         )}
         {isWardrobe && (
-          <div className='flex gap-[3px] rounded-[8px] bg-secondary/90 p-1'>
-            <button
-              type='button'
-              onClick={() => onView('circular')}
-              aria-label='Circular view'
-              className={viewTab(view === 'circular')}
-            >
-              <Target className='size-[15px]' />
-            </button>
-            <button
-              type='button'
-              onClick={() => onView('list')}
-              aria-label='List view'
-              className={viewTab(view === 'list')}
-            >
-              <LayoutList className='size-[15px]' />
-            </button>
-          </div>
+          <button
+            type='button'
+            onClick={onAddItem}
+            className='hidden items-center gap-1.5 rounded-[8px] bg-foreground px-[15px] py-[9px] text-[13px] font-semibold text-background sm:flex'
+          >
+            <Plus className='size-[15px]' /> Add item
+          </button>
         )}
-        <button
-          type='button'
-          onClick={onAddItem}
-          className='hidden items-center gap-1.5 rounded-[8px] bg-foreground px-[15px] py-[9px] text-[13px] font-semibold text-background sm:flex'
-        >
-          <Plus className='size-[15px]' /> Add item
-        </button>
       </div>
     </div>
   )

@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { ShoppingBag } from 'lucide-react'
 import { useAppContext } from '@/components/AppContext'
 import { EditItemModal } from '@/components/items/EditItemModal'
 import { GarmentLoader } from '@/components/GarmentLoader'
@@ -11,14 +12,66 @@ import {
   getItemImageSrc,
   type Category,
   type Item,
+  type PreviewItemBody,
+  type Season,
 } from '@/lib/items'
 import { SCORE_TIER_COLORS, getMatchScoreTone } from '@/lib/match-score'
 import { harmonyOf } from '@/lib/harmony'
 import { useItems } from '@/hooks/useItems'
 import { useMatchMap } from '@/hooks/useMatchMap'
+import { useMatchPreview } from '@/hooks/useMatchPreview'
 import { useOutfits } from '@/hooks/useOutfits'
+import { useProfile } from '@/hooks/useProfile'
+import type { Who } from '@/lib/onboarding'
 
 const CORE: Category[] = ['top', 'bottom', 'shoes']
+
+const ALL_SEASONS: Season[] = ['spring', 'summer', 'autumn', 'winter']
+
+function SuggestionGain({
+  category,
+  swatch,
+  gainColor,
+  colorType,
+}: {
+  category: Category
+  swatch: string
+  gainColor: string
+  colorType: string | null
+}) {
+  const body = useMemo<PreviewItemBody>(
+    () => ({
+      category,
+      hex: swatch,
+      accentHex: null,
+      pattern: 'solid',
+      formality: null,
+      fit: null,
+      seasonWear: ALL_SEASONS,
+    }),
+    [category, swatch]
+  )
+  const { data, isFetching } = useMatchPreview(body, colorType)
+  const label = data
+    ? `pairs with ${data.matchCount}`
+    : isFetching
+      ? 'scoring…'
+      : '—'
+  return (
+    <span
+      className='flex items-center gap-1.5 text-[12.5px] font-bold'
+      style={{ color: gainColor }}
+    >
+      ↗ {label}
+    </span>
+  )
+}
+
+function shopUrl(who: Who | null, terms: string): string {
+  const g = who === 'men' ? "men's " : who === 'women' ? "women's " : ''
+  const q = `${g}${terms}`.trim()
+  return `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(q)}`
+}
 
 function Heading({
   title,
@@ -50,6 +103,8 @@ export default function AnalyticsPage() {
   const { colorType } = useAppContext()
   const { itemsQuery, updateMutation, deleteMutation } = useItems()
   const { outfitsQuery } = useOutfits()
+  const { profileQuery } = useProfile()
+  const who = profileQuery.data?.who ?? null
   const matchMap = useMatchMap(colorType, true)
   const [editingItem, setEditingItem] = useState<Item | null>(null)
 
@@ -89,57 +144,62 @@ export default function AnalyticsPage() {
     })
 
     const isAccent = (i: Item) => i.wardrobeRole === 'pop'
+    const unwornAccents = unworn.filter(isAccent)
+    const tops = cnt('top')
+
     const sug: {
       title: string
       tag: string
       swatch: string
+      category: Category
       reason: string
-      gain: string
       gainColor: string
+      query: string
     }[] = []
-    if (cnt('bottom') <= 2)
+    if (cnt('bottom') <= 2) {
       sug.push({
-        title: 'A mid-tone trouser',
-        tag: 'Bottoms · thin',
+        title: 'A neutral bottom',
+        tag: `Bottom · ${cnt('bottom') === 0 ? 'missing' : 'thin'}`,
         swatch: '#8a8f7e',
-        reason:
-          'You lean top-heavy. One versatile neutral bottom bridges most of your tops and shoes.',
-        gain: 'more looks unlocked',
+        category: 'bottom',
+        reason: `Only ${cnt('bottom')} bottom${cnt('bottom') === 1 ? '' : 's'} on hand — a neutral trouser stretches across the most looks.`,
         gainColor: SCORE_TIER_COLORS.great,
+        query: 'neutral tapered trousers',
       })
-    if (
-      cnt('outerwear') === 0 &&
-      !items.some(i => /jacket|coat|outer/i.test(i.name))
-    )
+    }
+    if (cnt('shoes') <= 2) {
+      sug.push({
+        title: 'Another pair of shoes',
+        tag: `Shoes · ${cnt('shoes') === 0 ? 'missing' : 'thin'}`,
+        swatch: '#6f665c',
+        category: 'shoes',
+        reason: `${cnt('shoes')} pair${cnt('shoes') === 1 ? '' : 's'} so far — a versatile neutral pair finishes more outfits.`,
+        gainColor: SCORE_TIER_COLORS.works,
+        query: 'minimal leather sneakers',
+      })
+    }
+    if (cnt('outerwear') === 0 && tops > 0) {
       sug.push({
         title: 'A light overshirt',
         tag: 'Layer · missing',
         swatch: '#3d4a5c',
-        reason:
-          'No outer layer yet — a neutral overshirt extends every casual look into cooler weather.',
-        gain: 'unlocks 3 seasons',
+        category: 'outerwear',
+        reason: `No outer layer yet — one neutral overshirt layers over your ${tops} top${tops === 1 ? '' : 's'} and stretches looks into cooler weather.`,
         gainColor: SCORE_TIER_COLORS.perfect,
+        query: 'neutral overshirt jacket',
       })
-    if (unworn.some(isAccent))
+    }
+    if (unwornAccents.length >= 1) {
       sug.push({
         title: 'A neutral bridge piece',
         tag: 'Pairing · unlock',
         swatch: '#d8d4cc',
-        reason:
-          'Your accent pieces sit unused. A plain neutral partner gives them something to pair with.',
-        gain: 'wakes idle pieces',
+        category: 'top',
+        reason: `${unwornAccents.length} bold piece${unwornAccents.length === 1 ? '' : 's'} sit unused — a plain neutral partner gives them something to pair with.`,
         gainColor: SCORE_TIER_COLORS.works,
+        query: 'plain neutral crew t-shirt',
       })
-    if (cnt('shoes') <= 2)
-      sug.push({
-        title: 'A smarter shoe',
-        tag: 'Shoes · dress up',
-        swatch: '#4a3527',
-        reason:
-          'Your shoes read casual. One smarter pair lets you build looks above the everyday.',
-        gain: 'more range',
-        gainColor: SCORE_TIER_COLORS.works,
-      })
+    }
 
     const tierColor = getMatchScoreTone(avgHarmony).solidColor
     const stats = [
@@ -192,8 +252,8 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className='px-6 pt-4 pb-24 sm:px-10'>
-      <div className='mx-auto max-w-[900px]'>
+    <div className='px-6 pt-4 pb-24 sm:px-12'>
+      <div className='max-w-[900px]'>
         {/* STAT BAND */}
         <div className='grid grid-cols-2 gap-4 sm:grid-cols-4'>
           {a.stats.map(s => (
@@ -360,11 +420,21 @@ export default function AnalyticsPage() {
                   <div className='text-[13.5px] leading-relaxed text-muted-foreground'>
                     {g.reason}
                   </div>
-                  <div
-                    className='mt-auto flex items-center gap-1.5 text-[12.5px] font-bold'
-                    style={{ color: g.gainColor }}
-                  >
-                    ↗ {g.gain}
+                  <div className='mt-auto flex items-center justify-between gap-2'>
+                    <SuggestionGain
+                      category={g.category}
+                      swatch={g.swatch}
+                      gainColor={g.gainColor}
+                      colorType={colorType}
+                    />
+                    <a
+                      href={shopUrl(who, g.query)}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='flex flex-none items-center gap-1.5 rounded-[10px] bg-foreground px-3 py-2 text-[12.5px] font-semibold text-background transition-transform hover:scale-[1.03]'
+                    >
+                      <ShoppingBag className='size-[14px]' /> Shop
+                    </a>
                   </div>
                 </div>
               ))}

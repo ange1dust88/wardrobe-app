@@ -17,6 +17,7 @@ export function useItems() {
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ITEMS_KEY })
     queryClient.invalidateQueries({ queryKey: ['match-map'] })
+    queryClient.invalidateQueries({ queryKey: ['match-preview'] })
     queryClient.invalidateQueries({ queryKey: ['set-matches'] })
   }
 

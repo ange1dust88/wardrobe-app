@@ -59,8 +59,8 @@ function barColor(max: number): string {
 
 export default function HowItWorks() {
   return (
-    <div className='px-6 pt-4 pb-24 sm:px-10'>
-      <div className='mx-auto max-w-[820px]'>
+    <div className='px-6 pt-4 pb-24 sm:px-12'>
+      <div className='max-w-[760px]'>
         <h1 className='font-heading text-[clamp(30px,5vw,40px)] leading-[1.02] font-extrabold tracking-[-0.03em] text-balance'>
           Every pairing, on a scale of 36.
         </h1>

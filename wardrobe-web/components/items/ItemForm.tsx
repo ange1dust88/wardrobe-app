@@ -1,7 +1,7 @@
 'use client'
 
 import { ChevronDownIcon } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   CATEGORIES,
   CATEGORY_LABELS,
@@ -116,9 +116,11 @@ export function ItemForm({
   const { values, patch, toggle } = form
   const [extractingColor, setExtractingColor] = useState(false)
   const [dragging, setDragging] = useState(false)
-  const [preview, setPreview] = useState<string | null>(null)
-  const previewRef = useRef<string | null>(null)
-  const shownImage = preview ?? initialImageUrl ?? null
+  const objectUrl = useMemo(
+    () => (values.image ? URL.createObjectURL(values.image) : null),
+    [values.image]
+  )
+  const shownImage = objectUrl ?? initialImageUrl ?? null
 
   const showFit = FIT_CATEGORIES.has(values.category)
   const optionCount = 1 + (showFit ? 1 : 0)
@@ -130,18 +132,12 @@ export function ItemForm({
       ]
     : []
 
-  useEffect(
-    () => () => {
-      if (previewRef.current) URL.revokeObjectURL(previewRef.current)
-    },
-    []
-  )
+  useEffect(() => {
+    if (!objectUrl) return
+    return () => URL.revokeObjectURL(objectUrl)
+  }, [objectUrl])
 
   async function handleImage(file: File | null) {
-    if (previewRef.current) URL.revokeObjectURL(previewRef.current)
-    const url = file ? URL.createObjectURL(file) : null
-    previewRef.current = url
-    setPreview(url)
     patch({ image: file })
     if (!file) return
     setExtractingColor(true)

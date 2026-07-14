@@ -8,7 +8,7 @@ import { getMatchScoreTone } from '@/lib/match-score'
 import { cn } from '@/lib/utils'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { GarmentLoader } from '@/components/GarmentLoader'
+import { Skeleton } from '@/components/ui/skeleton'
 import { CreateFolderModal } from './CreateFolderModal'
 import { OutfitDetailModal } from './OutfitDetailModal'
 
@@ -92,8 +92,8 @@ export function OutfitsView({
   }
 
   return (
-    <div className='px-6 pt-3 pb-[70px] sm:px-8'>
-      <div className='mx-auto max-w-[1500px]'>
+    <div className='px-6 pt-3 pb-[70px] sm:px-12'>
+      <div className='w-full'>
         {!loading &&
           !errorMessage &&
           (looks.length > 0 || folders.length > 0) && (
@@ -191,8 +191,29 @@ export function OutfitsView({
           )}
 
         {loading ? (
-          <div className='flex items-center justify-center py-24'>
-            <GarmentLoader label='loading your outfits' />
+          <div className='grid grid-cols-[repeat(auto-fill,minmax(264px,1fr))] gap-5'>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className='rounded-[18px] border border-border bg-card p-5'
+              >
+                <div className='flex items-start justify-between gap-3'>
+                  <div className='flex-1'>
+                    <Skeleton className='h-4 w-2/3 rounded-md' />
+                    <Skeleton className='mt-2 h-3 w-1/3 rounded-md' />
+                  </div>
+                  <Skeleton className='size-9 rounded-lg' />
+                </div>
+                <div className='mt-4 flex gap-2'>
+                  {Array.from({ length: 4 }).map((_, j) => (
+                    <Skeleton key={j} className='size-11 rounded-[11px]' />
+                  ))}
+                </div>
+                <div className='mt-4 border-t border-border pt-3'>
+                  <Skeleton className='h-8 w-32 rounded-lg' />
+                </div>
+              </div>
+            ))}
           </div>
         ) : errorMessage ? (
           <Alert variant='error'>
@@ -237,7 +258,7 @@ export function OutfitsView({
                       setDetailId(look.id)
                     }
                   }}
-                  className='group flex cursor-pointer flex-col rounded-[14px] border border-border bg-card p-5 text-left shadow-[0_4px_16px_rgba(20,28,36,0.06)] transition-shadow hover:shadow-[0_10px_28px_rgba(20,28,36,0.1)] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
+                  className='rise-in group flex cursor-pointer flex-col rounded-[14px] border border-border bg-card p-5 text-left shadow-[0_4px_16px_rgba(20,28,36,0.06)] transition-shadow hover:shadow-[0_10px_28px_rgba(20,28,36,0.1)] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
                 >
                   <div className='mb-4 flex items-start justify-between gap-3'>
                     <div className='min-w-0'>
