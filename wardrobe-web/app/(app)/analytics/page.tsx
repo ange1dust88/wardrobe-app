@@ -5,7 +5,6 @@ import { ShoppingBag } from 'lucide-react'
 import { useAppContext } from '@/components/AppContext'
 import { EditItemModal } from '@/components/items/EditItemModal'
 import { GarmentLoader } from '@/components/GarmentLoader'
-import { notifyError } from '@/lib/toast'
 import {
   CATEGORIES,
   CATEGORY_LABELS,
@@ -451,13 +450,7 @@ export default function AnalyticsPage() {
           onSubmit={(id, body, callbacks) =>
             updateMutation.mutate({ id, body }, callbacks)
           }
-          onDelete={(id, callbacks) =>
-            deleteMutation.mutate(id, {
-              ...callbacks,
-              onError: err =>
-                notifyError('Could not delete item', (err as Error).message),
-            })
-          }
+          onDelete={(id, callbacks) => deleteMutation.mutate(id, callbacks)}
           pending={updateMutation.isPending}
           deleting={deleteMutation.isPending}
           errorMessage={

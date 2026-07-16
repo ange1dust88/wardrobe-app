@@ -11,6 +11,7 @@ import {
 } from '@/lib/items'
 import { getMatchScoreTone } from '@/lib/match-score'
 import { BRAND_ACCENT } from '@/lib/theme'
+import { flyToHidden } from '@/lib/flyTo'
 import { useCoarsePointer } from '@/hooks/useCoarsePointer'
 import { ScoreBadge } from './ScoreBadge'
 import { ScoreDetail } from './ScoreDetail'
@@ -203,6 +204,10 @@ export function OutfitCarousel({
                           type='button'
                           onClick={e => {
                             e.stopPropagation()
+                            const wrap = (e.currentTarget as HTMLElement)
+                              .parentElement
+                            if (wrap)
+                              flyToHidden(wrap.getBoundingClientRect(), item)
                             onToggleExclude(item)
                           }}
                           aria-label='Hide from wheel'

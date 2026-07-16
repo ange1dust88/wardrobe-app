@@ -1,11 +1,20 @@
 'use client'
 
-import { useState } from 'react'
-import { ChevronDownIcon, FolderIcon, PlusIcon, XIcon } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  FolderIcon,
+  PlusIcon,
+  Trash2Icon,
+  Undo2Icon,
+  XIcon,
+} from 'lucide-react'
 import { getItemImageSrc, type Folder, type Item } from '@/lib/items'
 import { timeAgo } from '@/lib/date'
 import { getMatchScoreTone } from '@/lib/match-score'
 import { cn } from '@/lib/utils'
+import { usePresence } from '@/hooks/usePresence'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -37,7 +46,8 @@ type Props = {
   errorMessage?: string
   onEdit: (look: SavedLook) => void
   onDuplicate: (look: SavedLook) => void
-  onDelete: (id: string) => void
+  onDeleteMany: (ids: string[]) => void
+  onRestore: (looks: SavedLook[]) => void
   onCreateFolder: (name: string) => void
   onDeleteFolder: (id: string) => void
   onMove: (id: string, folderId: string | null) => void
@@ -59,7 +69,8 @@ export function OutfitsView({
   errorMessage,
   onEdit,
   onDuplicate,
-  onDelete,
+  onDeleteMany,
+  onRestore,
   onCreateFolder,
   onDeleteFolder,
   onMove,
@@ -70,7 +81,18 @@ export function OutfitsView({
   const [filter, setFilter] = useState<string>('all')
   const [creating, setCreating] = useState(false)
   const [confirmFolderId, setConfirmFolderId] = useState<string | null>(null)
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [selecting, setSelecting] = useState(false)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [recentDeleted, setRecentDeleted] = useState<SavedLook[] | null>(null)
+  const [undoOpen, setUndoOpen] = useState(false)
+  const dismissTimer = useRef<number | null>(null)
+
+  useEffect(
+    () => () => {
+      if (dismissTimer.current) window.clearTimeout(dismissTimer.current)
+    },
+    []
+  )
 
   const unfiledCount = looks.filter(l => !l.folderId).length
   const filtered =
@@ -81,6 +103,50 @@ export function OutfitsView({
         : looks.filter(l => l.folderId === filter)
   const ordered = sortLooks(filtered, sort)
   const detailLook = looks.find(l => l.id === detailId) ?? null
+  const allVisibleSelected =
+    ordered.length > 0 && ordered.every(l => selected.has(l.id))
+  const selectionBar = usePresence(selecting)
+  const undoBar = usePresence(undoOpen && !selecting)
+
+  function toggleSelect(id: string) {
+    setSelected(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function exitSelect() {
+    setSelecting(false)
+    setSelected(new Set())
+  }
+
+  function toggleSelectAll() {
+    setSelected(
+      allVisibleSelected ? new Set() : new Set(ordered.map(l => l.id))
+    )
+  }
+
+  function removeLooks(batch: SavedLook[]) {
+    if (batch.length === 0) return
+    onDeleteMany(batch.map(l => l.id))
+    setRecentDeleted(batch)
+    setUndoOpen(true)
+    if (dismissTimer.current) window.clearTimeout(dismissTimer.current)
+    dismissTimer.current = window.setTimeout(() => setUndoOpen(false), 3500)
+  }
+
+  function deleteSelected() {
+    removeLooks(looks.filter(l => selected.has(l.id)))
+    exitSelect()
+  }
+
+  function undoDelete() {
+    if (dismissTimer.current) window.clearTimeout(dismissTimer.current)
+    if (recentDeleted) onRestore(recentDeleted)
+    setUndoOpen(false)
+  }
 
   function chipCls(active: boolean): string {
     return cn(
@@ -168,25 +234,53 @@ export function OutfitsView({
                   New folder
                 </button>
               </div>
-              {looks.length > 1 && (
-                <div className='flex gap-0.5 rounded-xl bg-muted/60 p-1'>
-                  {SORTS.map(s => (
-                    <button
-                      key={s.key}
-                      type='button'
-                      onClick={() => setSort(s.key)}
-                      className={cn(
-                        'rounded-[7px] px-3 py-[7px] text-[13px] font-semibold transition-colors',
-                        sort === s.key
-                          ? 'bg-card text-foreground shadow-sm'
-                          : 'text-muted-foreground'
-                      )}
-                    >
-                      {s.label}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <div className='flex items-center gap-2'>
+                {looks.length > 1 && (
+                  <div className='flex gap-0.5 rounded-xl bg-muted/60 p-1'>
+                    {SORTS.map(s => (
+                      <button
+                        key={s.key}
+                        type='button'
+                        onClick={() => setSort(s.key)}
+                        className={cn(
+                          'rounded-[7px] px-3 py-[7px] text-[13px] font-semibold transition-colors',
+                          sort === s.key
+                            ? 'bg-card text-foreground shadow-sm'
+                            : 'text-muted-foreground'
+                        )}
+                      >
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {looks.length > 0 && (
+                  <button
+                    type='button'
+                    onClick={() =>
+                      selecting ? exitSelect() : setSelecting(true)
+                    }
+                    className={cn(
+                      'flex min-w-[96px] items-center justify-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors',
+                      selecting
+                        ? 'border-foreground bg-foreground text-background'
+                        : 'border-border bg-card text-foreground hover:bg-secondary'
+                    )}
+                  >
+                    {selecting ? (
+                      <>
+                        <XIcon className='size-3.5' />
+                        Cancel
+                      </>
+                    ) : (
+                      <>
+                        <CheckIcon className='size-3.5' />
+                        Select
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
@@ -251,14 +345,23 @@ export function OutfitsView({
                   key={look.id}
                   role='button'
                   tabIndex={0}
-                  onClick={() => setDetailId(look.id)}
+                  onClick={() =>
+                    selecting ? toggleSelect(look.id) : setDetailId(look.id)
+                  }
                   onKeyDown={e => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault()
-                      setDetailId(look.id)
+                      if (selecting) toggleSelect(look.id)
+                      else setDetailId(look.id)
                     }
                   }}
-                  className='rise-in group flex cursor-pointer flex-col rounded-[14px] border border-border bg-card p-5 text-left shadow-[0_4px_16px_rgba(20,28,36,0.06)] transition-shadow hover:shadow-[0_10px_28px_rgba(20,28,36,0.1)] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
+                  className={cn(
+                    'rise-in group relative flex cursor-pointer flex-col rounded-[14px] border bg-card p-5 text-left shadow-[0_4px_16px_rgba(20,28,36,0.06)] transition-shadow hover:shadow-[0_10px_28px_rgba(20,28,36,0.1)] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+                    selecting && 'select-none',
+                    selected.has(look.id)
+                      ? 'border-foreground ring-2 ring-foreground'
+                      : 'border-border'
+                  )}
                 >
                   <div className='mb-4 flex items-start justify-between gap-3'>
                     <div className='min-w-0'>
@@ -277,7 +380,20 @@ export function OutfitsView({
                       </div>
                     </div>
                     <div className='flex flex-none flex-col items-end leading-none'>
-                      {look.harmony != null && tier ? (
+                      {selecting ? (
+                        <span
+                          className={cn(
+                            'flex size-6 items-center justify-center rounded-full border-2 transition-colors',
+                            selected.has(look.id)
+                              ? 'border-foreground bg-foreground text-background'
+                              : 'border-border'
+                          )}
+                        >
+                          {selected.has(look.id) && (
+                            <CheckIcon className='size-3.5' strokeWidth={3} />
+                          )}
+                        </span>
+                      ) : look.harmony != null && tier ? (
                         <>
                           <span
                             className='font-heading text-[26px] leading-none font-extrabold'
@@ -327,8 +443,13 @@ export function OutfitsView({
                   </div>
 
                   <div
-                    className='mt-4 flex items-center justify-between gap-2 border-t border-border pt-3.5'
-                    onClick={e => e.stopPropagation()}
+                    className={cn(
+                      'mt-4 flex items-center justify-between gap-2 border-t border-border pt-3.5',
+                      selecting && 'pointer-events-none opacity-50'
+                    )}
+                    onClick={e => {
+                      if (!selecting) e.stopPropagation()
+                    }}
                   >
                     <div className='relative'>
                       <FolderIcon className='pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-muted-foreground' />
@@ -337,6 +458,7 @@ export function OutfitsView({
                         value={look.folderId ?? ''}
                         onChange={e => onMove(look.id, e.target.value || null)}
                         aria-label='Folder'
+                        tabIndex={selecting ? -1 : undefined}
                         className='cursor-pointer appearance-none rounded-full border border-border bg-card py-2 pr-8 pl-8 text-[13px] font-semibold text-foreground outline-none'
                       >
                         <option value=''>Unfiled</option>
@@ -347,37 +469,6 @@ export function OutfitsView({
                         ))}
                       </select>
                     </div>
-                    <button
-                      type='button'
-                      onClick={() => {
-                        if (confirmDeleteId === look.id) {
-                          onDelete(look.id)
-                          setConfirmDeleteId(null)
-                        } else {
-                          setConfirmDeleteId(look.id)
-                        }
-                      }}
-                      onBlur={() =>
-                        confirmDeleteId === look.id && setConfirmDeleteId(null)
-                      }
-                      aria-label={
-                        confirmDeleteId === look.id
-                          ? 'Confirm delete'
-                          : 'Delete outfit'
-                      }
-                      className={cn(
-                        'flex flex-none items-center justify-center rounded-full font-bold transition-colors',
-                        confirmDeleteId === look.id
-                          ? 'h-9 bg-destructive/10 px-3.5 text-[12px] text-destructive'
-                          : 'size-9 bg-muted text-muted-foreground hover:bg-accent/40'
-                      )}
-                    >
-                      {confirmDeleteId === look.id ? (
-                        'Delete?'
-                      ) : (
-                        <XIcon className='size-4' />
-                      )}
-                    </button>
                   </div>
                 </div>
               )
@@ -385,6 +476,69 @@ export function OutfitsView({
           </div>
         )}
       </div>
+
+      {selectionBar.rendered && (
+        <div className='pointer-events-none fixed inset-x-0 bottom-5 z-40 flex justify-center px-4'>
+          <div
+            className='pointer-events-auto flex items-center gap-1 rounded-full border border-border bg-card/95 py-2 pr-2 pl-4 shadow-[0_10px_40px_rgba(20,28,36,0.18)] backdrop-blur'
+            style={{
+              animation:
+                selectionBar.state === 'in'
+                  ? 'bar-dock 0.28s cubic-bezier(0.2,0.7,0.2,1) both'
+                  : 'bar-undock 0.2s ease-in both',
+            }}
+          >
+            <span className='text-[13px] font-semibold tabular-nums'>
+              {selected.size} selected
+            </span>
+            <span className='mx-1.5 h-4 w-px bg-border' />
+            <button
+              type='button'
+              onClick={toggleSelectAll}
+              className='rounded-full px-3 py-1.5 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-foreground'
+            >
+              {allVisibleSelected ? 'Clear' : 'Select all'}
+            </button>
+            <button
+              type='button'
+              disabled={selected.size === 0}
+              onClick={deleteSelected}
+              className='flex items-center gap-1.5 rounded-full bg-destructive px-4 py-1.5 text-[13px] font-bold text-white transition-opacity disabled:opacity-40'
+            >
+              <Trash2Icon className='size-3.5' />
+              Delete
+            </button>
+          </div>
+        </div>
+      )}
+
+      {undoBar.rendered && recentDeleted && (
+        <div className='pointer-events-none fixed inset-x-0 bottom-5 z-40 flex justify-center px-4'>
+          <div
+            className='pointer-events-auto flex items-center gap-1 rounded-full bg-foreground py-2 pr-2 pl-4 text-background shadow-[0_10px_40px_rgba(20,28,36,0.28)]'
+            style={{
+              animation:
+                undoBar.state === 'in'
+                  ? 'bar-dock 0.28s cubic-bezier(0.2,0.7,0.2,1) both'
+                  : 'bar-undock 0.2s ease-in both',
+            }}
+          >
+            <span className='text-[13px] font-semibold'>
+              {recentDeleted.length === 1
+                ? 'Outfit deleted'
+                : `${recentDeleted.length} outfits deleted`}
+            </span>
+            <button
+              type='button'
+              onClick={undoDelete}
+              className='ml-1.5 flex items-center gap-1.5 rounded-full bg-background/15 px-3.5 py-1.5 text-[13px] font-bold text-background transition-colors hover:bg-background/25'
+            >
+              <Undo2Icon className='size-3.5' />
+              Undo
+            </button>
+          </div>
+        </div>
+      )}
 
       {creating && (
         <CreateFolderModal
@@ -408,7 +562,7 @@ export function OutfitsView({
             setDetailId(null)
           }}
           onDelete={() => {
-            onDelete(detailLook.id)
+            removeLooks([detailLook])
             setDetailId(null)
           }}
         />

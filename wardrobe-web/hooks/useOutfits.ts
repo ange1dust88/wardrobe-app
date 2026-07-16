@@ -49,10 +49,32 @@ export function useOutfits() {
     onSettled: () => queryClient.invalidateQueries({ queryKey: OUTFITS_KEY }),
   })
 
-  const deleteMutation = useMutation<void, Error, string>({
-    mutationFn: deleteOutfit,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: OUTFITS_KEY }),
+  const deleteManyMutation = useMutation<
+    void,
+    Error,
+    string[],
+    { previous?: Outfit[] }
+  >({
+    mutationFn: async ids => {
+      await Promise.all(ids.map(id => deleteOutfit(id)))
+    },
+    onMutate: async ids => {
+      await queryClient.cancelQueries({ queryKey: OUTFITS_KEY })
+      const previous = queryClient.getQueryData<Outfit[]>(OUTFITS_KEY)
+      if (previous) {
+        const idSet = new Set(ids)
+        queryClient.setQueryData<Outfit[]>(
+          OUTFITS_KEY,
+          previous.filter(o => !idSet.has(o.id))
+        )
+      }
+      return { previous }
+    },
+    onError: (_err, _ids, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(OUTFITS_KEY, ctx.previous)
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: OUTFITS_KEY }),
   })
 
-  return { outfitsQuery, duplicateMutation, moveMutation, deleteMutation }
+  return { outfitsQuery, duplicateMutation, moveMutation, deleteManyMutation }
 }

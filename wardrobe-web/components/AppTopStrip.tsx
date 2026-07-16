@@ -47,6 +47,9 @@ export function AppTopStrip({
   } else if (pathname === '/how-it-works') {
     title = 'How it works'
     subtitle = 'The seven axes of a match'
+  } else if (pathname === '/profile') {
+    title = 'Profile'
+    subtitle = 'Account & preferences'
   }
 
   return (
@@ -80,6 +83,7 @@ export function AppTopStrip({
           <button
             type='button'
             onClick={onToggleHidden}
+            data-hidden-toggle
             aria-label='Hidden pieces'
             title='Hidden pieces'
             className={cn(

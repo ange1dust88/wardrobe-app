@@ -9,7 +9,7 @@ import { EditItemModal } from '@/components/items/EditItemModal'
 import { ItemViewModal } from '@/components/items/ItemViewModal'
 import { useItems } from '@/hooks/useItems'
 import { useMatchPreview } from '@/hooks/useMatchPreview'
-import { notifyError, notifySuccess } from '@/lib/toast'
+import { capture } from '@/lib/analytics'
 import {
   API_URL,
   CATEGORIES,
@@ -421,6 +421,10 @@ export default function TestDrivePage() {
 
   function run() {
     if (!canRun) return
+    capture('testdrive_run', {
+      category: spec.category,
+      seasons: spec.seasonWear.length,
+    })
     setSubmitted(currentBody)
     setRunKey(currentKey)
     setRunning(true)
@@ -433,8 +437,6 @@ export default function TestDrivePage() {
     const result = await extractItemColor(file).catch(() => null)
     if (result) {
       patch({ hex: result.hex, accentHex: result.accentHex ?? null })
-    } else {
-      notifyError('Could not read the photo', 'Pick a color by hand instead.')
     }
     setReading(false)
   }
@@ -695,12 +697,7 @@ export default function TestDrivePage() {
             createMutation.reset()
           }}
           onSubmit={(values, callbacks) =>
-            createMutation.mutate(values, {
-              onSuccess: () => {
-                callbacks.onSuccess()
-                notifySuccess('Added to wardrobe')
-              },
-            })
+            createMutation.mutate(values, callbacks)
           }
           pending={createMutation.isPending}
           errorMessage={
@@ -732,13 +729,7 @@ export default function TestDrivePage() {
           onSubmit={(id, body, callbacks) =>
             updateMutation.mutate({ id, body }, callbacks)
           }
-          onDelete={(id, callbacks) =>
-            deleteMutation.mutate(id, {
-              ...callbacks,
-              onError: err =>
-                notifyError('Could not delete item', (err as Error).message),
-            })
-          }
+          onDelete={(id, callbacks) => deleteMutation.mutate(id, callbacks)}
           pending={updateMutation.isPending}
           deleting={deleteMutation.isPending}
           errorMessage={

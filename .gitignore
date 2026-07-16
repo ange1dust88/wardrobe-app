@@ -6,5 +6,6 @@ build/
 .env*.local
 .DS_Store
 *.log
-CLAUDE.md*.tsbuildinfo
+CLAUDE.md
+*.tsbuildinfo
 wardrobe-api/uploads/

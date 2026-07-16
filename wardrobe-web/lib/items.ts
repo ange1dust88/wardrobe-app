@@ -507,12 +507,6 @@ export async function deleteFolder(id: string): Promise<void> {
   if (!res.ok) throw new Error(`DELETE /folders/${id} → ${res.status}`)
 }
 
-export async function exportAccount(): Promise<unknown> {
-  const res = await apiFetch('/account/export')
-  if (!res.ok) throw new Error(`GET /account/export → ${res.status}`)
-  return res.json()
-}
-
 export async function deleteAccount(): Promise<void> {
   const res = await apiFetch('/account', { method: 'DELETE' })
   if (!res.ok) throw new Error(`DELETE /account → ${res.status}`)

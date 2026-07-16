@@ -15,6 +15,10 @@ export class ProfileService {
       who: dto.who ?? null,
       climate: dto.climate ?? null,
       palettes: dto.palettes ?? [],
+      hair: dto.hair ?? null,
+      eyes: dto.eyes ?? null,
+      skin: dto.skin ?? null,
+      undertone: dto.undertone ?? null,
       onboardedAt: new Date(),
     };
     return this.prisma.userProfile.upsert({

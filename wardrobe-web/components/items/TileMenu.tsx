@@ -50,7 +50,7 @@ export function TileMenu({
           />
           <div
             onClick={e => e.stopPropagation()}
-            className='absolute top-full right-0 z-50 mt-1 min-w-[156px] rounded-[12px] border border-border bg-card p-1 shadow-[0_12px_32px_rgba(20,28,36,0.18)]'
+            className='pop-in absolute top-full right-0 z-50 mt-1 min-w-[156px] origin-top-right rounded-[12px] border border-border bg-card p-1 shadow-[0_12px_32px_rgba(20,28,36,0.18)]'
           >
             <button
               type='button'

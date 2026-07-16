@@ -11,9 +11,9 @@ import { PageTransition } from '@/components/PageTransition'
 import { AppProvider } from '@/components/AppContext'
 import { FeedbackModal } from '@/components/FeedbackModal'
 import { AddItemModal } from '@/components/items/AddItemModal'
-import { ProfileModal } from '@/components/profile/ProfileModal'
 import { GarmentLoader } from '@/components/GarmentLoader'
 import type { Item, Outfit } from '@/lib/items'
+import { capture } from '@/lib/analytics'
 import { useExcluded } from '@/hooks/useExcluded'
 import { useItems } from '@/hooks/useItems'
 import { useOutfitBuilder } from '@/hooks/useOutfitBuilder'
@@ -70,7 +70,6 @@ function FrameChrome({
 }) {
   const { user } = useAuth()
   const [addOpen, setAddOpen] = useState(false)
-  const [profileOpen, setProfileOpen] = useState(false)
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [editingOutfit, setEditingOutfit] = useState<Outfit | null>(null)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -166,6 +165,7 @@ function FrameChrome({
       value={{
         colorType,
         openAddItem: () => setAddOpen(true),
+        openFeedback: () => setFeedbackOpen(true),
         showBreakdown,
         setShowBreakdown,
         editingOutfit,
@@ -185,7 +185,6 @@ function FrameChrome({
           onHome={exitEditOnHome}
           onAddItem={() => setAddOpen(true)}
           onFeedback={() => setFeedbackOpen(true)}
-          onProfile={() => setProfileOpen(true)}
         />
 
         <div className='min-h-svh pl-[70px]'>
@@ -194,7 +193,10 @@ function FrameChrome({
             catCount={catCount}
             savedCount={savedCount}
             searchOpen={searchOpen}
-            onToggleSearch={() => setSearchOpen(!searchOpen)}
+            onToggleSearch={() => {
+              if (!searchOpen) capture('search_opened')
+              setSearchOpen(!searchOpen)
+            }}
             hiddenCount={hiddenCount}
             hiddenOpen={hiddenOpen}
             onToggleHidden={() => setHiddenOpen(!hiddenOpen)}
@@ -220,14 +222,6 @@ function FrameChrome({
               : undefined
           }
         />
-
-        {profileOpen && (
-          <ProfileModal
-            onClose={() => setProfileOpen(false)}
-            itemCount={itemCount}
-            outfitCount={savedCount}
-          />
-        )}
 
         {feedbackOpen && (
           <FeedbackModal onClose={() => setFeedbackOpen(false)} />

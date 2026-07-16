@@ -10,6 +10,7 @@ export type WardrobeView = 'circular' | 'list'
 type AppContextValue = {
   colorType: string | null
   openAddItem: () => void
+  openFeedback: () => void
   showBreakdown: boolean
   setShowBreakdown: (value: boolean) => void
   editingOutfit: Outfit | null
@@ -25,6 +26,7 @@ type AppContextValue = {
 const AppContext = createContext<AppContextValue>({
   colorType: null,
   openAddItem: () => {},
+  openFeedback: () => {},
   showBreakdown: true,
   setShowBreakdown: () => {},
   editingOutfit: null,

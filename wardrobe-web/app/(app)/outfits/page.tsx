@@ -5,7 +5,6 @@ import { useAppContext } from '@/components/AppContext'
 import { OutfitsView, type SavedLook } from '@/components/items/OutfitsView'
 import { type Item } from '@/lib/items'
 import { harmonyOf } from '@/lib/harmony'
-import { notifyError, notifySuccess } from '@/lib/toast'
 import { useFolders } from '@/hooks/useFolders'
 import { useItems } from '@/hooks/useItems'
 import { useMatchMap } from '@/hooks/useMatchMap'
@@ -26,10 +25,13 @@ export default function OutfitsPage() {
   const { colorType, setEditingOutfit, editingOutfit, builder } =
     useAppContext()
   const { itemsQuery } = useItems()
-  const { outfitsQuery, duplicateMutation, moveMutation, deleteMutation } =
+  const { outfitsQuery, duplicateMutation, moveMutation, deleteManyMutation } =
     useOutfits()
-  const { foldersQuery, createMutation, deleteMutation: deleteFolderMutation } =
-    useFolders()
+  const {
+    foldersQuery,
+    createMutation,
+    deleteMutation: deleteFolderMutation,
+  } = useFolders()
   const matchMap = useMatchMap(colorType, true)
 
   const items = itemsQuery.data ?? []
@@ -81,55 +83,32 @@ export default function OutfitsPage() {
         router.push('/')
       }}
       onDuplicate={look =>
-        duplicateMutation.mutate(
-          {
-            name: copyName(look.name, new Set(outfits.map(o => o.name))),
-            itemIds: look.items.map(i => i.id),
-            folderId: look.folderId,
-          },
-          {
-            onSuccess: () => notifySuccess('Outfit duplicated'),
-            onError: err =>
-              notifyError('Could not duplicate', (err as Error).message),
-          }
+        duplicateMutation.mutate({
+          name: copyName(look.name, new Set(outfits.map(o => o.name))),
+          itemIds: look.items.map(i => i.id),
+          folderId: look.folderId,
+        })
+      }
+      onDeleteMany={ids => {
+        if (ids.length === 0) return
+        if (editingOutfit && ids.includes(editingOutfit.id)) {
+          setEditingOutfit(null)
+          builder.clear()
+        }
+        deleteManyMutation.mutate(ids)
+      }}
+      onRestore={restored =>
+        restored.forEach(l =>
+          duplicateMutation.mutate({
+            name: l.name,
+            itemIds: l.items.map(i => i.id),
+            folderId: l.folderId,
+          })
         )
       }
-      onDelete={id =>
-        deleteMutation.mutate(id, {
-          onSuccess: () => {
-            if (editingOutfit?.id === id) {
-              setEditingOutfit(null)
-              builder.clear()
-            }
-            notifySuccess('Outfit deleted')
-          },
-          onError: err =>
-            notifyError('Could not delete', (err as Error).message),
-        })
-      }
-      onCreateFolder={name =>
-        createMutation.mutate(name, {
-          onSuccess: () => notifySuccess('Folder created'),
-          onError: err =>
-            notifyError('Could not create folder', (err as Error).message),
-        })
-      }
-      onDeleteFolder={id =>
-        deleteFolderMutation.mutate(id, {
-          onSuccess: () => notifySuccess('Folder deleted'),
-          onError: err =>
-            notifyError('Could not delete folder', (err as Error).message),
-        })
-      }
-      onMove={(id, folderId) =>
-        moveMutation.mutate(
-          { id, folderId },
-          {
-            onError: err =>
-              notifyError('Could not move outfit', (err as Error).message),
-          }
-        )
-      }
+      onCreateFolder={name => createMutation.mutate(name)}
+      onDeleteFolder={id => deleteFolderMutation.mutate(id)}
+      onMove={(id, folderId) => moveMutation.mutate({ id, folderId })}
       onBuild={() => {
         setEditingOutfit(null)
         router.push('/')

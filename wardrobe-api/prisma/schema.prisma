@@ -165,6 +165,11 @@ enum Climate {
   hot
 }
 
+enum Undertone {
+  warm
+  cool
+}
+
 model UserProfile {
   userId      String          @id
   createdAt   DateTime        @default(now())
@@ -172,5 +177,9 @@ model UserProfile {
   who         Who?
   climate     Climate?
   palettes    SeasonPalette[]
+  hair        Int?
+  eyes        Int?
+  skin        Int?
+  undertone   Undertone?
   onboardedAt DateTime?
 }

@@ -4,7 +4,6 @@ import { XIcon } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { sendFeedback } from '@/lib/items'
-import { notifyError, notifySuccess } from '@/lib/toast'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -18,17 +17,18 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
   const pathname = usePathname()
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const canSend = message.trim().length > 0
 
   async function submit() {
     if (!canSend || sending) return
+    setError(null)
     setSending(true)
     try {
       await sendFeedback(message.trim(), pathname)
-      notifySuccess('Thanks for the feedback!')
       onClose()
     } catch (e) {
-      notifyError('Could not send', (e as Error).message)
+      setError((e as Error).message)
       setSending(false)
     }
   }
@@ -65,6 +65,11 @@ export function FeedbackModal({ onClose }: { onClose: () => void }) {
             placeholder="What's on your mind?"
             className='w-full resize-none rounded-[8px] border border-border bg-background px-3.5 py-3 text-[14px] outline-none'
           />
+          {error && (
+            <div className='mt-3 rounded-[8px] border border-destructive/25 bg-destructive/5 px-3.5 py-2.5 text-[13px] text-destructive'>
+              {error}
+            </div>
+          )}
           <div className='mt-4 flex items-center justify-end gap-2.5'>
             <Button
               type='button'

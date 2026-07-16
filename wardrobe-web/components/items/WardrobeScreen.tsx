@@ -30,7 +30,7 @@ import {
 } from '@/lib/items'
 import { harmonyOf } from '@/lib/harmony'
 import { MIN_RECOMMENDABLE_SCORE } from '@/lib/match-score'
-import { notifyError, notifySuccess } from '@/lib/toast'
+import { capture } from '@/lib/analytics'
 import { useItems } from '@/hooks/useItems'
 import { useMatchMap } from '@/hooks/useMatchMap'
 import { useOutfits } from '@/hooks/useOutfits'
@@ -52,6 +52,7 @@ export function WardrobeScreen({ view }: { view: WardrobeView }) {
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [editingItem, setEditingItem] = useState<Item | null>(null)
   const [allowConflicts, setAllowConflicts] = useState(false)
+  const [dupNotice, setDupNotice] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [catFilter, setCatFilter] = useState<Category | null>(null)
 
@@ -59,6 +60,10 @@ export function WardrobeScreen({ view }: { view: WardrobeView }) {
   const { outfitsQuery } = useOutfits()
   const excludedIds = excluded.excludedIds
   const toggleExcluded = excluded.toggle
+  const hideItem = (item: Item) => {
+    toggleExcluded(item.id)
+    capture('item_hidden', { category: item.category })
+  }
   const matchMap = useMatchMap(colorType, allowConflicts)
 
   const items = useMemo(() => itemsQuery.data ?? [], [itemsQuery.data])
@@ -249,7 +254,7 @@ export function WardrobeScreen({ view }: { view: WardrobeView }) {
                 excludedIds={excludedIds}
                 matchLoading={matchMap.isLoading}
                 filterMatchIds={filterMatchIds}
-                onToggleExclude={item => toggleExcluded(item.id)}
+                onToggleExclude={hideItem}
               />
             </div>
           </div>
@@ -267,7 +272,7 @@ export function WardrobeScreen({ view }: { view: WardrobeView }) {
               onEdit={setEditingItem}
               excludedIds={excludedIds}
               filterMatchIds={filterMatchIds}
-              onToggleExclude={item => toggleExcluded(item.id)}
+              onToggleExclude={hideItem}
             />
           </div>
         )}
@@ -303,10 +308,12 @@ export function WardrobeScreen({ view }: { view: WardrobeView }) {
           onRemove={builder.remove}
           onClear={() => {
             setAllowConflicts(false)
+            setDupNotice(null)
             builder.saveMutation.reset()
             builder.clearItems()
           }}
           onSave={() => {
+            setDupNotice(null)
             const wasEditing = builder.editingId != null
             const sig = [...builder.selectedIds].sort().join(',')
             const dup = (outfitsQuery.data ?? []).find(
@@ -315,9 +322,8 @@ export function WardrobeScreen({ view }: { view: WardrobeView }) {
                 [...o.itemIds].sort().join(',') === sig
             )
             if (dup) {
-              notifyError(
-                'Already saved',
-                `This exact set of pieces is saved as “${dup.name}”. Use Duplicate on it if you want a copy.`
+              setDupNotice(
+                `This exact set is already saved as “${dup.name}”. Duplicate it if you want a copy.`
               )
               return
             }
@@ -325,16 +331,20 @@ export function WardrobeScreen({ view }: { view: WardrobeView }) {
               onSuccess: () => {
                 setAllowConflicts(false)
                 setEditingOutfit(null)
-                notifySuccess(wasEditing ? 'Outfit updated' : 'Outfit saved')
+                capture('outfit_saved', {
+                  pieces: builder.selectedIds.length,
+                  editing: wasEditing,
+                })
                 if (wasEditing) router.push('/outfits')
               },
             })
           }}
           saving={builder.saveMutation.isPending}
           errorMessage={
-            builder.saveMutation.error
+            dupNotice ??
+            (builder.saveMutation.error
               ? (builder.saveMutation.error as Error).message
-              : undefined
+              : undefined)
           }
         />
       )}
@@ -347,13 +357,7 @@ export function WardrobeScreen({ view }: { view: WardrobeView }) {
           onSubmit={(id, body, callbacks) =>
             updateMutation.mutate({ id, body }, callbacks)
           }
-          onDelete={(id, callbacks) =>
-            deleteMutation.mutate(id, {
-              ...callbacks,
-              onError: err =>
-                notifyError('Could not delete item', (err as Error).message),
-            })
-          }
+          onDelete={(id, callbacks) => deleteMutation.mutate(id, callbacks)}
           pending={updateMutation.isPending}
           deleting={deleteMutation.isPending}
           errorMessage={

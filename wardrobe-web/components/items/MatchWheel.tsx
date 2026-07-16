@@ -9,6 +9,7 @@ import { BRAND_ACCENT } from '../../lib/theme'
 import { cn } from '../../lib/utils'
 import type { ScoreBreakdown } from '../../lib/items'
 import { useCoarsePointer } from '../../hooks/useCoarsePointer'
+import { flyToHidden } from '../../lib/flyTo'
 import { ScoreDetail } from './ScoreDetail'
 import { TileMenu } from './TileMenu'
 
@@ -28,10 +29,10 @@ type Props = {
   onToggleExclude: (item: Item) => void
 }
 
-const BOX = 760
-const CX = 380
-const CY = 380
-const R = 270
+const BOX = 800
+const CX = 400
+const CY = 400
+const R = 300
 
 export function MatchWheel({
   items,
@@ -196,7 +197,7 @@ export function MatchWheel({
           !building
         const img = getItemImageSrc(item)
         const boxShadow = isSel
-          ? '0 0 0 3px rgba(61,90,61,.9), 0 6px 18px rgba(20,16,8,.18)'
+          ? '0 0 0 2px rgba(61,90,61,.85), 0 6px 18px rgba(20,16,8,.18)'
           : isHover
             ? '0 6px 18px rgba(20,16,8,.22)'
             : isMatch
@@ -307,6 +308,8 @@ export function MatchWheel({
                 type='button'
                 onClick={e => {
                   e.stopPropagation()
+                  const wrap = (e.currentTarget as HTMLElement).parentElement
+                  if (wrap) flyToHidden(wrap.getBoundingClientRect(), item)
                   onToggleExclude(item)
                 }}
                 aria-label='Hide from wheel'

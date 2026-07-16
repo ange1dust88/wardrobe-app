@@ -20,7 +20,6 @@ type Props = {
   onHome?: () => void
   onAddItem: () => void
   onFeedback: () => void
-  onProfile: () => void
 }
 
 function railLink(active: boolean): string {
@@ -38,7 +37,6 @@ export function AppRail({
   onHome,
   onAddItem,
   onFeedback,
-  onProfile,
 }: Props) {
   const pathname = usePathname()
   const isWheel = pathname === '/'
@@ -47,6 +45,7 @@ export function AppRail({
   const isAnalytics = pathname === '/analytics'
   const isTestDrive = pathname === '/test-drive'
   const isHow = pathname === '/how-it-works'
+  const isProfile = pathname === '/profile'
 
   return (
     <aside className='fixed inset-y-0 left-0 z-40 flex w-[70px] flex-col items-center gap-3.5 border-r border-border bg-card/95 py-[18px] backdrop-blur-md'>
@@ -138,15 +137,19 @@ export function AppRail({
       >
         <Plus className='size-[22px]' />
       </button>
-      <button
-        type='button'
-        onClick={onProfile}
+      <Link
+        href='/profile'
         aria-label='Profile'
         title='Profile'
-        className='font-heading flex size-9 items-center justify-center rounded-full border border-border bg-secondary text-[14px] font-bold text-foreground uppercase'
+        className={cn(
+          'font-heading flex size-9 items-center justify-center rounded-full border text-[14px] font-bold uppercase transition-colors',
+          isProfile
+            ? 'border-foreground bg-foreground text-background'
+            : 'border-border bg-secondary text-foreground hover:border-foreground/40'
+        )}
       >
         {userInitial}
-      </button>
+      </Link>
     </aside>
   )
 }

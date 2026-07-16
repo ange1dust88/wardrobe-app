@@ -8,6 +8,7 @@ import {
   type Item,
   type UpdateItem,
 } from '@/lib/items'
+import { capture } from '@/lib/analytics'
 
 const ITEMS_KEY = ['items'] as const
 
@@ -28,7 +29,10 @@ export function useItems() {
 
   const createMutation = useMutation<Item, Error, CreateItem>({
     mutationFn: createItem,
-    onSuccess: invalidate,
+    onSuccess: item => {
+      invalidate()
+      capture('item_added', { category: item.category })
+    },
   })
 
   const updateMutation = useMutation<

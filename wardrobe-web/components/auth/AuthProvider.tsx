@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import type { User } from '@supabase/supabase-js'
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { identifyUser, initAnalytics, resetAnalytics } from '@/lib/analytics'
 
 type AuthResult = { error?: string; needsConfirmation?: boolean }
 
@@ -46,6 +47,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       sub.subscription.unsubscribe()
     }
   }, [queryClient])
+
+  useEffect(() => {
+    if (user) {
+      initAnalytics()
+      identifyUser(user.id, { email: user.email })
+    } else {
+      resetAnalytics()
+    }
+  }, [user])
 
   async function signIn(email: string, password: string): Promise<AuthResult> {
     const { error } = await supabase.auth.signInWithPassword({
