@@ -8,4 +8,3 @@ build/
 *.log
 CLAUDE.md
 *.tsbuildinfo
-wardrobe-api/uploads/

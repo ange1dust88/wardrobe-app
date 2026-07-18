@@ -1,44 +1,54 @@
 # Deploy
 
-Two apps: `wardrobe-api` (NestJS) and `wardrobe-web` (Next.js). Data lives in Supabase (Postgres + Storage + Auth).
+One Next.js app (`wardrobe-web`) — the UI and the API (`app/api/*`) ship
+together as a single deploy. Data lives in Supabase (Postgres + Storage + Auth).
 
 ## 1. Supabase (once)
+
 1. Create a Supabase project.
-2. **Auth** — enable Email provider (email/password).
-3. **Storage** — create a public bucket named `items` (or set `SUPABASE_BUCKET` to your name).
+2. **Auth** — enable the Email provider (email/password).
+3. **Storage** — create a public bucket named `items` (or set `SUPABASE_BUCKET`).
 4. Grab from Project Settings:
-   - `SUPABASE_URL` (Project URL)
-   - `SUPABASE_SERVICE_ROLE_KEY` (server only — never ship to the browser)
-   - anon/public key (for the web app)
-   - Postgres connection strings (Database → Connection string): pooled (`:6543`, `?pgbouncer=true`) for `DATABASE_URL`, direct (`:5432`) for `DIRECT_URL`.
+   - Project URL, anon/public key, and the service role key (server-only).
+   - Postgres connection strings (Database → Connection string): pooled
+     (`:6543`, `?pgbouncer=true`) → `DATABASE_URL`; direct (`:5432`) →
+     `DIRECT_URL`.
 
 ## 2. Database schema
-From `wardrobe-api` with `DATABASE_URL`/`DIRECT_URL` set:
+
+From `wardrobe-web` with `DATABASE_URL` / `DIRECT_URL` set:
+
 ```
 npx prisma generate
-npx prisma db push        # creates/updates tables to match schema.prisma
+npx prisma db push
 ```
-Schema changes here have been additive; `db push` is safe. Avoid `--accept-data-loss` on the shared DB.
 
-## 3. API — `wardrobe-api` (Render / Railway / Fly)
-- **Root dir:** `wardrobe-api`
-- **Build:** `npm install && npx prisma generate && npm run build`
-- **Start:** `npm run start:prod` (runs `node dist/main`)
-- **Env** (see `.env.example`): `DATABASE_URL`, `DIRECT_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_BUCKET`, `PORT` (platform-provided), `WEB_ORIGIN` (the deployed web URL, e.g. `https://your-app.vercel.app`).
-- **Health check:** `GET /health` → `{ "status": "ok" }`.
-- **Region (important for speed):** deploy the API in the **same region as the Supabase DB** (this project's DB is `aws-0-eu-west-1`). Every page load makes several DB queries; a cross-region API pays ~200ms round-trip *per query*, co-located pays ~1–5ms. Keep using the pooled connection string (`:6543`, `?pgbouncer=true`) for `DATABASE_URL`. (Local dev is slow for exactly this reason — your machine → the remote DB.)
+⚠️ This project's DB has a pre-existing drift on the `Category` enum (it holds
+extra values `skirt/bag/jewelry` that aren't in `schema.prisma`). Plain
+`db push` will offer to drop them — **do not** pass `--accept-data-loss`. Apply
+additive schema changes with raw SQL (`prisma db execute`) instead, or reconcile
+the enum first.
 
-## 4. Web — `wardrobe-web` (Vercel)
-- **Root dir:** `wardrobe-web`
-- **Build:** `next build` (default). **Framework:** Next.js.
-- **Env** (see `.env.example`): `NEXT_PUBLIC_API_URL` = the deployed API URL, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+## 3. Deploy — `wardrobe-web` (Vercel)
 
-## 5. Wire them together
-1. Deploy the API, note its URL.
-2. Set the web app's `NEXT_PUBLIC_API_URL` to that URL and deploy the web.
-3. Set the API's `WEB_ORIGIN` to the web URL (locks CORS to it) and redeploy.
+- **Framework:** Next.js. **Root directory:** `wardrobe-web`.
+- **Build:** `next build` (default). `postinstall` runs `prisma generate`.
+- **Function region (important for speed):** set it to the **same region as the
+  Supabase DB** (this project's DB is `aws-0-eu-west-1` → pick an EU region).
+  Each request makes several DB queries; co-located ≈ 1–5 ms per query,
+  cross-region ≈ 200 ms per query.
+- **Env vars:**
+  - `DATABASE_URL` (pooled), `DIRECT_URL` (direct)
+  - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (server-only), `SUPABASE_BUCKET`
+  - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+  - optional: `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST`
+- **Health check:** `GET /api/health` → `{ "status": "ok" }`.
+
+The API is same-origin under `/api` — there is no separate backend host, no CORS,
+and no `WEB_ORIGIN` to configure.
 
 ## Local dev
-- API: `cd wardrobe-api && PORT=3100 npm run start:dev`
-- Web: `cd wardrobe-web && NEXT_PUBLIC_API_URL=http://localhost:3100 npx next dev -p 3101`
-- Copy each `.env.example` to `.env` (api) / `.env.local` (web) and fill in.
+
+- Copy `wardrobe-web/.env.example` → `wardrobe-web/.env` and fill it in.
+- `npm run dev` (Next dev server) from `wardrobe-web`.
+- `npm test` runs the vitest suite.

@@ -1,8 +1,5 @@
 import { supabase } from './supabase'
 
-export const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'
-
 export async function apiFetch(
   path: string,
   init: RequestInit = {}
@@ -11,7 +8,7 @@ export async function apiFetch(
   const token = data.session?.access_token
   const headers = new Headers(init.headers)
   if (token) headers.set('Authorization', `Bearer ${token}`)
-  return fetch(`${API_URL}${path}`, { ...init, headers })
+  return fetch(`/api${path}`, { ...init, headers })
 }
 
 export const CATEGORIES = [
@@ -303,10 +300,7 @@ export function getItemImageSrc(item: Item): string | null {
   if (!item.imageUrl) {
     return null
   }
-  if (/^(https?:|data:|blob:)/.test(item.imageUrl)) {
-    return item.imageUrl
-  }
-  return `${API_URL}${item.imageUrl}`
+  return item.imageUrl
 }
 
 export async function deleteItem(id: string): Promise<void> {

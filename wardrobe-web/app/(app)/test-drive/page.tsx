@@ -11,7 +11,6 @@ import { useItems } from '@/hooks/useItems'
 import { useMatchPreview } from '@/hooks/useMatchPreview'
 import { capture } from '@/lib/analytics'
 import {
-  API_URL,
   CATEGORIES,
   CATEGORY_LABELS,
   FIT_LABELS,
@@ -91,10 +90,7 @@ function plural(cat: Category): string {
 }
 
 function imgOf(pair: MatchPreviewPair): string | null {
-  if (!pair.imageUrl) return null
-  return /^(https?:|data:|blob:)/.test(pair.imageUrl)
-    ? pair.imageUrl
-    : `${API_URL}${pair.imageUrl}`
+  return pair.imageUrl ?? null
 }
 
 function Sel({
