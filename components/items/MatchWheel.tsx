@@ -169,7 +169,15 @@ export function MatchWheel({
         ))}
       </svg>
 
-      <div className='pointer-events-none absolute top-1/2 left-1/2 z-1 w-[46%] -translate-x-1/2 -translate-y-1/2 text-center'>
+      <div
+        className='pointer-events-none absolute top-1/2 left-1/2 z-[2] size-[34%] -translate-x-1/2 -translate-y-1/2 rounded-full'
+        style={{
+          background:
+            'radial-gradient(closest-side, var(--background) 62%, transparent 100%)',
+        }}
+      />
+
+      <div className='pointer-events-none absolute top-1/2 left-1/2 z-[3] w-[46%] -translate-x-1/2 -translate-y-1/2 text-center'>
         <div className='font-heading text-[22px] leading-tight font-extrabold tracking-[-0.03em] text-foreground'>
           {centerTitle}
         </div>

@@ -25,8 +25,13 @@ export default function OutfitsPage() {
   const { colorType, setEditingOutfit, editingOutfit, builder } =
     useAppContext()
   const { itemsQuery } = useItems()
-  const { outfitsQuery, duplicateMutation, moveMutation, deleteManyMutation } =
-    useOutfits()
+  const {
+    outfitsQuery,
+    duplicateMutation,
+    moveMutation,
+    deleteManyMutation,
+    restoreOutfits,
+  } = useOutfits()
   const {
     foldersQuery,
     createMutation,
@@ -98,12 +103,14 @@ export default function OutfitsPage() {
         deleteManyMutation.mutate(ids)
       }}
       onRestore={restored =>
-        restored.forEach(l =>
-          duplicateMutation.mutate({
+        restoreOutfits(
+          restored.map(l => ({
+            id: l.id,
             name: l.name,
             itemIds: l.items.map(i => i.id),
             folderId: l.folderId,
-          })
+            createdAt: l.createdAt,
+          }))
         )
       }
       onCreateFolder={name => createMutation.mutate(name)}

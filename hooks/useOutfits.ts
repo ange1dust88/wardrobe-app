@@ -11,6 +11,13 @@ const OUTFITS_KEY = ['outfits'] as const
 
 type CreateVars = { name: string; itemIds: string[]; folderId?: string | null }
 type MoveVars = { id: string; folderId: string | null }
+type RestoreVars = {
+  id: string
+  name: string
+  itemIds: string[]
+  folderId: string | null
+  createdAt: string
+}
 
 export function useOutfits() {
   const queryClient = useQueryClient()
@@ -76,5 +83,32 @@ export function useOutfits() {
     onSettled: () => queryClient.invalidateQueries({ queryKey: OUTFITS_KEY }),
   })
 
-  return { outfitsQuery, duplicateMutation, moveMutation, deleteManyMutation }
+  function restoreOutfits(outfits: RestoreVars[]) {
+    if (outfits.length === 0) return
+    queryClient.setQueryData<Outfit[]>(OUTFITS_KEY, prev => [
+      ...(prev ?? []),
+      ...outfits.map(o => ({
+        id: o.id,
+        name: o.name,
+        itemIds: o.itemIds,
+        folderId: o.folderId,
+        createdAt: o.createdAt,
+      })),
+    ])
+    void Promise.all(
+      outfits.map(o =>
+        createOutfit({ name: o.name, itemIds: o.itemIds, folderId: o.folderId })
+      )
+    )
+      .catch(() => undefined)
+      .finally(() => queryClient.invalidateQueries({ queryKey: OUTFITS_KEY }))
+  }
+
+  return {
+    outfitsQuery,
+    duplicateMutation,
+    moveMutation,
+    deleteManyMutation,
+    restoreOutfits,
+  }
 }

@@ -1,7 +1,7 @@
 # Deploy
 
-One Next.js app (`wardrobe-web`) — the UI and the API (`app/api/*`) ship
-together as a single deploy. Data lives in Supabase (Postgres + Storage + Auth).
+A single Next.js app at the repo root — the UI and the API (`app/api/*`) ship
+together as one deploy. Data lives in Supabase (Postgres + Storage + Auth).
 
 ## 1. Supabase (once)
 
@@ -16,7 +16,7 @@ together as a single deploy. Data lives in Supabase (Postgres + Storage + Auth).
 
 ## 2. Database schema
 
-From `wardrobe-web` with `DATABASE_URL` / `DIRECT_URL` set:
+From the repo root with `DATABASE_URL` / `DIRECT_URL` set:
 
 ```
 npx prisma generate
@@ -29,9 +29,9 @@ extra values `skirt/bag/jewelry` that aren't in `schema.prisma`). Plain
 additive schema changes with raw SQL (`prisma db execute`) instead, or reconcile
 the enum first.
 
-## 3. Deploy — `wardrobe-web` (Vercel)
+## 3. Deploy — Vercel
 
-- **Framework:** Next.js. **Root directory:** `wardrobe-web`.
+- **Framework:** Next.js. **Root directory:** the repo root (default).
 - **Build:** `next build` (default). `postinstall` runs `prisma generate`.
 - **Function region (important for speed):** set it to the **same region as the
   Supabase DB** (this project's DB is `aws-0-eu-west-1` → pick an EU region).
@@ -49,6 +49,6 @@ and no `WEB_ORIGIN` to configure.
 
 ## Local dev
 
-- Copy `wardrobe-web/.env.example` → `wardrobe-web/.env` and fill it in.
-- `npm run dev` (Next dev server) from `wardrobe-web`.
+- Copy `.env.example` → `.env` and fill it in.
+- `npm run dev` (Next dev server) from the repo root.
 - `npm test` runs the vitest suite.

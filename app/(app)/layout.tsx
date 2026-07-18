@@ -187,7 +187,7 @@ function FrameChrome({
           onFeedback={() => setFeedbackOpen(true)}
         />
 
-        <div className='min-h-svh pl-[70px]'>
+        <div className='flex h-svh flex-col pl-[70px]'>
           <AppTopStrip
             itemCount={itemCount}
             catCount={catCount}
@@ -203,7 +203,9 @@ function FrameChrome({
             onAddItem={() => setAddOpen(true)}
           />
 
-          <PageTransition>{children}</PageTransition>
+          <main className='min-h-0 flex-1 overflow-y-auto'>
+            <PageTransition>{children}</PageTransition>
+          </main>
         </div>
 
         <AddItemModal

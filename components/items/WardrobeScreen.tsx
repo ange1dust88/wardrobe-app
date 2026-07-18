@@ -192,7 +192,13 @@ export function WardrobeScreen({ view }: { view: WardrobeView }) {
   const hasItems = !itemsQuery.isLoading && !errorMessage && items.length > 0
 
   return (
-    <div className='px-6 pt-6 pb-[168px] sm:px-12'>
+    <div
+      className={`px-6 sm:px-12 ${
+        view === 'circular'
+          ? 'flex min-h-0 flex-1 flex-col overflow-hidden pt-3'
+          : 'pt-6 pb-[168px]'
+      }`}
+    >
       {hasItems && (
         <WardrobeFilter
           open={searchOpen}
@@ -206,7 +212,13 @@ export function WardrobeScreen({ view }: { view: WardrobeView }) {
           onClose={() => setSearchOpen(false)}
         />
       )}
-      <div className='min-h-[calc(100svh-232px)]'>
+      <div
+        className={
+          view === 'circular'
+            ? 'flex min-h-0 flex-1 items-center justify-center pb-[84px]'
+            : 'min-h-[calc(100svh-232px)]'
+        }
+      >
         {itemsQuery.isLoading ? (
           <div className='flex min-h-[calc(100svh-232px)] items-center justify-center'>
             <GarmentLoader label='loading your wardrobe' />
@@ -239,24 +251,22 @@ export function WardrobeScreen({ view }: { view: WardrobeView }) {
             </Empty>
           </div>
         ) : view === 'circular' ? (
-          <div className='flex min-h-[calc(100svh-232px)] items-center justify-center'>
-            <div className='flex w-full max-w-[760px] items-center justify-center'>
-              <MatchWheel
-                items={items}
-                activeId={hoveredId}
-                selectedIds={builder.selectedIds}
-                matchedIds={matchedIds}
-                scoreById={scoreById}
-                breakdownById={showBreakdown ? breakdownById : {}}
-                onHover={setHoveredId}
-                onSelect={builder.toggle}
-                onEdit={setEditingItem}
-                excludedIds={excludedIds}
-                matchLoading={matchMap.isLoading}
-                filterMatchIds={filterMatchIds}
-                onToggleExclude={hideItem}
-              />
-            </div>
+          <div className='flex w-full max-w-[760px] items-center justify-center'>
+            <MatchWheel
+              items={items}
+              activeId={hoveredId}
+              selectedIds={builder.selectedIds}
+              matchedIds={matchedIds}
+              scoreById={scoreById}
+              breakdownById={showBreakdown ? breakdownById : {}}
+              onHover={setHoveredId}
+              onSelect={builder.toggle}
+              onEdit={setEditingItem}
+              excludedIds={excludedIds}
+              matchLoading={matchMap.isLoading}
+              filterMatchIds={filterMatchIds}
+              onToggleExclude={hideItem}
+            />
           </div>
         ) : (
           <div className={searchOpen ? 'pt-[56px]' : ''}>
