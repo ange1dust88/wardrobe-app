@@ -3,6 +3,7 @@ import {
   createItem,
   deleteItem,
   fetchItems,
+  seedWardrobe,
   updateItem,
   type CreateItem,
   type Item,
@@ -49,5 +50,16 @@ export function useItems() {
     onSuccess: invalidate,
   })
 
-  return { itemsQuery, createMutation, updateMutation, deleteMutation }
+  const seedMutation = useMutation<void, Error, void>({
+    mutationFn: seedWardrobe,
+    onSuccess: invalidate,
+  })
+
+  return {
+    itemsQuery,
+    createMutation,
+    updateMutation,
+    deleteMutation,
+    seedMutation,
+  }
 }

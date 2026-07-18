@@ -25,6 +25,16 @@ import { Input } from '@/components/ui/input'
 
 const ANY_SUBTYPE = '__any'
 
+const NAME_EXAMPLE: Record<Category, string> = {
+  headwear: 'Grey wool beanie',
+  top: 'Black cotton tee',
+  outerwear: 'Beige trench coat',
+  dress: 'Black slip dress',
+  bottom: 'Blue slim jeans',
+  shoes: 'Converse All Star red',
+  accessory: 'Brown leather belt',
+}
+
 const FIT_CATEGORIES = new Set<Category>([
   'top',
   'outerwear',
@@ -157,7 +167,7 @@ export function ItemForm({
           type='text'
           value={values.name}
           onChange={e => patch({ name: e.target.value })}
-          placeholder='Converse All Star red'
+          placeholder={NAME_EXAMPLE[values.category]}
           className='h-11 items-center rounded-xl'
         />
       </div>

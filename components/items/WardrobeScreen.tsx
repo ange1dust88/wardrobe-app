@@ -56,7 +56,8 @@ export function WardrobeScreen({ view }: { view: WardrobeView }) {
   const [query, setQuery] = useState('')
   const [catFilter, setCatFilter] = useState<Category | null>(null)
 
-  const { itemsQuery, updateMutation, deleteMutation } = useItems()
+  const { itemsQuery, updateMutation, deleteMutation, seedMutation } =
+    useItems()
   const { outfitsQuery } = useOutfits()
   const excludedIds = excluded.excludedIds
   const toggleExcluded = excluded.toggle
@@ -243,10 +244,19 @@ export function WardrobeScreen({ view }: { view: WardrobeView }) {
                 </EmptyDescription>
               </EmptyHeader>
               <EmptyContent>
-                <Button onClick={openAddItem}>
-                  <PlusIcon />
-                  Add item
-                </Button>
+                <div className='flex flex-wrap items-center justify-center gap-2.5'>
+                  <Button onClick={openAddItem}>
+                    <PlusIcon />
+                    Add item
+                  </Button>
+                  <Button
+                    variant='outline'
+                    onClick={() => seedMutation.mutate()}
+                    loading={seedMutation.isPending}
+                  >
+                    Load a sample wardrobe
+                  </Button>
+                </div>
               </EmptyContent>
             </Empty>
           </div>

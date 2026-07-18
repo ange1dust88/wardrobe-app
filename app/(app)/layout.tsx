@@ -38,8 +38,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
 function AuthedFrame({ children }: { children: React.ReactNode }) {
   const { profileQuery, saveMutation } = useProfile()
-
-  useItems()
+  const { seedMutation } = useItems()
   useOutfits()
 
   if (profileQuery.isLoading) return <Loading />
@@ -48,7 +47,11 @@ function AuthedFrame({ children }: { children: React.ReactNode }) {
   if (!profile || !profile.onboardedAt) {
     return (
       <Onboarding
-        onComplete={input => saveMutation.mutate(input)}
+        onComplete={input =>
+          saveMutation.mutate(input, {
+            onSuccess: () => seedMutation.mutate(),
+          })
+        }
         saving={saveMutation.isPending}
       />
     )
