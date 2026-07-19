@@ -78,12 +78,39 @@ export interface MatchPreview {
   byCategory: MatchPreviewSlot[]
 }
 
+const ELASTIC_WAIST = /sweat|jogger|track|legging|pyjama|pajama|lounge/i
+const NO_LOOP_SUBTYPES = new Set(['sweatpants', 'leggings'])
+
+function isBelt(item: Item): boolean {
+  return (
+    item.category === Category.Accessory &&
+    (item.subType === 'belt' || /belt/i.test(item.name))
+  )
+}
+
+// A belt can only sit on a bottom you can thread it through — never a top or
+// shoes, and never an elastic-waist bottom (sweatpants, leggings).
+function threadable(item: Item): boolean {
+  if (item.category !== Category.Bottom) return false
+  if (item.subType != null && NO_LOOP_SUBTYPES.has(item.subType)) return false
+  if (ELASTIC_WAIST.test(item.name)) return false
+  return true
+}
+
+function beltConflict(anchor: Item, candidate: Item): boolean {
+  const belt = isBelt(anchor) ? anchor : isBelt(candidate) ? candidate : null
+  if (!belt) return false
+  const other = belt === anchor ? candidate : anchor
+  return !threadable(other)
+}
+
 function pairAllowed(
   anchor: Item,
   candidate: Item,
   allowConflicts: boolean
 ): boolean {
   if (allowConflicts) return true
+  if (beltConflict(anchor, candidate)) return false
   if (candidate.category === anchor.category) {
     return (
       categoryStacks(anchor.category) &&

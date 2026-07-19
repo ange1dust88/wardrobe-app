@@ -117,3 +117,50 @@ describe('buildPreview', () => {
     expect(deriveColor('#ff2200').isNeutral).toBe(false)
   })
 })
+
+describe('belt matching', () => {
+  const belt = () =>
+    makeItem({
+      id: 'belt',
+      category: Category.Accessory,
+      subType: 'belt',
+      name: 'Leather belt',
+    })
+
+  it('pairs with a loop bottom', () => {
+    const trousers = makeItem({
+      id: 'tr',
+      category: Category.Bottom,
+      subType: 'trousers',
+      name: 'Wool trousers',
+    })
+    expect(buildMatchMap([belt(), trousers]).belt.tr).toHaveProperty('score')
+  })
+
+  it('does not pair with sweatpants (elastic waist by subtype)', () => {
+    const sweats = makeItem({
+      id: 'sw',
+      category: Category.Bottom,
+      subType: 'sweatpants',
+      name: 'Grey pants',
+    })
+    expect(buildMatchMap([belt(), sweats]).belt.sw).toBeUndefined()
+  })
+
+  it('detects an elastic waist by name too', () => {
+    const joggers = makeItem({
+      id: 'j',
+      category: Category.Bottom,
+      name: 'Black joggers',
+    })
+    expect(buildMatchMap([belt(), joggers]).belt.j).toBeUndefined()
+  })
+
+  it('does not pair with a top or shoes', () => {
+    const top = makeItem({ id: 't', category: Category.Top })
+    const shoes = makeItem({ id: 's', category: Category.Shoes })
+    const map = buildMatchMap([belt(), top, shoes])
+    expect(map.belt.t).toBeUndefined()
+    expect(map.belt.s).toBeUndefined()
+  })
+})
