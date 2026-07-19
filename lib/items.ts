@@ -217,6 +217,11 @@ export async function seedWardrobe(): Promise<void> {
   if (!res.ok) throw new Error(`POST /seed → ${res.status}`)
 }
 
+export async function clearWardrobe(): Promise<void> {
+  const res = await apiFetch('/seed', { method: 'DELETE' })
+  if (!res.ok) throw new Error(`DELETE /seed → ${res.status}`)
+}
+
 export async function createItem(body: CreateItem): Promise<Item> {
   const formData = new FormData()
   formData.append('name', body.name)

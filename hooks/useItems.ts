@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  clearWardrobe,
   createItem,
   deleteItem,
   fetchItems,
@@ -52,7 +53,19 @@ export function useItems() {
 
   const seedMutation = useMutation<void, Error, void>({
     mutationFn: seedWardrobe,
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate()
+      queryClient.invalidateQueries({ queryKey: ['profile'] })
+    },
+  })
+
+  const clearMutation = useMutation<void, Error, void>({
+    mutationFn: clearWardrobe,
+    onSuccess: () => {
+      invalidate()
+      queryClient.invalidateQueries({ queryKey: ['outfits'] })
+      queryClient.invalidateQueries({ queryKey: ['profile'] })
+    },
   })
 
   return {
@@ -61,5 +74,6 @@ export function useItems() {
     updateMutation,
     deleteMutation,
     seedMutation,
+    clearMutation,
   }
 }

@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client'
 import { prisma } from '../db'
+import { deleteImage } from '../storage'
 import {
   Category,
   Fit,
@@ -114,5 +115,28 @@ export async function seedStarterWardrobe(userId: string): Promise<number> {
   }) as Prisma.ItemCreateManyInput[]
 
   const res = await prisma.item.createMany({ data })
+  await prisma.userProfile.updateMany({
+    where: { userId },
+    data: { sampleWardrobe: true },
+  })
   return res.count
+}
+
+export async function clearSampleWardrobe(userId: string): Promise<void> {
+  const items = await prisma.item.findMany({
+    where: { userId },
+    select: { imageUrl: true },
+  })
+  await Promise.all(
+    items
+      .map(i => i.imageUrl)
+      .filter((url): url is string => !!url)
+      .map(url => deleteImage(url))
+  )
+  await prisma.outfit.deleteMany({ where: { userId } })
+  await prisma.item.deleteMany({ where: { userId } })
+  await prisma.userProfile.updateMany({
+    where: { userId },
+    data: { sampleWardrobe: false },
+  })
 }

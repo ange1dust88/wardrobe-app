@@ -32,6 +32,7 @@ import { harmonyOf } from '@/lib/harmony'
 import { MIN_RECOMMENDABLE_SCORE } from '@/lib/match-score'
 import { capture } from '@/lib/analytics'
 import { useItems } from '@/hooks/useItems'
+import { useProfile } from '@/hooks/useProfile'
 import { useMatchMap } from '@/hooks/useMatchMap'
 import { useOutfits } from '@/hooks/useOutfits'
 
@@ -56,8 +57,9 @@ export function WardrobeScreen({ view }: { view: WardrobeView }) {
   const [query, setQuery] = useState('')
   const [catFilter, setCatFilter] = useState<Category | null>(null)
 
-  const { itemsQuery, updateMutation, deleteMutation, seedMutation } =
+  const { itemsQuery, updateMutation, deleteMutation, clearMutation } =
     useItems()
+  const profile = useProfile().profileQuery.data
   const { outfitsQuery } = useOutfits()
   const excludedIds = excluded.excludedIds
   const toggleExcluded = excluded.toggle
@@ -213,6 +215,24 @@ export function WardrobeScreen({ view }: { view: WardrobeView }) {
           onClose={() => setSearchOpen(false)}
         />
       )}
+      {profile?.sampleWardrobe && hasItems && (
+        <div className='mb-3 flex flex-none flex-wrap items-center justify-between gap-3 rounded-[12px] border border-border bg-secondary/50 px-4 py-2.5'>
+          <span className='text-[13px] text-muted-foreground'>
+            <span className='font-semibold text-foreground'>
+              Sample wardrobe
+            </span>{' '}
+            — a starter set so you can see how matching works. Hover a piece to
+            bloom its pairings.
+          </span>
+          <Button
+            variant='outline'
+            onClick={() => clearMutation.mutate()}
+            loading={clearMutation.isPending}
+          >
+            Clear &amp; add my own
+          </Button>
+        </div>
+      )}
       <div
         className={
           view === 'circular'
@@ -244,19 +264,10 @@ export function WardrobeScreen({ view }: { view: WardrobeView }) {
                 </EmptyDescription>
               </EmptyHeader>
               <EmptyContent>
-                <div className='flex flex-wrap items-center justify-center gap-2.5'>
-                  <Button onClick={openAddItem}>
-                    <PlusIcon />
-                    Add item
-                  </Button>
-                  <Button
-                    variant='outline'
-                    onClick={() => seedMutation.mutate()}
-                    loading={seedMutation.isPending}
-                  >
-                    Load a sample wardrobe
-                  </Button>
-                </div>
+                <Button onClick={openAddItem}>
+                  <PlusIcon />
+                  Add item
+                </Button>
               </EmptyContent>
             </Empty>
           </div>

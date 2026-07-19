@@ -10,6 +10,7 @@ export type UserProfile = {
   eyes: number | null
   skin: number | null
   undertone: Undertone | null
+  sampleWardrobe: boolean
   onboardedAt: string | null
 }
 
